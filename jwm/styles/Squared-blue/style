@@ -8,61 +8,66 @@
       <Height>18</Height>
 
       <Active>
-         <Text>#484848</Text>
-         <Title>#e3e5e7</Title>
-         <Outline>#484848</Outline>
+         <Text>#e0e0e0</Text>
+         <Title>#161616</Title>
+         <Outline>#5369a3</Outline>
          <Opacity>1.0</Opacity>
       </Active>
 
       <Inactive>
          <Text>#9c9c9c</Text>
-         <Title>#e3e5e7</Title>
-         <Outline>#484848</Outline>
+         <Title>#373737</Title>
+         <Outline>#5369a3</Outline>
          <Opacity>0.5:0.9:0.1</Opacity>
       </Inactive>
 
    </WindowStyle>
 
+   <ButtonClose>Squared-blue/button-close.xpm</ButtonClose>
+   <ButtonMax>Squared-blue/button-max.xpm</ButtonMax>
+   <ButtonMaxActive>Squared-blue/button-max-active.xpm</ButtonMaxActive>
+   <ButtonMin>Squared-blue/button-min.xpm</ButtonMin>
+
    <TaskListStyle>
-      <Font>LiberationSans-9</Font>
-      <Foreground>#484848</Foreground>
-      <Background>#e3e5e7</Background>
+      <Font>LiberationSans-9:bold</Font>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#161616</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#484848</ActiveBackground>
+      <ActiveBackground>#5369a3</ActiveBackground>
    </TaskListStyle>
 
    <!-- Additional TrayStyle attribute: insert -->
    <TrayStyle>
       <Font>LiberationSans-9:bold</Font>
-      <Foreground>#484848</Foreground>
-      <Background>#e3e5e7</Background>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#222222</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#484848</ActiveBackground>
+      <ActiveBackground>#5369a3</ActiveBackground>
       <Opacity>0.75</Opacity>
    </TrayStyle>
 
    <PagerStyle>
-      <Outline>#484848</Outline>
-      <Foreground>#484848</Foreground>
-      <Background>#e3e5e7</Background>
-      <ActiveForeground>#e3e5e7</ActiveForeground>
-      <ActiveBackground>#484848</ActiveBackground>
+      <Outline>#5369a3</Outline>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#373737</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#5369a3</ActiveBackground>
    </PagerStyle>
 
    <MenuStyle>
-      <Font>LiberationSans-9</Font>
-      <Foreground>#484848</Foreground>
-      <Background>#e3e5e7</Background>
-      <ActiveForeground>#e3e5e7</ActiveForeground>
-      <ActiveBackground>#484848</ActiveBackground>
+      <Font>LiberationSans-9:bold</Font>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#222222</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#5369a3</ActiveBackground>
       <Opacity>0.85</Opacity>
    </MenuStyle>
 
    <PopupStyle>
       <Font>LiberationSans-8</Font>
-      <Outline>#484848</Outline>
-      <Foreground>#484848</Foreground>
-      <Background>#e3e5e7</Background>
+      <Outline>#161616</Outline>
+      <Foreground>#f0f0f0</Foreground>
+      <Background>#5369a3</Background>
    </PopupStyle>
 
    <!-- Virtual Desktops -->

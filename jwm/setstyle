@@ -3,7 +3,7 @@
 style="$1"
 
 if test -n "$style" -a -f "$style"; then
-	cat >$HOME/.jwm/style<<EOF
+	cat >"${JWM_CONFIG_DIR:-$HOME/.jwm}/style"<<EOF
 <?xml version="1.0"?>
 <JWM>
    <Include>$style</Include>

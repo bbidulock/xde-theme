@@ -10,25 +10,30 @@
       <Active>
          <Text>#e0e0e0</Text>
          <Title>#161616</Title>
-         <Outline>#5369a3</Outline>
+         <Outline>#617953</Outline>
          <Opacity>1.0</Opacity>
       </Active>
 
       <Inactive>
          <Text>#9c9c9c</Text>
          <Title>#373737</Title>
-         <Outline>#5369a3</Outline>
+         <Outline>#617953</Outline>
          <Opacity>0.5:0.9:0.1</Opacity>
       </Inactive>
 
    </WindowStyle>
+
+   <ButtonClose>Squared-green/button-close.xpm</ButtonClose>
+   <ButtonMax>Squared-green/button-max.xpm</ButtonMax>
+   <ButtonMaxActive>Squared-green/button-max-active.xpm</ButtonMaxActive>
+   <ButtonMin>Squared-green/button-min.xpm</ButtonMin>
 
    <TaskListStyle>
       <Font>LiberationSans-9:bold</Font>
       <Foreground>#c0c0c0</Foreground>
       <Background>#161616</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#5369a3</ActiveBackground>
+      <ActiveBackground>#617953</ActiveBackground>
    </TaskListStyle>
 
    <!-- Additional TrayStyle attribute: insert -->
@@ -37,16 +42,16 @@
       <Foreground>#c0c0c0</Foreground>
       <Background>#222222</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#5369a3</ActiveBackground>
+      <ActiveBackground>#617953</ActiveBackground>
       <Opacity>0.75</Opacity>
    </TrayStyle>
 
    <PagerStyle>
-      <Outline>#5369a3</Outline>
+      <Outline>#617953</Outline>
       <Foreground>#c0c0c0</Foreground>
       <Background>#373737</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#5369a3</ActiveBackground>
+      <ActiveBackground>#617953</ActiveBackground>
    </PagerStyle>
 
    <MenuStyle>
@@ -54,7 +59,7 @@
       <Foreground>#c0c0c0</Foreground>
       <Background>#222222</Background>
       <ActiveForeground>#f0f0f0</ActiveForeground>
-      <ActiveBackground>#5369a3</ActiveBackground>
+      <ActiveBackground>#617953</ActiveBackground>
       <Opacity>0.85</Opacity>
    </MenuStyle>
 
@@ -62,7 +67,7 @@
       <Font>LiberationSans-8</Font>
       <Outline>#161616</Outline>
       <Foreground>#f0f0f0</Foreground>
-      <Background>#5369a3</Background>
+      <Background>#617953</Background>
    </PopupStyle>
 
    <!-- Virtual Desktops -->

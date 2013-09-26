@@ -122,6 +122,14 @@ jwmstylesdir='$(jwmdir)/styles'
 AC_SUBST([jwmstylesdir])
 jwmicondir='$(jwmdir)/icons'
 AC_SUBST([jwmicondir])
+jwmstyles1dir='$(jwmstylesdir)/Squared-cadet'
+AC_SUBST([jwmstyles1dir])
+jwmstyles2dir='$(jwmstylesdir)/Squared-grey'
+AC_SUBST([jwmstyles2dir])
+jwmstyles3dir='$(jwmstylesdir)/Squared-green'
+AC_SUBST([jwmstyles3dir])
+jwmstyles4dir='$(jwmstylesdir)/Squared-blue'
+AC_SUBST([jwmstyles4dir])
 
 pekwmdir='$(datadir)/pekwm'
 AC_SUBST([pekwmdir])

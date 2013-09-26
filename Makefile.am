@@ -478,12 +478,6 @@ dist_gtkthemes4_DATA = \
 dist_jwm_SCRIPTS = \
 	jwm/setstyle
 
-dist_jwmstyles_DATA = \
-	jwm/styles/Squared-blue \
-	jwm/styles/Squared-cadet \
-	jwm/styles/Squared-green \
-	jwm/styles/Squared-grey
-
 dist_jwmicon_DATA = \
 	jwm/icons/window-above.xpm \
 	jwm/icons/window-below.xpm \
@@ -508,6 +502,34 @@ dist_jwmicon_DATA = \
 	jwm/icons/window-stick.xpm \
 	jwm/icons/window-titlebar.xpm \
 	jwm/icons/window-unshade.xpm
+
+dist_jwmstyles1_DATA = \
+	jwm/styles/Squared-cadet/button-close.xpm \
+	jwm/styles/Squared-cadet/button-max-active.xpm \
+	jwm/styles/Squared-cadet/button-max.xpm \
+	jwm/styles/Squared-cadet/button-min.xpm \
+	jwm/styles/Squared-cadet/style
+
+dist_jwmstyles2_DATA = \
+	jwm/styles/Squared-grey/button-close.xpm \
+	jwm/styles/Squared-grey/button-max-active.xpm \
+	jwm/styles/Squared-grey/button-max.xpm \
+	jwm/styles/Squared-grey/button-min.xpm \
+	jwm/styles/Squared-grey/style
+
+dist_jwmstyles3_DATA = \
+	jwm/styles/Squared-green/button-close.xpm \
+	jwm/styles/Squared-green/button-max-active.xpm \
+	jwm/styles/Squared-green/button-max.xpm \
+	jwm/styles/Squared-green/button-min.xpm \
+	jwm/styles/Squared-green/style
+
+dist_jwmstyles4_DATA = \
+	jwm/styles/Squared-blue/button-close.xpm \
+	jwm/styles/Squared-blue/button-max-active.xpm \
+	jwm/styles/Squared-blue/button-max.xpm \
+	jwm/styles/Squared-blue/button-min.xpm \
+	jwm/styles/Squared-blue/style
 
 dist_pekwmicons_DATA = \
 	pekwm/icons/window-above.xpm \

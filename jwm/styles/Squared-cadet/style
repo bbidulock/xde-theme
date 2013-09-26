@@ -23,6 +23,11 @@
 
    </WindowStyle>
 
+   <ButtonClose>Squared-cadet/button-close.xpm</ButtonClose>
+   <ButtonMax>Squared-cadet/button-max.xpm</ButtonMax>
+   <ButtonMaxActive>Squared-cadet/button-max-active.xpm</ButtonMaxActive>
+   <ButtonMin>Squared-cadet/button-min.xpm</ButtonMin>
+
    <TaskListStyle>
       <Font>LiberationSans-9:bold</Font>
       <Foreground>#c0c0c0</Foreground>
