@@ -1,0 +1,16 @@
+/* XPM */
+static char *arrow_selected_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"5 7 3 1 ",
+"  c None",
+": c #5369a3",
+". c #f0f0f0",
+/* pixels */
+".::::",
+"..:::",
+"...::",
+"....:",
+"...::",
+"..:::",
+".::::"
+};

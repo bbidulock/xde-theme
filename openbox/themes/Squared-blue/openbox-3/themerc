@@ -1,0 +1,231 @@
+!----------------------------------------------------------------------------------------------
+! This work is licensed under the Creative Commons
+! Attribution-ShareAlike License.
+! To view a copy of this license, visit
+! http://creativecommons.org/licenses/by-sa/3.0/
+!----------------------------------------------------------------------------------------------
+! Style Name: 						Unexicon
+! Style version						1
+! Style Author: 					endel (endel@tlen.pl)
+! Style Date: 						12.12.2010
+!----------------------------------------------------------------------------------------------
+
+*font:							Liberation Sans:size=9:Normal
+#*.font.effect:						shadow
+#*.font.shadow.bg.color:				#535353
+#*.font.shadow.x:					1
+#*.font.shadow.y:					1
+
+!----------------------------------------------------------------------------------------------
+
+osd.border.width:					1
+osd.border.color:					#5369a3
+osd.bg:							flat solid
+osd.bg.border.color:					#5369a3
+osd.label.bg:						flat solid
+osd.label.bg.border.color:				#5369a3
+osd.label.text.color:					#c0c0c0
+osd.label.font:						Liberation Sans:size=9:Normal
+osd.label.text.font:					shadow=y:shadowtint=70:shadowoffset=1
+osd.hilight.bg:						flat solid
+osd.hilight.bg.border.color:				#5369a3
+osd.hilight.bg.color:					#5369a3
+osd.unhilight.bg:					flat solid
+osd.unhilight.bg.border.color:				#5369a3
+osd.unhilight.bg.color:					#373737
+
+!----------------------------------------------------------------------------------------------
+
+menu.overlap:						0
+menu.overlap.x:						0
+menu.overlap.y:						0
+menu.separator.width:					1
+menu.separator.padding.width:				3
+menu.separator.padding.height:				3
+
+menu.bevel.width:					0
+menu.items.height:					16
+menu.title.height:					16
+
+menu.border.width:					1
+menu.border.color:					#5369a3
+menu.bg.border.color:					#5369a3
+
+menu.bullet.position:					right
+
+menu.title.bg:						flat solid
+menu.title.bg.border.color:				#5369a3
+menu.title.text.justify:				center
+menu.title.bg.color:					#161616
+menu.title.text.color:					#c3c3c3
+menu.title.font:					Liberation Sans:size=9:Bold
+menu.title.text.font:					shadow=y:shadowtint=70:shadowoffset=1
+
+menu.items.bg:						flat solid
+menu.items.bg.border.color:				#5369a3
+menu.items.justify:					left
+menu.items.bg.color:					#161616
+menu.items.text.color:					#c3c3c3
+menu.items.text.font:					Liberation Sans:size=9:Normal
+menu.items.font:					shadow=n
+menu.items.disabled.text.color:				#726d69
+
+menu.items.active.bg:					flat solid
+menu.items.active.bg.border.color:			#5369a3
+menu.items.active.bg.color:				#5369a3
+menu.items.active.text.color:				#e7e7e7
+menu.items.active.text.font:				Liberation Sans:size=9:Bold
+menu.items.active.text:					shadow=y:shadowtint=70:shadowoffset=1
+
+!----------------------------------------------------------------------------------------------
+
+window.bevelWidth:					1
+window.shade:
+window.borderWidth:					1
+window.bg.border.color:					#5369a3
+window.roundCorners:
+
+window.label.text.justify:				center
+
+window.title.height:					18
+
+window.active.border.color:				#161616
+
+window.inactive.border.color:				#161616
+
+window.active.title.bg:					flat solid
+window.active.title.bg.border.color:			#5369a3
+window.active.title.bg.color:				#161616
+window.active.title.text.color:				#e7e7e7
+window.active.title.separator.color:			#161616
+
+window.inactive.title.bg:				flat solid
+window.inactive.title.bg.border.color:			#5369a3
+window.inactive.title.bg.color:				#161616
+window.inactive.title.text.color:			#9c9c9c
+window.inactive.title.separator.color:			#161616
+
+window.active.label.bg:					flat solid
+window.active.label.bg.border.color:			#5369a3
+window.active.label.bg.color:				#161616
+window.active.label.text.color:				#e7e7e7
+window.active.label.font:				Liberation Sans:size=9:Bold
+window.active.label.text.font:				shadow=y:shadowtint=70:shadowoffset=1
+
+window.inactive.label.bg:				flat solid
+window.inactive.label.bg.border.color:			#5369a3
+window.inactive.label.bg.color:				#161616
+window.inactive.label.text.color:			#c3c3c3
+window.inactive.label.font:				Liberation Sans:size=9:Normal
+window.inactive.label.text.font:			shadow=n
+
+window.active.button.unpressed.bg:			flat solid
+window.active.button.unpressed.bg.border.color:		#5369a3
+window.active.button.unpressed.bg.color:		#5369a3
+window.active.button.unpressed.image.color:		#c3c3c3
+
+window.active.button.pressed.bg:			flat solid
+window.active.button.pressed.bg.border.color:		#5369a3
+window.active.button.pressed.bg.color:			#5369a3
+window.active.button.pressed.image.color:		#f0f0f0
+
+window.active.button.disabled.bg:			flat solid
+window.active.button.disabled.bg.border.color:		#5369a3
+window.active.button.disabled.bg.color:			#5369a3
+window.active.button.disabled.image.color:		#9c9c9c
+
+window.active.button.toggled.bg:			flat solid
+window.active.button.toggled.bg.border.color:		#5369a3
+window.active.button.toggled.bg.color:			#5369a3
+window.active.button.toggled.image.color:		#c3c3c3
+
+window.active.button.toggled.unpressed.bg:		flat solid
+window.active.button.toggled.unpressed.bg.border.color:	#5369a3
+window.active.button.toggled.unpressed.bg.color:	#5369a3
+window.active.button.toggled.unpressed.image.color:	#c3c3c3
+
+window.active.button.toggled.pressed.bg:		flat solid
+window.active.button.toggled.pressed.bg.border.color:	#5369a3
+window.active.button.toggled.pressed.bg.color:		#5369a3
+window.active.button.toggled.pressed.image.color:	#c3c3c3
+
+window.active.button.toggled.hover.bg:			flat solid
+window.active.button.toggled.hover.bg.border.color:	#5369a3
+window.active.button.toggled.hover.bg.color:		#5369a3
+window.active.button.toggled.hover.image.color:		#c3c3c3
+
+window.inactive.button.unpressed.bg:			flat solid
+window.inactive.button.unpressed.bg.border.color:	#5369a3
+window.inactive.button.unpressed.bg.color:		#5369a3
+window.inactive.button.unpressed.image.color:		#5369a3
+
+window.inactive.button.pressed.bg:			flat solid
+window.inactive.button.pressed.bg.border.color:		#5369a3
+window.inactive.button.pressed.bg.color:		#5369a3
+window.inactive.button.pressed.image.color:		#5369a3
+
+window.inactive.button.hover.bg:			flat solid
+window.inactive.button.hover.bg.border.color:		#5369a3
+window.inactive.button.hover.bg.color:			#5369a3
+window.inactive.button.hover.image.color:		#5369a3
+
+window.inactive.button.disabled.bg:			flat solid
+window.inactive.button.disabled.bg.border.color:	#5369a3
+window.inactive.button.disabled.bg.color:		#5369a3
+window.inactive.button.disabled.image.color:		#373737
+
+window.inactive.button.toggled.bg:			flat solid
+window.inactive.button.toggled.bg.border.color:		#5369a3
+window.inactive.button.toggled.bg.color:		#5369a3
+window.inactive.button.toggled.image.color:		#5369a3
+
+window.inactive.button.toggled.unpressed.bg:		flat solid
+window.inactive.button.toggled.unpressed.bg.border.color:	#5369a3
+window.inactive.button.toggled.unpressed.bg.color:	#5369a3
+window.inactive.button.toggled.unpressed.image.color:	#5369a3
+
+window.inactive.button.toggled.pressed.bg:		flat solid
+window.inactive.button.toggled.pressed.bg.border.color:	#5369a3
+window.inactive.button.toggled.pressed.bg.color:	#5369a3
+window.inactive.button.toggled.pressed.image.color:	#5369a3
+
+window.inactive.button.toggled.hover.bg:		flat solid
+window.inactive.button.toggled.hover.bg.border.color:	#5369a3
+window.inactive.button.toggled.hover.bg.color:		#5369a3
+window.inactive.button.toggled.hover.image.color:	#5369a3
+
+border.width:						1
+padding.width:						0
+padding.height:						1
+window.handle.width:					2
+window.client.padding.width:				1
+window.client.padding.height:				1
+
+window.button.pressed.bg.color:				#4C4C4C
+window.button.pressed.image.color:			#000000
+
+window.active.handle.bg:				flat solid
+window.active.handle.bg.border.color:			#5369a3
+window.active.handle.bg.color:				#000000
+window.inactive.handle.bg:				flat solid
+window.inactive.handle.bg.border.color:			#5369a3
+window.inactive.handle.bg.color:			#000000
+window.handleWidth:					2
+
+window.active.grip.bg:					flat solid
+window.active.grip.bg.border.color:			#5369a3
+window.active.grip.bg.color:				#000000
+window.inactive.grip.bg:				flat solid
+window.inactive.grip.bg.border.color:			#5369a3
+window.inactive.grip.bg.color:				#000000
+
+!----------------------------------------------------------------------------------------------
+
+slit:							flat solid
+slit.bg:						flat solid
+slit.bg.color:						#3A3A3A
+slit.borderWidth:					1
+slit.bevelWidth:					1
+slit.bg.border.color:					#5369a3
+
+!----------------------------------------------------------------------------------------------

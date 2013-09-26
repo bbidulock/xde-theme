@@ -1,0 +1,358 @@
+# Squared-blue Pekwm theme
+# License: cc-by-sa
+# Author: Brian Bidulock
+# Email: bidulock@openss7.org
+# Homepage: http://www.unexicon.com/
+
+$font = "XFT#Liberation Sans:size=9#1 1 3 3#Left"
+# $font = "Liberation Sans  Bold-9Left#XFT"
+$font_title = "XFT#Liberation Sans:size=9:weight=bold#1 2#Center"
+
+$color_bg = "#161616"
+$color_bu = "#467277"
+$color_fg = "#c0c0c0"
+$color_hi = "#f0f0f0"
+$color_h2 = "#e7e7e7"
+$color_un = "#9c9c9c"
+$color_b2 = "#222222"
+$color_b3 = "#373737"
+
+PDecor {
+	Decor = "Default" {
+		Title {
+			Height = "18"
+			HeightAdapt = "False"
+			Pad = "2 2 2 2"
+			Focused = "Solid $color_bg"
+			UnFocused = "Solid $color_bg"
+			WidthMin = "0"
+			WidthMax = "80"
+			WidthSymetric = "True"
+			Tab {
+				Focused = "Solid $color_bg"
+				FocusedSelected = "Solid $color_bg"
+				Unfocused = "Solid $color_bg"
+				UnfocusedSelected = "Solid $color_bg"
+			}
+			Separator {
+				Focused = "Image tab_separator.xpm"
+				Unfocused = "Image tab_separator.xpm"
+			}
+			Font {
+				Focused = "$font_title"
+			}
+			FontColor {
+				Focused = "$color_h2 $color_b3"
+				FocusedSelected = "$color_hi $color_b2"
+				Unfocused = "$color_un $color_b2"
+				UnfocusedSelected = "$color_fg $color_b2"
+			}
+			Buttons {
+				# on the right hand side we have minimize, maximize and close
+				# buttons.
+				Right {
+					Focused   = "Image close_focused.xpm"
+					Unfocused = "Image close_unfocus.xpm"
+					Hover     = "Image close_hovered.xpm"
+					Pressed   = "Image close_pressed.xpm"
+					Button = "1" { Actions = "Close" }
+					Button = "3" { Actions = "Kill" }
+					SetShape = "True"
+				}
+				Right {
+					Focused   = "Image maximize_focused.xpm"
+					Unfocused = "Image maximize_unfocus.xpm"
+					Hover     = "Image maximize_hovered.xpm"
+					Pressed   = "Image maximize_pressed.xpm"
+					Button = "1" { Actions = "Toggle Maximized 1 1" }
+					Button = "2" { Actions = "Toggle Maximized 0 1" }
+					Button = "3" { Actions = "Toggle Maximized 1 0" }
+					SetShape = "True"
+				}
+				Right {
+					Focused   = "Image minimize_focused.xpm"
+					Unfocused = "Image minimize_unfocus.xpm"
+					Hover     = "Image minimize_hovered.xpm"
+					Pressed   = "Image minimize_pressed.xpm"
+					Button = "1" { Actions = "Set Iconified" }
+					SetShape = "True"
+				}
+				# on the left size we want window menu, sticky and shade buttons.
+				Left {
+					Focused   = "Image menu_focused.xpm"
+					Unfocused = "Image menu_unfocus.xpm"
+					Hover     = "Image menu_hovered.xpm"
+					Pressed   = "Image menu_pressed.xpm"
+					Button = "1" { Actions = "ShowMenu Window" }
+					SetShape = "True"
+				}
+				Left {
+					Focused   = "Image stick_focused.xpm"
+					Unfocused = "Image stick_unfocus.xpm"
+					Hover     = "Image stick_hovered.xpm"
+					Pressed   = "Image stick_pressed.xpm"
+					Button = "1" { Actions = "Toggle Sticky" }
+					SetShape = "True"
+				}
+				Left {
+					Focused   = "Image shade_focused.xpm"
+					Unfocused = "Image shade_unfocus.xpm"
+					Hover     = "Image shade_hovered.xpm"
+					Pressed   = "Image shade_pressed.xpm"
+					Button = "1" { Actions = "Toggle Shaded" }
+					SetShape = "True"
+				}
+			}
+			Border {
+				Focused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Image border_lr.xpm"
+					Right = "Image border_lr.xpm"
+					BottomLeft = "Image border_bl.xpm"
+					Bottom = "Image border_b.xpm"
+					BottomRight = "Image border_br.xpm"
+				}
+				Unfocused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Image border_lr.xpm"
+					Right = "Image border_lr.xpm"
+					BottomLeft = "Image border_bl.xpm"
+					Bottom = "Image border_b.xpm"
+					BottomRight = "Image border_br.xpm"
+				}
+			}
+		}
+	}
+	Decor = "Menu" {
+		Title {
+			Height = "18"
+			HeightAdapt = "False"
+			Pad = "2 2 2 2"
+			Focused = "Solid $color_bg"
+			Unfocused = "Solid $color_bg"
+			WidthMin = "0"
+			WidthMax = "80"
+			WidthSymetric = "True"
+			Tab {
+				Focused = "Solid $color_bg"
+				FocusedSelected = "Solid $color_bg"
+				Unfocused = "Solid $color_bg"
+				UnfocusedSelected = "Solid $color_bg"
+			}
+			Separator {
+				Focused = "Solid blue 2"
+				Unfocused = "Solid blue 2"
+			}
+			Font {
+				Focused = "$font_title"
+			}
+			FontColor {
+				Focused = "$color_h2 $color_b3"
+				FocusedSelected = "$color_hi $color_b2"
+				Unfocused = "$color_un $color_b2"
+				UnfocusedSelected = "$color_fg $color_b2"
+			}
+			Buttons {
+				Right {
+					Focused   = "Image close_focused.xpm"
+					Unfocused = "Image close_unfocus.xpm"
+					Hover     = "Image close_hovered.xpm"
+					Pressed   = "Image close_pressed.xpm"
+					Button = "1" { Actions = "Close" }
+					Button = "3" { Actions = "Kill" }
+					SetShape = "True"
+				}
+			}
+			Border {
+				Focused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Image border_lr.xpm"
+					Right = "Image border_lr.xpm"
+					BottomLeft = "Image border_bl.xpm"
+					Bottom = "Image border_b.xpm"
+					BottomRight = "Image border_br.xpm"
+				}
+				Unfocused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Image border_lr.xpm"
+					Right = "Image border_lr.xpm"
+					BottomLeft = "Image border_bl.xpm"
+					Bottom = "Image border_b.xpm"
+					BottomRight = "Image border_br.xpm"
+				}
+			}
+		}
+	}
+	Decor = "Titlebarless" {
+		Title {
+			Height = "0"
+			HeightAdapt = "False"
+			Pad = "0 0 0 0"
+			Focused = "Empty"
+			Unfocused = "Empty"
+			WidthMin = "0"
+			WidthMax = "80"
+			WidthSymetric = "True"
+			Tab {
+				Focused = "Empty"
+				FocusedSelected = "Empty"
+				Unfocused = "Empty"
+				UnfocusedSelected = "Empty"
+			}
+			Separator {
+				Focused = "Empty"
+				Unfocused = "Empty"
+			}
+			Font {
+				Focused = "Empty"
+			}
+			FontColor {
+				Focused = "Empty"
+				FocusedSelected = "Empty"
+				Unfocused = "Empty"
+				UnfocusedSelected = "Empty"
+			}
+			Border {
+				Focused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Empty"
+					Right = "Empty"
+					BottomLeft = "Empty"
+					Bottom = "Empty"
+					BottomRight = "Empty"
+				}
+				Unfocused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Empty"
+					Right = "Empty"
+					BottomLeft = "Empty"
+					Bottom = "Empty"
+					BottomRight = "Empty"
+				}
+			}
+		}
+	}
+	Decor = "Statuswindow" {
+		Title {
+			Height = "0"
+			HeightAdapt = "False"
+			Pad = "0 0 0 0"
+			Focused = "Empty"
+			Unfocused = "Empty"
+			WidthMin = "0"
+			WidthMax = "80"
+			WidthSymetric = "True"
+			Tab {
+				Focused = "Empty"
+				FocusedSelected = "Empty"
+				Unfocused = "Empty"
+				UnfocusedSelected = "Empty"
+			}
+			Separator {
+				Focused = "Empty"
+				Unfocused = "Empty"
+			}
+			Font {
+				Focused = "Empty"
+			}
+			FontColor {
+				Focused = "Empty"
+				FocusedSelected = "Empty"
+				Unfocused = "Empty"
+				UnfocusedSelected = "Empty"
+			}
+			Buttons {
+			}
+			Border {
+				Focused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left =  "Empty"
+					Right = "Empty"
+					BottomLeft = "Empty"
+					Bottom = "Empty"
+					BottomRight = "Empty"
+				}
+				Unfocused {
+					TopLeft = "Empty"
+					Top = "Empty"
+					TopRight = "Empty"
+					Left = "Empty"
+					Right = "Empty"
+					BottomLeft = "Empty"
+					Bottom = "Empty"
+					BottomRight = "Empty"
+				}
+			}
+		}
+	}
+}
+
+Harbour {
+	Texture = "Solid $color_bg"
+}
+
+Menu {
+	Pad = "1 1 2 0"
+	Focused {
+		Font = "$font"
+		Background = "Solid $color_bg"
+		Item = "Empty"
+		Text = "$color_fg"
+		Separator = "Image separator.xpm#Scaled"
+		Arrow = "Image arrow_focused.xpm"
+	}
+	Unfocused {
+		Font = "$font"
+		Background = "Solid $color_bg"
+		Item = "Empty"
+		Text = "$color_fg"
+		Separator = "Image separator.xpm#Scaled"
+		Arrow = "Image arrow_unfocus.xpm"
+	}
+	Selected {
+		Font = "$font"
+		Background = "Solid $color_bu"
+		Item = "Empty"
+		Text = "$color_hi"
+		Separator = "Image separator.xpm#Scaled"
+		Arrow = "Image arrow_selected.xpm"
+	}
+}
+
+CmdDialog {
+	Font = "$font"
+	Texture = "Solid #ffffff"
+	Text = "#000000"
+	Pad = "4 4 1 10"
+}
+
+Status {
+	Font = "$font"
+	Texture = "Solid $color_bg"
+	Text = "$color_fg"
+	Pad = "2 2 10 10"
+}
+
+WorkspaceIndicator {
+	Font = "$font"
+	Background = "Solid $color_b2"
+	Workspace = "Solid $color_bg"
+	WorkspaceActive = "Solid $color_bu"
+	Text = "$color_fg"
+	EdgePadding = "2 2 2 2"
+	WorkspacePadding = "2 2 2 2"
+}

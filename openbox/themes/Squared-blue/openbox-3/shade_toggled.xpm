@@ -1,0 +1,20 @@
+/* XPM */
+static char *shade_toggled[] = {
+/* columns rows colors chars-per-pixel */
+"12 12 2 1 ",
+"  c gray100",
+". c black",
+/* pixels */
+"............",
+".          .",
+"............",
+"            ",
+"            ",
+"            ",
+"            ",
+"            ",
+"            ",
+"            ",
+"            ",
+"            "
+};

@@ -1,0 +1,19 @@
+/* XPM */
+static char *border_b_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"100 8 5 1 ",
+"  c #161616",
+". c #161616",
+"x c #222222",
+"y c #373737",
+"z c #000000",
+/* pixels */
+"                                                                                                    ",
+"                                                                                                    ",
+"                                                                                                    ",
+" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ",
+"yzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+" yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyx ",
+"                                                                                                    ",
+"                                                                                                    "
+};

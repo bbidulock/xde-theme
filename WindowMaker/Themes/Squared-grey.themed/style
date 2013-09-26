@@ -1,0 +1,34 @@
+{
+  WindowTitleFont = "Liberation Sans,sans serif:bold:pixelsize=12";
+  MenuTitleFont = "Liberation Sans,sans serif:bold:pixelsize=12";
+  MenuTextFont = "Liberation Sans,sans serif:pixelsize=12";
+  IconTitleFont = "Liberation Sans,sans serif:pixelsize=9";
+  ClipTitleFont = "Liberation Sans:bold:pixelsize=10";
+  DisplayFont = "Liberation Sans,sans serif:pixelsize=12";
+  LargeDisplayFont = "Liberation Sans,sans serif:pixelsize=24";
+  TitleJustify = center;
+  HighlightColor = "#717171";
+  HighlightTextColor = "#e3e5eb";
+  ClipTitleColor = "#272727";
+  CClipTitleColor = "#212121";
+  FTitleColor = "#484848";
+  PTitleColor = "#c9c9c9";
+  UTitleColor = "#9c9c9c";
+  FTitleBack = (spixmap, sytbar.xpm, "#e3e5eb");
+  PTitleBack = (spixmap, sytbar.xpm, "#e3e5eb");
+  UTitleBack = (solid, "#e3e5eb");
+  ResizebarBack = (spixmap, sytbar.xpm, "#e3e5eb");
+  MenuTitleColor = "#0f0f0f";
+  MenuTextColor = "#272727";
+  MenuDisabledColor = "#9c9c9c";
+  MenuTitleBack = (spixmap, sytbar.xpm, "#e3e5eb");
+  MenuTextBack = (spixmap, sytbar.xpm, "#e3e5eb");
+  IconBack = (spixmap, syicon.xpm, "#e3e5eb");
+  IconTitleColor = "#e3e5eb";
+  IconTitleBack = "#717171";
+  MenuStyle = flat;
+  MenuTextExtendSpace = 0;
+  WindowTitleExtendSpace = 0;
+  MenuTitleExtendSpace = 0;
+  SwitchPanelImages = (sytile.xpm, syback.xpm, 30, 40);
+}

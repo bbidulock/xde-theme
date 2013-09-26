@@ -1,0 +1,16 @@
+/* XPM */
+static char *arrow_unfocus_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"5 7 3 1 ",
+"  c None",
+": c #161616",
+". c #c0c0c0",
+/* pixels */
+".::::",
+"..:::",
+"...::",
+"....:",
+"...::",
+"..:::",
+".::::"
+};

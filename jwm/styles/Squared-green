@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+
+<JWM>
+   <WindowStyle>
+
+      <Font>LiberationSans-9:bold</Font>
+      <Width>2</Width>
+      <Height>18</Height>
+
+      <Active>
+         <Text>#e0e0e0</Text>
+         <Title>#161616</Title>
+         <Outline>#617953</Outline>
+         <Opacity>1.0</Opacity>
+      </Active>
+
+      <Inactive>
+         <Text>#9c9c9c</Text>
+         <Title>#373737</Title>
+         <Outline>#617953</Outline>
+         <Opacity>0.5:0.9:0.1</Opacity>
+      </Inactive>
+
+   </WindowStyle>
+
+   <TaskListStyle>
+      <Font>LiberationSans-9:bold</Font>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#161616</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#617953</ActiveBackground>
+   </TaskListStyle>
+
+   <!-- Additional TrayStyle attribute: insert -->
+   <TrayStyle>
+      <Font>LiberationSans-9:bold</Font>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#222222</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#617953</ActiveBackground>
+      <Opacity>0.75</Opacity>
+   </TrayStyle>
+
+   <PagerStyle>
+      <Outline>#617953</Outline>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#373737</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#617953</ActiveBackground>
+   </PagerStyle>
+
+   <MenuStyle>
+      <Font>LiberationSans-9:bold</Font>
+      <Foreground>#c0c0c0</Foreground>
+      <Background>#222222</Background>
+      <ActiveForeground>#f0f0f0</ActiveForeground>
+      <ActiveBackground>#617953</ActiveBackground>
+      <Opacity>0.85</Opacity>
+   </MenuStyle>
+
+   <PopupStyle>
+      <Font>LiberationSans-8</Font>
+      <Outline>#161616</Outline>
+      <Foreground>#f0f0f0</Foreground>
+      <Background>#617953</Background>
+   </PopupStyle>
+
+   <!-- Virtual Desktops -->
+   <!-- Desktop tags can be contained within Desktops for desktop names. -->
+   <Desktops width="4" height="2">
+      <!-- Default background. Note that a Background tag can be
+           contained within a Desktop tag to give a specific background
+           for that desktop.
+       -->
+      <!--
+      <Background type="image">/export0/images/formulae.jpg</Background>
+       -->
+      <!--
+      <Desktop name="1">
+         <Background type="image">/usr/share/images/towers/tower_bluesky4.jpg</Background>
+      </Desktop>
+      <Desktop name="2">
+         <Background type="image">/usr/share/images/towers/tower_field1.jpg</Background>
+      </Desktop>
+      <Desktop name="3">
+         <Background type="image">/usr/share/images/towers/hoghorns_sillouette6.jpg</Background>
+      </Desktop>
+      <Desktop name="4">
+         <Background type="image">/usr/share/images/towers/tower_sky2.jpg</Background>
+      </Desktop>
+      <Desktop name="5">
+         <Background type="image">/usr/share/images/towers/tower_backlit1.jpg</Background>
+      </Desktop>
+      <Desktop name="6">
+         <Background type="image">/usr/share/images/towers/tower_clouds1.jpg</Background>
+      </Desktop>
+      <Desktop name="7">
+         <Background type="image">/usr/share/images/towers/tower_sillouette3.jpg</Background>
+      </Desktop>
+      <Desktop name="8">
+         <Background type="image">/usr/share/images/towers/tower_greysky3.jpg</Background>
+      </Desktop>
+       -->
+   </Desktops>
+
+</JWM>
+
