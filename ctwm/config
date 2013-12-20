@@ -59,7 +59,7 @@ rcfile="$TWM_CONFIG_HOME/rc.m4"
 [ -s "$rcfile" ] || rcfile="$TWM_CONFIG_SDIR/rc.m4"
 [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
 
-for file in apps config defaults feel keys look menu setstyle stylemenu winmenu
+for file in apps config defaults keys menu setstyle stylemenu winmenu
 do
     if [ ! -f "$TWM_CONFIG_HOME/$file" -a -s "$TWM_CONFIG_SDIR/$file" ]
     then

@@ -1,4 +1,0 @@
-divert(-1)
-define(`TWM_THEME_DIR',`/home/brian/.twm/feels/Unexicon')
-sinclude(`/home/brian/.twm/feels/Unexicon/feelrc')
-dnl vim: ft=m4

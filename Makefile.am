@@ -4,9 +4,10 @@ AUTOMAKE_OPTIONS = nostdinc
 
 SUBDIRS =
 
-samedir = $(dataroot)
+samedir = $(datadir)
 
 nobase_dist_data_DATA =
+nobase_nodist_data_DATA =
 nobase_dist_same_SCRIPTS =
 
 nobase_dist_data_DATA += \
@@ -566,13 +567,16 @@ nobase_dist_data_DATA += \
 	pekwm/themes/Squared-blue/tab_separator.xpm \
 	pekwm/themes/Squared-blue/theme
 
+install-data-twm:
+	$(MKDIR_P) $(DESTDIR)$(datadir)/twm/looks
+	$(LN_S) $(datadir)/twm/looks/Default/lookrc $(DESTDIR)$(datadir)/twm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(datadir)/twm/looks/Default
+
 nobase_dist_data_DATA += \
 	twm/apps \
 	twm/buttons \
 	twm/defaults \
-	twm/feel \
 	twm/keys \
-	twm/look \
 	twm/menu \
 	twm/rc.m4 \
 	twm/stylemenu \
@@ -582,10 +586,6 @@ nobase_dist_same_SCRIPTS += \
 	twm/config \
 	twm/getstyles \
 	twm/setstyle
-
-nobase_dist_data_DATA += \
-	twm/feels/Classic/feelrc \
-	twm/feels/Default/feelrc
 
 nobase_dist_data_DATA += \
 	twm/looks/Classic/lookrc \
@@ -643,13 +643,16 @@ nobase_dist_data_DATA += \
 	twm/looks/Squared-grey/bitmaps/desk.xbm \
 	twm/looks/Squared-grey/bitmaps/iconify.xbm
 
+install-data-ctwm:
+	$(MKDIR_P) $(DESTDIR)$(datadir)/ctwm/looks
+	$(LN_S) $(datadir)/ctwm/looks/Default/lookrc $(DESTDIR)$(datadir)/ctwm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(datadir)/ctwm/looks/Default
+
 nobase_dist_data_DATA += \
 	ctwm/apps \
 	ctwm/buttons \
 	ctwm/defaults \
-	ctwm/feel \
 	ctwm/keys \
-	ctwm/look \
 	ctwm/menu \
 	ctwm/rc.m4 \
 	ctwm/stylemenu \
@@ -659,10 +662,6 @@ nobase_dist_same_SCRIPTS += \
 	ctwm/config \
 	ctwm/getstyles \
 	ctwm/setstyle
-
-nobase_dist_data_DATA += \
-	ctwm/feels/Classic/feelrc \
-	ctwm/feels/Default/feelrc
 
 nobase_dist_data_DATA += \
 	ctwm/looks/Classic/lookrc \
@@ -720,13 +719,16 @@ nobase_dist_data_DATA += \
 	ctwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
 	ctwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
 
+install-data-vtwm:
+	$(MKDIR_P) $(DESTDIR)$(datadir)/vtwm/looks
+	$(LN_S) $(datadir)/vtwm/looks/Default/lookrc $(DESTDIR)$(datadir)/vtwm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(datadir)/vtwm/looks/Default
+
 nobase_dist_data_DATA += \
 	vtwm/apps \
 	vtwm/buttons \
 	vtwm/defaults \
-	vtwm/feel \
 	vtwm/keys \
-	vtwm/look \
 	vtwm/menu \
 	vtwm/rc.m4 \
 	vtwm/stylemenu \
@@ -736,10 +738,6 @@ nobase_dist_same_SCRIPTS += \
 	vtwm/config \
 	vtwm/getstyles \
 	vtwm/setstyle
-
-nobase_dist_data_DATA += \
-	vtwm/feels/Classic/feelrc \
-	vtwm/feels/Default/feelrc
 
 nobase_dist_data_DATA += \
 	vtwm/looks/Classic/lookrc \
@@ -796,4 +794,8 @@ nobase_dist_data_DATA += \
 	vtwm/looks/Squared-grey/pixmaps/close_pressed.xpm \
 	vtwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
 	vtwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
+
+install-data-local: install-data-twm install-data-ctwm install-data-vtwm
+
+.PHONY: install-data-twm install-data-ctwm install-data-vtwm
 

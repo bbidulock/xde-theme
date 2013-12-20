@@ -1,5 +1,27 @@
 # created with git log --stat=76 | fmt -sct -w80
 
+commit ae6934b99844e68edc9615d4066f3a3bef0d669e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 20 01:48:04 2013 -0700
+
+    do not need m4 directory
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 8073b7b169b41f67739830dc90b9353a058c11da
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 20 01:39:15 2013 -0700
+
+    initial set of GNU autoconf release files
+
+ AUTHORS    |    9 +
+ ChangeLog  | 1864 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS       |   11 +
+ THANKS     |    5 +
+ autogen.sh |    4 +
+ 5 files changed, 1893 insertions(+)
+
 commit 63ee1c34c35994d8d96574a4f3ce022c44f2bee1
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Dec 20 01:27:03 2013 -0700

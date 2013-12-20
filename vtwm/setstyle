@@ -4,7 +4,7 @@ if [ $# -gt 1 ] ; then
     TWM_TYPE="$1"
     styledir="$2"
 else
-    TWM_TYPE=${TWM_TYPE:-twm}
+    TWM_TYPE=${TWM_TYPE:-vtwm}
     styledir="$1"
 fi
 

@@ -59,7 +59,6 @@ divert(MENUS)
 #-----------#
 divert(-1)
 sinclude(TWM_CONFIG_HOME`/defaults'))dnl
-sinclude(TWM_CONFIG_HOME`/feel')dnl
 define(`TWM_STYLE_DIR',esyscmd(`readlink -n -f "'TWM_CONFIG_HOME`/lookrc" 2>/dev/null|sed "s,/[^/]*$,,"'))
 sinclude(TWM_CONFIG_HOME`/lookrc')dnl
 divert(COLOR)dnl

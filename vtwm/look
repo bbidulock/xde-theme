@@ -1,4 +1,0 @@
-divert(-1)
-define(`TWM_STYLE_DIR',`/home/brian/.vtwm/looks/Squared-blue')
-sinclude(`/home/brian/.vtwm/looks/Squared-blue/lookrc')
-dnl vim:ft=m4
