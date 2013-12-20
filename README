@@ -1,0 +1,133 @@
+xde-styles -- read me first file.  2013-12-20
+
+xde-styles
+==========
+
+Package xde-styles-1.1 was released under CCPL:cc-by-sa-3.0 license
+2013-12-20. 
+
+This is a set of styles for the XDE (X Desktop Environment) which
+provides a small and consistent set of window manager styles across a
+wide range of light-weight window managers.  The purpose is to provide a
+consistent visual appearance for the X Desktop Environment across all
+supported window managers.
+
+Release
+-------
+
+This is the xde-styles-1.1 package, released 2013-12-20.  This release,
+and the latest version, can be obtained from the GitHub repository at
+(http://github.com/bbidulock/xde-styles), using a command such as:
+
+    $> git clone http://github.com/bbidulock/xde-styles.git
+
+Please see the `NEWS' file for release notes and history of user visible
+changes for the current version, and the `ChangeLog' file for a more
+detailed history of implementation changes.  The `TODO' file lists
+features not yet implemented and other outstanding items.
+
+Please see the `INSTALL' file for installation instructions.
+
+When working from `git(1)', please see the `README-git' file.  An
+abbreviated installation procedure that works for most applications
+appears below.
+
+This release is published under the CCPL:cc-by-sa-3.0 (primarily because
+the base styles used to develop these styles were licensed under this
+license).  Please see the license in the file `COPYING'.
+
+Quick Start:
+------------
+
+The quickest and easiest way to get xde-styles up and running is to run
+the following commands:
+
+    $> git clone http://github.com/bbidulock/xde-styles.git
+    $> cd xde-styles
+    $> ./autogen.sh
+    $> ./configure --prefix=/usr
+    $> make V=0
+    $> make DESTDIR="$pkgdir" install
+
+This will configure, compile and install xde-styles the quickest.  For
+those who would like to spend the extra 15 seconds reading ./configure
+--help, some compile time options can be turned on and off before the
+build.
+
+For general information on GNU's ./configure, see the file `INSTALL'.
+
+Window manager support:
+-----------------------
+
+The following set of supported window managers (alphabetically):
+blackbox(1), ctwm(1), fluxbox(1), fvwm(1), icewm(1), jwm(1), mwm(1),
+openbox(1), pekwm(1), twm(1), vtwm(1), wmaker(1).  Also provided is
+gtk-2.0 style files consistent with the window manager style.
+
+Of these window managers, blackbox(1), fluxbox(1), icewm(1), openbox(1),
+pekwm(1) and wmaker(1) provide a native style system and the styles
+provided are consistent with their style systems.
+
+ctwm(1), vtwm(1) and twm(1) do not provide a native style system, but
+have a powerful configuration system.  ctwm-themes is available for
+ctwm(1), but the styles provided here are not consistent with
+ctwm-themes.  A style system based on m4 rc files that works with
+ctwm(1), vtwm(1) and twm(1) are provided in this package.  Take a look
+at the scripts and base files provided in the /usr/share/*twm
+directories after installation to see how it works.
+
+jwm(1) does not provide a native styles system and typically runs from a
+single configuration file; however, it does have a powerful
+configuration file mechanism.  A sytle system based on xml configuration
+files is provided in this package.  Take a look at the scripts and base
+files provided in the /usr/share/jwm directory after installation to see
+how it works.
+
+fvwm(1) does not provide a native style system.  fvwm-themes is
+available for fvwm(1), but the styles provided here are not consistent
+with fvwm-themes.  fvwm(1) does provide a (too?) powerful configuration
+system and a style system based on fvwm configuration files similar to
+(but much more simple than) fvwm-themes is provided in this package.
+
+Styles:
+-------
+
+The styles provided by the package are based on the `Squared' styles
+available for fluxbox(1) developed by endel (endel@tlen.pl) and
+distributed under cc-by-sa-3.0, but have been enhanced and extended.
+
+All of the variations have the following features: flat title bars and
+borders that are predominately blackish (greyish for Squared-grey).  A
+set of flat squared, (rectangular actually), title bar buttons with a
+highlight color fading from the outer to inner title bar button.  An
+overlaid bitmap pattern on hightlight, hover, or pressed that reveals
+the primary title bar button function.  The style for the title bar is
+extended to panels, docks, harbours, slits, root menus, window menus and
+other window manager styled components.  The style also extends to a
+gtk-2.0 style of the same name that can be used for Gtk2 applications
+that want their style to be consistent with that of the window manager
+elements.
+
+The variations of this style are as follows:
+
+Squared-blue: Predominately blackish background with azure blue buttons
+and highlight colors.
+
+Squared-green: Predominately blackish background with forest green
+buttons and highlight colors.
+
+Squared-cadet: Predominately blackish background with cadet blue (sea
+blue really) buttons and highlight colors.
+
+Squared-grey: Predominately light greyish (slight blue tinge) background
+with dark gray buttons and hightlight colors.
+
+Adding your own styles:
+-----------------------
+
+The styles provided in the package provided can easily be adapted to
+provide your own consistent set of styles across the supported window
+managers and to integrate your styles with the various style systems.
+
+
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
