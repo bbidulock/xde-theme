@@ -1,6 +1,6 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-styles],[1.1],[bugs@openss7.org],[xde-styles])
+AC_INIT([xde-styles],[1.1],[http://github.com/bbidulock/xde-styles],[xde-styles])
 AC_REVISION([1.1])
 
 AC_CONFIG_SRCDIR([configure.ac])
