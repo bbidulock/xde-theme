@@ -7,13 +7,13 @@ config=$(echo "$config"|sed 's,^.*/,,')
 config="$here/$config";
 setstyle="$here/setstyle"
 
-TWM_TYPE=${1:-${TWM_TYPE:-twm}}
-TWM_VERSION=${2:-${TWM_VERSION:-1.0.8}}
+TWM_TYPE=${1:-${TWM_TYPE:-vtwm}}
+TWM_VERSION=${2:-${TWM_VERSION:-5.5.0}}
 
 echo "twm program is: $TWM_TYPE $TWM_VERSION" >&2
 
 TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-$HOME/.$TWM_TYPE}
-TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-/usr/share/$TWM_TYPE}
+TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
 
 [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
 
@@ -82,6 +82,9 @@ case "$CLASS" in
 esac
 
 USER=${LOGNAME:-$USER}
+
+echo "M4 command is:" >&2
+echo "m4 -DUSER=\"$USER\" -DHOME=\"$HOME\" -DWIDTH=\"$WIDTH\" -DHEIGHT=\"$HEIGHT\" -DCLASS=\"$CLASS\" -DCOLOR=\"$COLOR\" -DTWM_TYPE=\"$TWM_TYPE\" -DTWM_VERSION=\"$TWM_VERSION\" \"$rcfile\" >\"$TWM_CONFIG_HOME/rc\"" >&2
 
 m4 -DUSER="$USER" -DHOME="$HOME" \
    -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \

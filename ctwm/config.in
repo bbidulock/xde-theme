@@ -1,17 +1,19 @@
 #!/bin/bash
 
-getstyles=$0
-here=$(echo $getstyles|sed 's,/[^/]*$,,')
-here=`(cd "$here"; pwd)`
-getstyles=$(echo "$getstyles"|sed 's,^.*/,,')
-getstyles="$here/$getstyles";
+config=$0
+here=$(echo $config|sed 's,/[^/]*$,,')
+(cd "$here"; here=`pwd`)
+config=$(echo "$config"|sed 's,^.*/,,')
+config="$here/$config";
 setstyle="$here/setstyle"
 
-TWM_TYPE=${1:-${TWM_TYPE:-twm}}
+TWM_TYPE=${1:-${TWM_TYPE:-ctwm}}
+TWM_VERSION=${2:-${TWM_VERSION:-3.8.1}}
+
+echo "twm program is: $TWM_TYPE $TWM_VERSION" >&2
 
 TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-$HOME/.$TWM_TYPE}
-TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-/usr/share/$TWM_TYPE}
-USER=${LOGNAME:-$USER}
+TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
 
 [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
 
@@ -53,8 +55,38 @@ getstyles() {
     echo "dnl vim: ft=m4"
 }
 
+rcfile="$TWM_CONFIG_HOME/rc.m4"
+[ -s "$rcfile" ] || rcfile="$TWM_CONFIG_SDIR/rc.m4"
+[ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+
+for file in apps config defaults keys menu setstyle stylemenu winmenu
+do
+    if [ ! -f "$TWM_CONFIG_HOME/$file" -a -s "$TWM_CONFIG_SDIR/$file" ]
+    then
+	cp "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file"
+    fi
+done
+
 getstyles >"$TWM_CONFIG_HOME/stylemenu"
 
-exit 0
+export TWM_CONFIG_HOME
+export TWM_CONFIG_SDIR
+
+WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
+HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+
+CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
+case "$CLASS" in
+(*Color)    COLOR='Yes' ;;
+(*)	    COLOR='No' ;;
+esac
+
+USER=${LOGNAME:-$USER}
+
+m4 -DUSER="$USER" -DHOME="$HOME" \
+   -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
+   -DCLASS="$CLASS" -DCOLOR="$COLOR" \
+   -DTWM_TYPE="$TWM_TYPE" -DTWM_VERSION="$TWM_VERSION" \
+   "$rcfile" >"$TWM_CONFIG_HOME/rc"
 
 # vim: sw=4

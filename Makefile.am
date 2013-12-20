@@ -4,16 +4,15 @@ AUTOMAKE_OPTIONS = nostdinc
 
 SUBDIRS =
 
-samedir = $(datadir)
+nobase_dist_share_DATA =
+nobase_nodist_share_DATA =
+nobase_dist_share_SCRIPTS =
+nobase_nodist_share_SCRIPTS =
 
-nobase_dist_data_DATA =
-nobase_nodist_data_DATA =
-nobase_dist_same_SCRIPTS =
-
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-cadet/theme.cfg
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-cadet/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/close.xpm \
@@ -51,10 +50,10 @@ nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-cadet/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-grey/theme.cfg
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-grey/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/close.xpm \
@@ -92,10 +91,10 @@ nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-grey/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-green/theme.cfg
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-green/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-green/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-green/pixmaps/close.xpm \
@@ -133,10 +132,10 @@ nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-green/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-green/pixmaps/unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-blue/theme.cfg
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-blue/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/close.xpm \
@@ -174,13 +173,13 @@ nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-blue/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	blackbox/styles/Squared-cadet \
 	blackbox/styles/Squared-grey \
 	blackbox/styles/Squared-green \
 	blackbox/styles/Squared-blue
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-cadet/closeA.xpm \
 	icewm/themes/Squared-cadet/closeI.xpm \
 	icewm/themes/Squared-cadet/default.theme \
@@ -201,12 +200,12 @@ nobase_dist_data_DATA += \
 	icewm/themes/Squared-cadet/rollupA.xpm \
 	icewm/themes/Squared-cadet/rollupI.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-cadet/taskbar/desktop.xpm \
 	icewm/themes/Squared-cadet/taskbar/start.xpm \
 	icewm/themes/Squared-cadet/taskbar/windows.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-grey/closeA.xpm \
 	icewm/themes/Squared-grey/closeI.xpm \
 	icewm/themes/Squared-grey/default.theme \
@@ -227,12 +226,12 @@ nobase_dist_data_DATA += \
 	icewm/themes/Squared-grey/rollupA.xpm \
 	icewm/themes/Squared-grey/rollupI.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-grey/taskbar/desktop.xpm \
 	icewm/themes/Squared-grey/taskbar/start.xpm \
 	icewm/themes/Squared-grey/taskbar/windows.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-green/closeA.xpm \
 	icewm/themes/Squared-green/closeI.xpm \
 	icewm/themes/Squared-green/default.theme \
@@ -253,12 +252,12 @@ nobase_dist_data_DATA += \
 	icewm/themes/Squared-green/rollupA.xpm \
 	icewm/themes/Squared-green/rollupI.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-green/taskbar/desktop.xpm \
 	icewm/themes/Squared-green/taskbar/start.xpm \
 	icewm/themes/Squared-green/taskbar/windows.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-blue/closeA.xpm \
 	icewm/themes/Squared-blue/closeI.xpm \
 	icewm/themes/Squared-blue/default.theme \
@@ -279,7 +278,7 @@ nobase_dist_data_DATA += \
 	icewm/themes/Squared-blue/rollupA.xpm \
 	icewm/themes/Squared-blue/rollupI.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	icewm/themes/Squared-blue/taskbar/desktop.xpm \
 	icewm/themes/Squared-blue/taskbar/start.xpm \
 	icewm/themes/Squared-blue/taskbar/windows.xpm
@@ -287,41 +286,41 @@ nobase_dist_data_DATA += \
 
 SUBDIRS += openbox
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	WindowMaker/Styles/Squared-cadet.style \
 	WindowMaker/Styles/Squared-grey.style \
 	WindowMaker/Styles/Squared-green.style \
 	WindowMaker/Styles/Squared-blue.style
 
-#nobase_dist_data_DATA += \
+#nobase_dist_share_DATA += \
 #	WindowMaker/Themes/Squared-cadet.themed/style \
 #	WindowMaker/Themes/Squared-cadet.themed/scback.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/scicon.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/sctbar.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/sctile.xpm
 #
-#nobase_dist_data_DATA += \
+#nobase_dist_share_DATA += \
 #	WindowMaker/Themes/Squared-grey.themed/style \
 #	WindowMaker/Themes/Squared-grey.themed/syback.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/syicon.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/sytbar.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/sytile.xpm
 #
-#nobase_dist_data_DATA += \
+#nobase_dist_share_DATA += \
 #	WindowMaker/Themes/Squared-green.themed/style \
 #	WindowMaker/Themes/Squared-green.themed/sgback.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgicon.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgtbar.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgtile.xpm
 #
-#nobase_dist_data_DATA += \
+#nobase_dist_share_DATA += \
 #	WindowMaker/Themes/Squared-blue.themed/style \
 #	WindowMaker/Themes/Squared-blue.themed/sbback.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbicon.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbtbar.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbtile.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	WindowMaker/Themes/Squared-cadet.themed/scback.xpm \
 	WindowMaker/Themes/Squared-cadet.themed/scicon.xpm \
 	WindowMaker/Themes/Squared-cadet.themed/sctbar.xpm \
@@ -342,10 +341,10 @@ nobase_dist_data_DATA += \
 
 SUBDIRS += gtk
 
-nobase_dist_same_SCRIPTS += \
+nobase_dist_share_SCRIPTS += \
 	jwm/setstyle
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	jwm/icons/window-above.xpm \
 	jwm/icons/window-below.xpm \
 	jwm/icons/window-border.xpm \
@@ -370,35 +369,35 @@ nobase_dist_data_DATA += \
 	jwm/icons/window-titlebar.xpm \
 	jwm/icons/window-unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	jwm/styles/Squared-cadet/button-close.xpm \
 	jwm/styles/Squared-cadet/button-max-active.xpm \
 	jwm/styles/Squared-cadet/button-max.xpm \
 	jwm/styles/Squared-cadet/button-min.xpm \
 	jwm/styles/Squared-cadet/style
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	jwm/styles/Squared-grey/button-close.xpm \
 	jwm/styles/Squared-grey/button-max-active.xpm \
 	jwm/styles/Squared-grey/button-max.xpm \
 	jwm/styles/Squared-grey/button-min.xpm \
 	jwm/styles/Squared-grey/style
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	jwm/styles/Squared-green/button-close.xpm \
 	jwm/styles/Squared-green/button-max-active.xpm \
 	jwm/styles/Squared-green/button-max.xpm \
 	jwm/styles/Squared-green/button-min.xpm \
 	jwm/styles/Squared-green/style
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	jwm/styles/Squared-blue/button-close.xpm \
 	jwm/styles/Squared-blue/button-max-active.xpm \
 	jwm/styles/Squared-blue/button-max.xpm \
 	jwm/styles/Squared-blue/button-min.xpm \
 	jwm/styles/Squared-blue/style
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	pekwm/icons/window-above.xpm \
 	pekwm/icons/window-below.xpm \
 	pekwm/icons/window-border.xpm \
@@ -423,7 +422,7 @@ nobase_dist_data_DATA += \
 	pekwm/icons/window-titlebar.xpm \
 	pekwm/icons/window-unshade.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	pekwm/themes/Squared-cadet/arrow_focused.xpm \
 	pekwm/themes/Squared-cadet/arrow_selected.xpm \
 	pekwm/themes/Squared-cadet/arrow_unfocus.xpm \
@@ -459,7 +458,7 @@ nobase_dist_data_DATA += \
 	pekwm/themes/Squared-cadet/tab_separator.xpm \
 	pekwm/themes/Squared-cadet/theme
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	pekwm/themes/Squared-grey/arrow_focused.xpm \
 	pekwm/themes/Squared-grey/arrow_selected.xpm \
 	pekwm/themes/Squared-grey/arrow_unfocus.xpm \
@@ -495,7 +494,7 @@ nobase_dist_data_DATA += \
 	pekwm/themes/Squared-grey/tab_separator.xpm \
 	pekwm/themes/Squared-grey/theme
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	pekwm/themes/Squared-green/arrow_focused.xpm \
 	pekwm/themes/Squared-green/arrow_selected.xpm \
 	pekwm/themes/Squared-green/arrow_unfocus.xpm \
@@ -531,7 +530,7 @@ nobase_dist_data_DATA += \
 	pekwm/themes/Squared-green/tab_separator.xpm \
 	pekwm/themes/Squared-green/theme
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	pekwm/themes/Squared-blue/arrow_focused.xpm \
 	pekwm/themes/Squared-blue/arrow_selected.xpm \
 	pekwm/themes/Squared-blue/arrow_unfocus.xpm \
@@ -568,30 +567,32 @@ nobase_dist_data_DATA += \
 	pekwm/themes/Squared-blue/theme
 
 install-data-twm:
-	$(MKDIR_P) $(DESTDIR)$(datadir)/twm/looks
-	$(LN_S) $(datadir)/twm/looks/Default/lookrc $(DESTDIR)$(datadir)/twm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(datadir)/twm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/twm/looks
+	$(LN_S) $(sharedir)/twm/looks/Default/lookrc $(DESTDIR)$(sharedir)/twm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/twm/looks/Default
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	twm/apps \
 	twm/buttons \
 	twm/defaults \
 	twm/keys \
 	twm/menu \
-	twm/rc.m4 \
 	twm/stylemenu \
 	twm/winmenu
 
-nobase_dist_same_SCRIPTS += \
-	twm/config \
-	twm/getstyles \
+nobase_dist_share_SCRIPTS += \
 	twm/setstyle
 
-nobase_dist_data_DATA += \
+nobase_nodist_share_SCRIPTS += \
+	twm/config \
+	twm/getstyles \
+	twm/rc.m4
+
+nobase_dist_share_DATA += \
 	twm/looks/Classic/lookrc \
 	twm/looks/Squared/_lookrc
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	twm/looks/Squared-blue/lookrc \
 	twm/looks/Squared-blue/bitmaps/menu.xbm \
 	twm/looks/Squared-blue/bitmaps/shade.xbm \
@@ -604,7 +605,7 @@ nobase_dist_data_DATA += \
 	twm/looks/Squared-blue/bitmaps/desk.xbm \
 	twm/looks/Squared-blue/bitmaps/iconify.xbm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	twm/looks/Squared-cadet/lookrc \
 	twm/looks/Squared-cadet/bitmaps/menu.xbm \
 	twm/looks/Squared-cadet/bitmaps/shade.xbm \
@@ -617,7 +618,7 @@ nobase_dist_data_DATA += \
 	twm/looks/Squared-cadet/bitmaps/desk.xbm \
 	twm/looks/Squared-cadet/bitmaps/iconify.xbm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	twm/looks/Squared-green/lookrc \
 	twm/looks/Squared-green/bitmaps/menu.xbm \
 	twm/looks/Squared-green/bitmaps/shade.xbm \
@@ -630,7 +631,7 @@ nobase_dist_data_DATA += \
 	twm/looks/Squared-green/bitmaps/desk.xbm \
 	twm/looks/Squared-green/bitmaps/iconify.xbm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	twm/looks/Squared-grey/lookrc \
 	twm/looks/Squared-grey/bitmaps/menu.xbm \
 	twm/looks/Squared-grey/bitmaps/shade.xbm \
@@ -644,30 +645,32 @@ nobase_dist_data_DATA += \
 	twm/looks/Squared-grey/bitmaps/iconify.xbm
 
 install-data-ctwm:
-	$(MKDIR_P) $(DESTDIR)$(datadir)/ctwm/looks
-	$(LN_S) $(datadir)/ctwm/looks/Default/lookrc $(DESTDIR)$(datadir)/ctwm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(datadir)/ctwm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/ctwm/looks
+	$(LN_S) $(sharedir)/ctwm/looks/Default/lookrc $(DESTDIR)$(sharedir)/ctwm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/ctwm/looks/Default
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	ctwm/apps \
 	ctwm/buttons \
 	ctwm/defaults \
 	ctwm/keys \
 	ctwm/menu \
-	ctwm/rc.m4 \
 	ctwm/stylemenu \
 	ctwm/winmenu
 
-nobase_dist_same_SCRIPTS += \
-	ctwm/config \
-	ctwm/getstyles \
+nobase_dist_share_SCRIPTS += \
 	ctwm/setstyle
 
-nobase_dist_data_DATA += \
+nobase_nodist_share_SCRIPTS += \
+	ctwm/config \
+	ctwm/getstyles \
+	ctwm/rc.m4
+
+nobase_dist_share_DATA += \
 	ctwm/looks/Classic/lookrc \
 	ctwm/looks/Squared/_lookrc
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	ctwm/looks/Squared-blue/lookrc \
 	ctwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
 	ctwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
@@ -680,7 +683,7 @@ nobase_dist_data_DATA += \
 	ctwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
 	ctwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	ctwm/looks/Squared-cadet/lookrc \
 	ctwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
 	ctwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
@@ -693,7 +696,7 @@ nobase_dist_data_DATA += \
 	ctwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
 	ctwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	ctwm/looks/Squared-green/lookrc \
 	ctwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
 	ctwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
@@ -706,7 +709,7 @@ nobase_dist_data_DATA += \
 	ctwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
 	ctwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	ctwm/looks/Squared-grey/lookrc \
 	ctwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
 	ctwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
@@ -720,30 +723,32 @@ nobase_dist_data_DATA += \
 	ctwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
 
 install-data-vtwm:
-	$(MKDIR_P) $(DESTDIR)$(datadir)/vtwm/looks
-	$(LN_S) $(datadir)/vtwm/looks/Default/lookrc $(DESTDIR)$(datadir)/vtwm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(datadir)/vtwm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/vtwm/looks
+	$(LN_S) $(sharedir)/vtwm/looks/Default/lookrc $(DESTDIR)$(sharedir)/vtwm/lookrc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/vtwm/looks/Default
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	vtwm/apps \
 	vtwm/buttons \
 	vtwm/defaults \
 	vtwm/keys \
 	vtwm/menu \
-	vtwm/rc.m4 \
 	vtwm/stylemenu \
 	vtwm/winmenu
 
-nobase_dist_same_SCRIPTS += \
-	vtwm/config \
-	vtwm/getstyles \
+nobase_dist_share_SCRIPTS += \
 	vtwm/setstyle
 
-nobase_dist_data_DATA += \
+nobase_nodist_share_SCRIPTS += \
+	vtwm/config \
+	vtwm/getstyles \
+	vtwm/rc.m4
+
+nobase_dist_share_DATA += \
 	vtwm/looks/Classic/lookrc \
 	vtwm/looks/Squared/_lookrc
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	vtwm/looks/Squared-blue/lookrc \
 	vtwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
 	vtwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
@@ -756,7 +761,7 @@ nobase_dist_data_DATA += \
 	vtwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
 	vtwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	vtwm/looks/Squared-cadet/lookrc \
 	vtwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
 	vtwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
@@ -769,7 +774,7 @@ nobase_dist_data_DATA += \
 	vtwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
 	vtwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	vtwm/looks/Squared-green/lookrc \
 	vtwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
 	vtwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
@@ -782,7 +787,7 @@ nobase_dist_data_DATA += \
 	vtwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
 	vtwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
 
-nobase_dist_data_DATA += \
+nobase_dist_share_DATA += \
 	vtwm/looks/Squared-grey/lookrc \
 	vtwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
 	vtwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
