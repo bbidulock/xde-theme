@@ -5,3 +5,10 @@ configure
 scripts
 _build
 _install
+Makefile
+config.log
+config.status
+configure
+scripts/
+_build/
+_install/

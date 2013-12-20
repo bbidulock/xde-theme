@@ -2,12 +2,17 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = nostdinc
 
-dist_data_DATA =
+SUBDIRS =
 
-dist_fluxboxstyles1_DATA = \
+samedir = $(dataroot)
+
+nobase_dist_data_DATA =
+nobase_dist_same_SCRIPTS =
+
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-cadet/theme.cfg
 
-dist_fluxboxpixmaps1_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-cadet/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/close.xpm \
@@ -45,10 +50,10 @@ dist_fluxboxpixmaps1_DATA = \
 	fluxbox/styles/Squared-cadet/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-cadet/pixmaps/unshade.xpm
 
-dist_fluxboxstyles2_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-grey/theme.cfg
 
-dist_fluxboxpixmaps2_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-grey/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/close.xpm \
@@ -86,10 +91,10 @@ dist_fluxboxpixmaps2_DATA = \
 	fluxbox/styles/Squared-grey/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-grey/pixmaps/unshade.xpm
 
-dist_fluxboxstyles3_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-green/theme.cfg
 
-dist_fluxboxpixmaps3_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-green/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-green/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-green/pixmaps/close.xpm \
@@ -127,10 +132,10 @@ dist_fluxboxpixmaps3_DATA = \
 	fluxbox/styles/Squared-green/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-green/pixmaps/unshade.xpm
 
-dist_fluxboxstyles4_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-blue/theme.cfg
 
-dist_fluxboxpixmaps4_DATA = \
+nobase_dist_data_DATA += \
 	fluxbox/styles/Squared-blue/pixmaps/close_pressed.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/close_unfocus.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/close.xpm \
@@ -168,13 +173,13 @@ dist_fluxboxpixmaps4_DATA = \
 	fluxbox/styles/Squared-blue/pixmaps/unshade_unfocus.xpm \
 	fluxbox/styles/Squared-blue/pixmaps/unshade.xpm
 
-dist_blackboxstyles_DATA = \
+nobase_dist_data_DATA += \
 	blackbox/styles/Squared-cadet \
 	blackbox/styles/Squared-grey \
 	blackbox/styles/Squared-green \
 	blackbox/styles/Squared-blue
 
-dist_icewmthemes1_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-cadet/closeA.xpm \
 	icewm/themes/Squared-cadet/closeI.xpm \
 	icewm/themes/Squared-cadet/default.theme \
@@ -195,12 +200,12 @@ dist_icewmthemes1_DATA = \
 	icewm/themes/Squared-cadet/rollupA.xpm \
 	icewm/themes/Squared-cadet/rollupI.xpm
 
-dist_icewmthemes1tb_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-cadet/taskbar/desktop.xpm \
 	icewm/themes/Squared-cadet/taskbar/start.xpm \
 	icewm/themes/Squared-cadet/taskbar/windows.xpm
 
-dist_icewmthemes2_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-grey/closeA.xpm \
 	icewm/themes/Squared-grey/closeI.xpm \
 	icewm/themes/Squared-grey/default.theme \
@@ -221,12 +226,12 @@ dist_icewmthemes2_DATA = \
 	icewm/themes/Squared-grey/rollupA.xpm \
 	icewm/themes/Squared-grey/rollupI.xpm
 
-dist_icewmthemes2tb_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-grey/taskbar/desktop.xpm \
 	icewm/themes/Squared-grey/taskbar/start.xpm \
 	icewm/themes/Squared-grey/taskbar/windows.xpm
 
-dist_icewmthemes3_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-green/closeA.xpm \
 	icewm/themes/Squared-green/closeI.xpm \
 	icewm/themes/Squared-green/default.theme \
@@ -247,12 +252,12 @@ dist_icewmthemes3_DATA = \
 	icewm/themes/Squared-green/rollupA.xpm \
 	icewm/themes/Squared-green/rollupI.xpm
 
-dist_icewmthemes3tb_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-green/taskbar/desktop.xpm \
 	icewm/themes/Squared-green/taskbar/start.xpm \
 	icewm/themes/Squared-green/taskbar/windows.xpm
 
-dist_icewmthemes4_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-blue/closeA.xpm \
 	icewm/themes/Squared-blue/closeI.xpm \
 	icewm/themes/Squared-blue/default.theme \
@@ -273,179 +278,49 @@ dist_icewmthemes4_DATA = \
 	icewm/themes/Squared-blue/rollupA.xpm \
 	icewm/themes/Squared-blue/rollupI.xpm
 
-dist_icewmthemes4tb_DATA = \
+nobase_dist_data_DATA += \
 	icewm/themes/Squared-blue/taskbar/desktop.xpm \
 	icewm/themes/Squared-blue/taskbar/start.xpm \
 	icewm/themes/Squared-blue/taskbar/windows.xpm
 
 
-dist_openboxthemes1_DATA = \
-	openbox/themes/Squared-cadet/openbox-3/bullet.xbm \
-	openbox/themes/Squared-cadet/openbox-3/close_disabled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/close_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/close_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/close.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_disabled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_toggled_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_toggled_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk_toggled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/desk.xbm \
-	openbox/themes/Squared-cadet/openbox-3/iconify_disabled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/iconify_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/iconify_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/iconify.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_disabled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_toggled_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_toggled_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max_toggled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/max.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_disabled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_toggled_hover.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_toggled_pressed.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade_toggled.xbm \
-	openbox/themes/Squared-cadet/openbox-3/shade.xbm \
-	openbox/themes/Squared-cadet/openbox-3/themerc
+SUBDIRS += openbox
 
-dist_openboxthemes2_DATA = \
-	openbox/themes/Squared-grey/openbox-3/bullet.xbm \
-	openbox/themes/Squared-grey/openbox-3/close_disabled.xbm \
-	openbox/themes/Squared-grey/openbox-3/close_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/close_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/close.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_disabled.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_toggled_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_toggled_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk_toggled.xbm \
-	openbox/themes/Squared-grey/openbox-3/desk.xbm \
-	openbox/themes/Squared-grey/openbox-3/iconify_disabled.xbm \
-	openbox/themes/Squared-grey/openbox-3/iconify_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/iconify_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/iconify.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_disabled.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_toggled_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_toggled_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/max_toggled.xbm \
-	openbox/themes/Squared-grey/openbox-3/max.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_disabled.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_toggled_hover.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_toggled_pressed.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade_toggled.xbm \
-	openbox/themes/Squared-grey/openbox-3/shade.xbm \
-	openbox/themes/Squared-grey/openbox-3/themerc
-
-dist_openboxthemes3_DATA = \
-	openbox/themes/Squared-green/openbox-3/bullet.xbm \
-	openbox/themes/Squared-green/openbox-3/close_disabled.xbm \
-	openbox/themes/Squared-green/openbox-3/close_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/close_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/close.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_disabled.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_toggled_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_toggled_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/desk_toggled.xbm \
-	openbox/themes/Squared-green/openbox-3/desk.xbm \
-	openbox/themes/Squared-green/openbox-3/iconify_disabled.xbm \
-	openbox/themes/Squared-green/openbox-3/iconify_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/iconify_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/iconify.xbm \
-	openbox/themes/Squared-green/openbox-3/max_disabled.xbm \
-	openbox/themes/Squared-green/openbox-3/max_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/max_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/max_toggled_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/max_toggled_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/max_toggled.xbm \
-	openbox/themes/Squared-green/openbox-3/max.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_disabled.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_toggled_hover.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_toggled_pressed.xbm \
-	openbox/themes/Squared-green/openbox-3/shade_toggled.xbm \
-	openbox/themes/Squared-green/openbox-3/shade.xbm \
-	openbox/themes/Squared-green/openbox-3/themerc
-
-dist_openboxthemes4_DATA = \
-	openbox/themes/Squared-blue/openbox-3/bullet.xbm \
-	openbox/themes/Squared-blue/openbox-3/close_disabled.xbm \
-	openbox/themes/Squared-blue/openbox-3/close_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/close_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/close.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_disabled.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_toggled_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_toggled_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk_toggled.xbm \
-	openbox/themes/Squared-blue/openbox-3/desk.xbm \
-	openbox/themes/Squared-blue/openbox-3/iconify_disabled.xbm \
-	openbox/themes/Squared-blue/openbox-3/iconify_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/iconify_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/iconify.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_disabled.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_toggled_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_toggled_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/max_toggled.xbm \
-	openbox/themes/Squared-blue/openbox-3/max.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_disabled.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_toggled_hover.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_toggled_pressed.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade_toggled.xbm \
-	openbox/themes/Squared-blue/openbox-3/shade.xbm \
-	openbox/themes/Squared-blue/openbox-3/themerc
-
-dist_wmakerstyles_DATA = \
+nobase_dist_data_DATA += \
 	WindowMaker/Styles/Squared-cadet.style \
 	WindowMaker/Styles/Squared-grey.style \
 	WindowMaker/Styles/Squared-green.style \
 	WindowMaker/Styles/Squared-blue.style
 
-#dist_wmakertheme1_DATA = \
+#nobase_dist_data_DATA += \
 #	WindowMaker/Themes/Squared-cadet.themed/style \
 #	WindowMaker/Themes/Squared-cadet.themed/scback.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/scicon.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/sctbar.xpm \
 #	WindowMaker/Themes/Squared-cadet.themed/sctile.xpm
 #
-#dist_wmakertheme2_DATA = \
+#nobase_dist_data_DATA += \
 #	WindowMaker/Themes/Squared-grey.themed/style \
 #	WindowMaker/Themes/Squared-grey.themed/syback.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/syicon.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/sytbar.xpm \
 #	WindowMaker/Themes/Squared-grey.themed/sytile.xpm
 #
-#dist_wmakertheme3_DATA = \
+#nobase_dist_data_DATA += \
 #	WindowMaker/Themes/Squared-green.themed/style \
 #	WindowMaker/Themes/Squared-green.themed/sgback.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgicon.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgtbar.xpm \
 #	WindowMaker/Themes/Squared-green.themed/sgtile.xpm
 #
-#dist_wmakertheme4_DATA = \
+#nobase_dist_data_DATA += \
 #	WindowMaker/Themes/Squared-blue.themed/style \
 #	WindowMaker/Themes/Squared-blue.themed/sbback.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbicon.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbtbar.xpm \
 #	WindowMaker/Themes/Squared-blue.themed/sbtile.xpm
 
-dist_wmakerpixmaps_DATA = \
+nobase_dist_data_DATA += \
 	WindowMaker/Themes/Squared-cadet.themed/scback.xpm \
 	WindowMaker/Themes/Squared-cadet.themed/scicon.xpm \
 	WindowMaker/Themes/Squared-cadet.themed/sctbar.xpm \
@@ -463,22 +338,13 @@ dist_wmakerpixmaps_DATA = \
 	WindowMaker/Themes/Squared-blue.themed/sbtbar.xpm \
 	WindowMaker/Themes/Squared-blue.themed/sbtile.xpm
 
-dist_gtkthemes1_DATA = \
-	gtk/themes/Squared-cadet/gtk-2.0/gtkrc
 
-dist_gtkthemes2_DATA = \
-	gtk/themes/Squared-grey/gtk-2.0/gtkrc
+SUBDIRS += gtk
 
-dist_gtkthemes3_DATA = \
-	gtk/themes/Squared-green/gtk-2.0/gtkrc
-
-dist_gtkthemes4_DATA = \
-	gtk/themes/Squared-blue/gtk-2.0/gtkrc
-
-dist_jwm_SCRIPTS = \
+nobase_dist_same_SCRIPTS += \
 	jwm/setstyle
 
-dist_jwmicon_DATA = \
+nobase_dist_data_DATA += \
 	jwm/icons/window-above.xpm \
 	jwm/icons/window-below.xpm \
 	jwm/icons/window-border.xpm \
@@ -503,35 +369,35 @@ dist_jwmicon_DATA = \
 	jwm/icons/window-titlebar.xpm \
 	jwm/icons/window-unshade.xpm
 
-dist_jwmstyles1_DATA = \
+nobase_dist_data_DATA += \
 	jwm/styles/Squared-cadet/button-close.xpm \
 	jwm/styles/Squared-cadet/button-max-active.xpm \
 	jwm/styles/Squared-cadet/button-max.xpm \
 	jwm/styles/Squared-cadet/button-min.xpm \
 	jwm/styles/Squared-cadet/style
 
-dist_jwmstyles2_DATA = \
+nobase_dist_data_DATA += \
 	jwm/styles/Squared-grey/button-close.xpm \
 	jwm/styles/Squared-grey/button-max-active.xpm \
 	jwm/styles/Squared-grey/button-max.xpm \
 	jwm/styles/Squared-grey/button-min.xpm \
 	jwm/styles/Squared-grey/style
 
-dist_jwmstyles3_DATA = \
+nobase_dist_data_DATA += \
 	jwm/styles/Squared-green/button-close.xpm \
 	jwm/styles/Squared-green/button-max-active.xpm \
 	jwm/styles/Squared-green/button-max.xpm \
 	jwm/styles/Squared-green/button-min.xpm \
 	jwm/styles/Squared-green/style
 
-dist_jwmstyles4_DATA = \
+nobase_dist_data_DATA += \
 	jwm/styles/Squared-blue/button-close.xpm \
 	jwm/styles/Squared-blue/button-max-active.xpm \
 	jwm/styles/Squared-blue/button-max.xpm \
 	jwm/styles/Squared-blue/button-min.xpm \
 	jwm/styles/Squared-blue/style
 
-dist_pekwmicons_DATA = \
+nobase_dist_data_DATA += \
 	pekwm/icons/window-above.xpm \
 	pekwm/icons/window-below.xpm \
 	pekwm/icons/window-border.xpm \
@@ -556,7 +422,7 @@ dist_pekwmicons_DATA = \
 	pekwm/icons/window-titlebar.xpm \
 	pekwm/icons/window-unshade.xpm
 
-dist_pekwmthemes1_DATA = \
+nobase_dist_data_DATA += \
 	pekwm/themes/Squared-cadet/arrow_focused.xpm \
 	pekwm/themes/Squared-cadet/arrow_selected.xpm \
 	pekwm/themes/Squared-cadet/arrow_unfocus.xpm \
@@ -592,7 +458,7 @@ dist_pekwmthemes1_DATA = \
 	pekwm/themes/Squared-cadet/tab_separator.xpm \
 	pekwm/themes/Squared-cadet/theme
 
-dist_pekwmthemes2_DATA = \
+nobase_dist_data_DATA += \
 	pekwm/themes/Squared-grey/arrow_focused.xpm \
 	pekwm/themes/Squared-grey/arrow_selected.xpm \
 	pekwm/themes/Squared-grey/arrow_unfocus.xpm \
@@ -628,7 +494,7 @@ dist_pekwmthemes2_DATA = \
 	pekwm/themes/Squared-grey/tab_separator.xpm \
 	pekwm/themes/Squared-grey/theme
 
-dist_pekwmthemes3_DATA = \
+nobase_dist_data_DATA += \
 	pekwm/themes/Squared-green/arrow_focused.xpm \
 	pekwm/themes/Squared-green/arrow_selected.xpm \
 	pekwm/themes/Squared-green/arrow_unfocus.xpm \
@@ -664,7 +530,7 @@ dist_pekwmthemes3_DATA = \
 	pekwm/themes/Squared-green/tab_separator.xpm \
 	pekwm/themes/Squared-green/theme
 
-dist_pekwmthemes4_DATA = \
+nobase_dist_data_DATA += \
 	pekwm/themes/Squared-blue/arrow_focused.xpm \
 	pekwm/themes/Squared-blue/arrow_selected.xpm \
 	pekwm/themes/Squared-blue/arrow_unfocus.xpm \
@@ -699,4 +565,235 @@ dist_pekwmthemes4_DATA = \
 	pekwm/themes/Squared-blue/stick_unfocus.xpm \
 	pekwm/themes/Squared-blue/tab_separator.xpm \
 	pekwm/themes/Squared-blue/theme
+
+nobase_dist_data_DATA += \
+	twm/apps \
+	twm/buttons \
+	twm/defaults \
+	twm/feel \
+	twm/keys \
+	twm/look \
+	twm/menu \
+	twm/rc.m4 \
+	twm/stylemenu \
+	twm/winmenu
+
+nobase_dist_same_SCRIPTS += \
+	twm/config \
+	twm/getstyles \
+	twm/setstyle
+
+nobase_dist_data_DATA += \
+	twm/feels/Classic/feelrc \
+	twm/feels/Default/feelrc
+
+nobase_dist_data_DATA += \
+	twm/looks/Classic/lookrc \
+	twm/looks/Squared/_lookrc
+
+nobase_dist_data_DATA += \
+	twm/looks/Squared-blue/lookrc \
+	twm/looks/Squared-blue/bitmaps/menu.xbm \
+	twm/looks/Squared-blue/bitmaps/shade.xbm \
+	twm/looks/Squared-blue/bitmaps/stick.xbm \
+	twm/looks/Squared-blue/bitmaps/lhalf.xbm \
+	twm/looks/Squared-blue/bitmaps/rhalf.xbm \
+	twm/looks/Squared-blue/bitmaps/min.xbm \
+	twm/looks/Squared-blue/bitmaps/max.xbm \
+	twm/looks/Squared-blue/bitmaps/close.xbm \
+	twm/looks/Squared-blue/bitmaps/desk.xbm \
+	twm/looks/Squared-blue/bitmaps/iconify.xbm
+
+nobase_dist_data_DATA += \
+	twm/looks/Squared-cadet/lookrc \
+	twm/looks/Squared-cadet/bitmaps/menu.xbm \
+	twm/looks/Squared-cadet/bitmaps/shade.xbm \
+	twm/looks/Squared-cadet/bitmaps/stick.xbm \
+	twm/looks/Squared-cadet/bitmaps/lhalf.xbm \
+	twm/looks/Squared-cadet/bitmaps/rhalf.xbm \
+	twm/looks/Squared-cadet/bitmaps/min.xbm \
+	twm/looks/Squared-cadet/bitmaps/max.xbm \
+	twm/looks/Squared-cadet/bitmaps/close.xbm \
+	twm/looks/Squared-cadet/bitmaps/desk.xbm \
+	twm/looks/Squared-cadet/bitmaps/iconify.xbm
+
+nobase_dist_data_DATA += \
+	twm/looks/Squared-green/lookrc \
+	twm/looks/Squared-green/bitmaps/menu.xbm \
+	twm/looks/Squared-green/bitmaps/shade.xbm \
+	twm/looks/Squared-green/bitmaps/stick.xbm \
+	twm/looks/Squared-green/bitmaps/lhalf.xbm \
+	twm/looks/Squared-green/bitmaps/rhalf.xbm \
+	twm/looks/Squared-green/bitmaps/min.xbm \
+	twm/looks/Squared-green/bitmaps/max.xbm \
+	twm/looks/Squared-green/bitmaps/close.xbm \
+	twm/looks/Squared-green/bitmaps/desk.xbm \
+	twm/looks/Squared-green/bitmaps/iconify.xbm
+
+nobase_dist_data_DATA += \
+	twm/looks/Squared-grey/lookrc \
+	twm/looks/Squared-grey/bitmaps/menu.xbm \
+	twm/looks/Squared-grey/bitmaps/shade.xbm \
+	twm/looks/Squared-grey/bitmaps/stick.xbm \
+	twm/looks/Squared-grey/bitmaps/lhalf.xbm \
+	twm/looks/Squared-grey/bitmaps/rhalf.xbm \
+	twm/looks/Squared-grey/bitmaps/min.xbm \
+	twm/looks/Squared-grey/bitmaps/max.xbm \
+	twm/looks/Squared-grey/bitmaps/close.xbm \
+	twm/looks/Squared-grey/bitmaps/desk.xbm \
+	twm/looks/Squared-grey/bitmaps/iconify.xbm
+
+nobase_dist_data_DATA += \
+	ctwm/apps \
+	ctwm/buttons \
+	ctwm/defaults \
+	ctwm/feel \
+	ctwm/keys \
+	ctwm/look \
+	ctwm/menu \
+	ctwm/rc.m4 \
+	ctwm/stylemenu \
+	ctwm/winmenu
+
+nobase_dist_same_SCRIPTS += \
+	ctwm/config \
+	ctwm/getstyles \
+	ctwm/setstyle
+
+nobase_dist_data_DATA += \
+	ctwm/feels/Classic/feelrc \
+	ctwm/feels/Default/feelrc
+
+nobase_dist_data_DATA += \
+	ctwm/looks/Classic/lookrc \
+	ctwm/looks/Squared/_lookrc
+
+nobase_dist_data_DATA += \
+	ctwm/looks/Squared-blue/lookrc \
+	ctwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/stick_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/lhalf_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/rhalf_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/min_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/max_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/close_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
+	ctwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	ctwm/looks/Squared-cadet/lookrc \
+	ctwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/stick_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/lhalf_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/rhalf_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/min_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/max_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/close_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
+	ctwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	ctwm/looks/Squared-green/lookrc \
+	ctwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/stick_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/lhalf_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/rhalf_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/min_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/max_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/close_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
+	ctwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	ctwm/looks/Squared-grey/lookrc \
+	ctwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/stick_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/lhalf_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/rhalf_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/min_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/max_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/close_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
+	ctwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	vtwm/apps \
+	vtwm/buttons \
+	vtwm/defaults \
+	vtwm/feel \
+	vtwm/keys \
+	vtwm/look \
+	vtwm/menu \
+	vtwm/rc.m4 \
+	vtwm/stylemenu \
+	vtwm/winmenu
+
+nobase_dist_same_SCRIPTS += \
+	vtwm/config \
+	vtwm/getstyles \
+	vtwm/setstyle
+
+nobase_dist_data_DATA += \
+	vtwm/feels/Classic/feelrc \
+	vtwm/feels/Default/feelrc
+
+nobase_dist_data_DATA += \
+	vtwm/looks/Classic/lookrc \
+	vtwm/looks/Squared/_lookrc
+
+nobase_dist_data_DATA += \
+	vtwm/looks/Squared-blue/lookrc \
+	vtwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/stick_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/lhalf_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/rhalf_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/min_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/max_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/close_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
+	vtwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	vtwm/looks/Squared-cadet/lookrc \
+	vtwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/stick_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/lhalf_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/rhalf_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/min_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/max_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/close_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
+	vtwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	vtwm/looks/Squared-green/lookrc \
+	vtwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/stick_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/lhalf_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/rhalf_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/min_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/max_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/close_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
+	vtwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
+
+nobase_dist_data_DATA += \
+	vtwm/looks/Squared-grey/lookrc \
+	vtwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/stick_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/lhalf_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/rhalf_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/min_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/max_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/close_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
+	vtwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
 
