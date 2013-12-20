@@ -1,0 +1,412 @@
+divert(VARIABLES)
+ifelse(TWM_TYPE,`vtwm',
+``#' Enable XFT font rendering.
+EnableXftFontRenderer')
+divert(FONTS)
+ifelse(TWM_TYPE,`vtwm',`
+TitleFont	"Liberation Sans:bold:roman:size=9:antialias=true"
+ResizeFont	"Liberation Sans:bold:roman:size=9:antialias=true"
+IconManagerFont	"Liberation Sans:bold:roman:size=9:antialias=true"
+MenuTitleFont	"Liberation Sans:bold:roman:size=9:antialias=true"
+MenuFont	"Liberation Sans:medium:roman:size=9:antialias=true"
+IconFont	"Liberation Sans:medium:roman:size=9:antialias=true"
+VirtualDesktopFont "Liberation Sans:medium:roman:size=9:antialias=true"
+DoorFont	"Liberation Sans:medium:roman:size=9:antialias=true"
+InfoFont	"Liberation Sans:medium:roman:size=9:antialias=true"
+',`
+TitleFont       "-*-liberation sans-bold-r-normal-*-*-90-*-*-*-*-iso10646-1"
+ResizeFont      "-*-liberation sans-bold-r-normal-*-*-90-*-*-*-*-iso10646-1"
+IconManagerFont "-*-liberation sans-bold-r-normal-*-*-90-*-*-*-*-iso10646-1"
+MenuFont        "-*-liberation sans-medium-r-normal-*-*-90-*-*-*-*-iso10646-1"
+IconFont        "-*-liberation sans-medium-r-normal-*-*-90-*-*-*-*-iso10646-1"
+ifelse(TWM_TYPE,`ctwm',`WorkSpaceFont   "-*-liberation sans-medium-r-normal-*-*-90-*-*-*-*-iso10646-1"')')
+divert(VARIABLES)
+ifelse(TWM_TYPE,`vtwm',`
+`##' Fine tune font offsets.
+TextOffsets {
+	TitleFont	    "+1+1"
+	MenuTitleFont	    "+2+1"
+	MenuFont	    "+1+1"
+	IconManagerFont	    "+0+0"
+	VirtualDesktopFont  "-1-4"
+}
+')
+divert(VARIABLES)
+TitlePadding 0
+
+### BORDERS ###
+
+## Width of border around client window frames.
+BorderWidth 2
+
+## Use client border width instead of BorderWidth
+#ClientBorderWidth
+
+## The amount by which titlebuttons should be indented on all sides
+ButtonIndent 0
+ifelse(TWM_TYPE,`vtwm',`
+`##' Bevel width for 3D buttons.
+ButtonBevelWidth 1
+
+`##' Bevel width for doors.
+DoorBevelWidth 1
+
+`##' Bevel width for icon manager.
+IconManagerBevelWidth 0
+
+`##' Bevel width for info windows.
+InfoBevelWidth 1
+
+`##' Bevel width for menus.
+MenuBevelWidth 1
+
+`##' Bevel width for titlebar.
+TitleBevelWidth 0
+
+`##' Bevel width for virtual desktop.
+VirtualDesktopBevelWidth 1
+')
+## Distance between titlebar decorations and the window frame.
+FramePadding 0
+
+## Width of border surrounding icon windows.
+IconBorderWidth 2
+ifelse(TWM_TYPE, `vtwm', `
+`##' Bevel width of icons.
+IconBevelWidth 2
+
+`##' Menu scroll activation borders.
+MenuScrollBorderWidth 2
+
+`##' Number of entries to scroll.
+MenuScrollJump 3
+')
+ifelse(TWM_TYPE, `twm', `
+`##' Width of border surrounding menu windows. (TWM Only)
+#MenuBorderWidth 1
+')
+## The width in pixels of the border surrounding title buttons.
+TitleButtonBorderWidth 0
+
+## The distance between titlebar decorations and highlight area.
+TitlePadding 4
+ifelse(TWM_TYPE, `vtwm', `
+`##' Opactiy for icons.
+IconOpacity 255
+
+`##' Opacity for menus.
+MenuOpacity 255
+')
+## Do not use shadows on menus (faster)
+NoMenuShadows
+
+## Do not use backing store on menus.
+#NoBackingStore
+
+ifelse(TWM_TYPE, `vtwm', `
+`##' Do not use defulat buttons on titlebars.
+NoDefaultTitleButtons
+',`
+`##' Do not use default buttons on titlebars.
+NoDefaults
+')
+ifelse(TWM_TYPE, `vtwm',
+`IconDirectory `"'TWM_STYLE_DIR`/pixmaps"'',
+`IconDirectory `"'TWM_STYLE_DIR`/bitmaps"'')
+
+ifelse(TWM_TYPE, `ctwm',
+`PixmapDirectory `"'TWM_STYLE_DIR`/pixmaps:'TWM_CONFIG_HOME`/pixmaps:'TWM_CONFIG_SDIR`/pixmaps:/usr/share/pixmaps"'')
+
+## Windows titles buttons
+ifelse(TWM_TYPE,`twm',`
+LeftTitleButton "menu.xbm" = f.menu "windowops"
+LeftTitleButton "shade.xbm" = f.nop
+LeftTitleButton "stick.xbm" = f.nop
+LeftTitleButton "lhalf.xbm" = f.leftzoom
+
+RightTitleButton "rhalf.xbm" = f.rightzoom
+RightTitleButton "min.xbm" = f.iconify
+RightTitleButton "max.xbm" = f.fullzoom
+RightTitleButton "close.xbm" = f.delete')
+ifelse(TWM_TYPE,`vtwm',`
+LeftTitleButton "menu_pressed.xpm" = f.menu "windowops"
+LeftTitleButton "shade_pressed.xpm" = f.nop
+LeftTitleButton "stick_pressed.xpm" = f.stick
+LeftTitleButton "lhalf_pressed.xpm" = f.leftzoom
+
+RightTitleButton "rhalf_pressed.xpm" = f.rightzoom
+RightTitleButton "min_pressed.xpm" = f.iconify
+RightTitleButton "max_pressed.xpm" = f.fullzoom
+RightTitleButton "close_pressed.xpm" = f.delete')
+ifelse(TWM_TYPE,`ctwm',`
+LeftTitleButton "xpm:menu_pressed.xpm" = f.menu "windowops"
+LeftTitleButton "xpm:shade_pressed.xpm" = f.squeeze
+LeftTitleButton "xpm:stick_pressed.xpm" = f.occupyall
+LeftTitleButton "xpm:lhalf_pressed.xpm" = f.leftzoom
+
+RightTitleButton "xpm:rhalf_pressed.xpm" = f.rightzoom
+RightTitleButton "xpm:min_pressed.xpm" = f.iconify
+RightTitleButton "xpm:max_pressed.xpm" = f.fullzoom
+RightTitleButton "xpm:close_pressed.xpm" = f.deleteordestroy')
+ifelse(TWM_TYPE,`vtwm',`
+Pixmaps {
+`#'	TitleHighlight		":xpm:sunkenbox"
+	VirtualBackgroundPixmap	"gray1"
+	MenuIconPixmap		":xpm:rarrow"
+`#'	IconManagerPixmap	":xpm:zoom"
+}
+
+`##' Pause on exit and quit for sounds.
+`#'PauseOnExit 2
+`#'PauseOnQuit 2
+')
+## Do not generate icons, ever (they are ugly anyway).
+IconifyByUnmapping
+
+## Do not highlight _any_ title bars (ugly stipple).
+NoTitleHighlight
+
+## Always decorate transitents.
+#DecorateTransients
+ifelse(TWM_TYPE,`vtwm',`
+`##' Do not deiconify transients with parents.
+`#'DontDeiconifyTransients
+')
+## Do not pass keys to applciation from titlebar.
+NoTitleFocus
+ifelse(TWM_TYPE,`vtwm',`
+`##' Sloppy focus.
+SloppyFocus
+')
+## Move opaque instead of outline.
+OpaqueMove
+ifelse(TWM_TYPE, `ctwm', `
+`##' Maximum of screen size, in percent, for opaque move
+OpaqueMoveThreshold 100
+
+`##' Resize opaque instead of outline.
+OpaqueResize
+
+`##' Maximum of screen size, in percent, for opaque resize
+OpaqueResizeThreshold 100
+
+')
+## Double click when moving within this time causes constrained move.
+ConstrainedMoveTime 500
+
+## Do not wait to cross window boundaries when resizing.
+AutoRelativeResize
+ifelse(TWM_TYPE,`vtwm',`
+`##' Try to keep resizing windows on screen.
+AutoResizeKeepOnScreen
+')
+## Place windows randomly.
+ifelse(TWM_TYPE, `ctwm',
+`RandomPlacement "on" "+22+22"',
+`RandomPlacement')
+ifelse(TWM_TYPE, `vtwm',`
+`##' Place windows at pointer.
+`#'PointerPlacement
+')
+## Honor program-requessted position. 
+#UsePPosition
+
+WarpUnmapped
+
+## ignore case in res_name and res_class comparisons
+NoCaseSensitive
+
+#NoIconManagers
+#NoRaiseOnMove
+#NoRaiseOnResize
+#NoRaiseOnWarp
+#NoRaiseOnDeiconify
+
+## Do not move windows off screen unless forced.
+DontMoveOff
+
+ifelse(TWM_TYPE,`vtwm',`
+`##' Keep window on screen when deiconifying.
+DeiconifyToScreen
+
+`##' Keep window on screen when unzooming.
+UnzoomToScreen
+')
+## Number of segments in animations of iconification.
+Zoom 128
+ifelse(TWM_TYPE,`vtwm',`
+`##' Animate zooms without appropriate window.
+ZoomZoom
+
+`##' Really complex, see manual page.
+ZoomState "full"
+
+`##' Make random zooms less random.
+LessRandomZoomZoom
+
+`##' Pretty zoom animations.
+PrettyZoom
+')
+ifelse(TWM_TYPE,`vtwm', `
+`##' Pan viewport 10% when pointer approaches edge of viewport.
+AutoPan 10
+
+`##' Border for autopan
+AutoPanBorderWidth 5
+
+`##' Delay for autopan.
+PanResistance 750
+
+`##' Warp pointer away from border on change
+AutoPanExtraWarp 2
+
+`##' Really complicated, see manpage.
+AutoPanWarpWithRespectToRealScreen 50
+
+`##' Really complicated, see manpage.
+NaturalAutopanBehavior
+
+`##' Grid for panning.
+PanDistanceX 100
+PanDistanceY 100
+
+`##' Snap to panning grid.
+`#'SnapRealScreen
+')
+ifelse(TWM_TYPE, `vtwm', `
+`##' Client geometries relative to viewport.
+NotVirtualGeometries
+')
+Cursors
+{
+	Frame	    "top_left_arrow"
+	Title	    "top_left_arrow"
+	Icon	    "top_left_arrow"
+	IconMgr	    "top_left_arrow"
+	Move	    "fleur"
+	Resize	    "fleur"
+	Menu	    "sb_left_arrow"
+	Button	    "hand2"
+	Wait	    "watch"
+	Select	    "dot"
+	Destroy	    "pirate"
+}
+ifelse(TWM_TYPE, `ctwm', `
+`##' _MIT_PRIORITY_COLORS to save: all titlebar colors
+SaveColor {
+	"`#'COLOR1"
+	"`#'COLOR2"
+	"`#'COLOR3"
+	"`#'COLOR4"
+	"`#'COLOR5"
+}
+
+`##' Enable the Workspacemanager
+ShowWorkSpaceManager
+
+`##' starts the Workspace manager in map mode
+StartInMapState
+
+`##' Geometry
+`#'WorkSpaceManagerGeometry        "360x60-0-0" 4
+
+`##' Workspace names and button colors
+`##' "name"     [{ bg-button [fg-button] [bg-root] [fg-root] [pixmap-root] }]
+WorkSpaces {
+	"1" {"rgb:0/6/6" "rgb:f/f/f"}
+	"2" {"rgb:4/4/6" "rgb:f/f/f"}
+	"3" {"rgb:6/4/4" "rgb:f/f/f"}
+	"4" {"rgb:6/6/6" "rgb:f/f/f"}
+	"5" {"rgb:0/4/4" "rgb:f/f/f"}
+	"6" {"rgb:2/2/4" "rgb:f/f/f"}
+	"7" {"rgb:4/2/2" "rgb:f/f/f"}
+	"8" {"rgb:4/4/4" "rgb:f/f/f"}
+}
+')
+ifelse(TWM_TYPE,`vtwm',`
+`##' Enable virtual desktop.
+VirtualDesktop "2x2-0-0" 16
+
+`##' Receive motion events on virtual desktop.
+VirtualReceivesMotionEvents
+
+`##' Send motion events from virtual desktop.
+VirtualSendsMotionEvents
+')
+ifelse(TWM_TYPE,`vtwm',`
+`##' Do not interpolate menu colors on titles.
+DontInterpolateTitles
+
+`##' Interpolate menu colors (others do)
+InterpolateMenuColors
+
+`##' TWM behaviour for TMW WIndows colors.
+OldFashionedTwmWindowsMenu
+')
+divert(-1)
+
+define(`twm_deffore',			`"`#''COLOR4`"')
+define(`twm_defback',			`"`#''COLOR1`"')
+define(`twm_BorderColor',		`"`#''COLOR1`"')
+define(`twm_BorderTileForeground',	`"`#''COLOR1`"')
+define(`twm_BorderTileBackground',	`"`#''COLOR2`"')
+define(`twm_TitleForeground',		`"`#''COLOR3`"')
+define(`twm_TitleBackground',		`"`#''COLOR2`"')
+define(`twm_IconForeground',		`"`#''COLOR3`"')
+define(`twm_IconBackground',		`"`#''COLOR2`"')
+define(`twm_IconBorderColor',		`"`#''COLOR1`"')
+define(`twm_IconManagerForeground',	`"`#''COLOR3`"')
+define(`twm_IconManagerBackground',	`"`#''COLOR2`"')
+define(`twm_IconManagerHighlight',	`"`#''COLOR1`"')
+define(`twm_DoorForeground',		`"`#''COLOR3`"')
+define(`twm_DoorBackground',		`"`#''COLOR2`"')
+
+divert(COLOR)
+    # Default colors for sizing and information windows
+    DefaultForeground		`"#'COLOR3`"'
+    DefaultBackground		`"#'COLOR2`"'
+
+    # Menu Colors
+    MenuBackground		`"#'COLOR2`"'
+    MenuForeground		`"#'COLOR3`"'
+    MenuTitleBackground		`"#'COLOR1`"'
+    MenuTitleForeground		`"#'COLOR4`"'
+    MenuShadowColor		`"#'COLOR5`"'
+ifelse(TWM_TYPE, `twm', `
+    MenuBorderColor       `"#'COLOR1`"'')
+ifelse(TWM_TYPE, `ctwm', `
+    MapWindowBackground		`"#'COLOR1`"' {
+    }
+    MapWindowForeground		`"#'COLOR4`"' {
+    }')
+ifelse(TWM_TYPE, `vtwm', `
+    DesktopDisplayBackground	`"#'COLOR1`"' {
+    }
+    DesktopDisplayForeground	`"#'COLOR2`"' {
+    }
+    DesktopDisplayBorder	`"#'COLOR3`"' {
+    }
+    VirtualBackground		`"#'COLOR1`"'
+    VirtualForeground		`"#'COLOR4`"'
+    ')
+divert(VARIABLES)dnl
+syscmd(`test -r "'TWM_CONFIG_HOME`/apps"')dnl
+ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/apps')', `sinclude(TWM_CONFIG_SDIR`/apps''))
+divert(BUTTONS)dnl
+syscmd(`test -r "'TWM_CONFIG_HOME`/buttons"')dnl
+ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/buttons')', `sinclude(TWM_CONFIG_SDIR`/buttons''))
+divert(BINDINGS)dnl
+syscmd(`test -r "'TWM_CONFIG_HOME`/keys"')dnl
+ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/keys')', `sinclude(TWM_CONFIG_SDIR`/keys')')
+divert(MENUS)dnl
+syscmd(`test -r "'TWM_CONFIG_HOME`/winmenu"')dnl
+ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/winmenu')', `sinclude(TWM_CONFIG_SDIR`/winmenu')')
+divert(MENUS)dnl
+`##' including TWM_CONFIG_HOME/stylemenu
+sinclude(TWM_CONFIG_HOME`/stylemenu')
+divert(MENUS)dnl
+`##' including TWM_CONFIG_HOME/menu
+syscmd(`test -r "'TWM_CONFIG_HOME`/menu"')dnl
+ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/menu')', `sinclude(TWM_CONFIG_SDIR`/menu')')
+divert(-1)
+dnl vim: ft=m4

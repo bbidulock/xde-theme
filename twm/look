@@ -1,0 +1,4 @@
+divert(-1)
+define(`TWM_STYLE_DIR',`/home/brian/.twm/looks/Airforce')
+sinclude(`/home/brian/.twm/looks/Airforce/lookrc')
+dnl vim:ft=m4

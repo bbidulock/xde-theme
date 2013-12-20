@@ -1,0 +1,30 @@
+divert(FUNCTIONS)
+#
+# Define some useful functions for motion-based actions.
+#
+divert(VARIABLES)
+#ClientBorderWidth
+MoveDelta 3
+divert(FUNCTIONS)
+Function "move-or-lower"   { f.move f.deltastop f.lower }
+Function "move-or-raise"   { f.move f.deltastop f.raise }
+Function "move-or-iconify" { f.move f.deltastop f.iconify }
+divert(BINDINGS)
+#
+# Set some useful bindings.  Sort of uwm-ish, sort of simple-button-ish
+#
+Button1 = : root : f.menu "defops"
+
+Button1 = m : window|icon : f.function "move-or-lower"
+Button2 = m : window|icon : f.iconify
+Button3 = m : window|icon : f.function "move-or-raise"
+
+Button1 = : title : f.function "move-or-raise"
+Button2 = : title : f.raiselower
+
+Button1 = : icon : f.function "move-or-iconify"
+Button2 = : icon : f.iconify
+
+Button1 = : iconmgr : f.iconify
+Button2 = : iconmgr : f.iconify
+dnl vim: ft=m4
