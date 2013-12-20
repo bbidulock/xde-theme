@@ -5,7 +5,6 @@ AC_REVISION([1.1])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([scripts])
-AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([gnits 1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
