@@ -23,13 +23,6 @@ TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 rm -f "$TWM_CONFIG_HOME/stylerc"
 ln -s "$styledir/stylerc" "$TWM_CONFIG_HOME/"
 
-cat >"$TWM_CONFIG_HOME/style"<<TWMEOF
-divert(-1)
-define(\`TWM_STYLE_DIR',\`$styledir')
-sinclude(\`$styledir/stylerc')
-dnl vim:ft=m4
-TWMEOF
-
 exit 0
 
 # vim: sw=4

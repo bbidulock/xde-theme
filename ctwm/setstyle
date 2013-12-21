@@ -23,13 +23,6 @@ CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-${HOME:-~}/.$CTWM_TYPE}
 rm -f "$CTWM_CONFIG_HOME/stylerc"
 ln -s "$styledir/stylerc" "$CTWM_CONFIG_HOME/"
 
-cat >"$CTWM_CONFIG_HOME/style"<<TWMEOF
-divert(-1)
-define(\`TWM_STYLE_DIR',\`$styledir')
-sinclude(\`$styledir/stylerc')
-dnl vim:ft=m4
-TWMEOF
-
 exit 0
 
 # vim: sw=4

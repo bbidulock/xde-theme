@@ -23,13 +23,6 @@ VTWM_CONFIG_HOME=${VTWM_CONFIG_HOME:-${HOME:-~}/.$VTWM_TYPE}
 rm -f "$VTWM_CONFIG_HOME/stylerc"
 ln -s "$styledir/stylerc" "$VTWM_CONFIG_HOME/"
 
-cat >"$VTWM_CONFIG_HOME/style"<<TWMEOF
-divert(-1)
-define(\`TWM_STYLE_DIR',\`$styledir')
-sinclude(\`$styledir/stylerc')
-dnl vim:ft=m4
-TWMEOF
-
 exit 0
 
 # vim: sw=4

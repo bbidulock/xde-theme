@@ -35,9 +35,6 @@ ifelse(TWM_TYPE,`twm',`
     MenuTitleForeground	    "rgb:2/a/9"
 divert(VARIABLES)dnl
 MoveDelta 3
-divert(VARIABLES)dnl
-syscmd(`test -r "'TWM_CONFIG_HOME`/apps"')dnl
-ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/apps')', `sinclude(TWM_CONFIG_SDIR`/apps''))
 divert(FUNCTIONS)dnl
 #
 # Define some useful functions for motion-based actions.
@@ -65,15 +62,6 @@ Button2 = : icon : f.iconify
 
 Button1 = : iconmgr : f.iconify
 Button2 = : iconmgr : f.iconify
-divert(BINDINGS)dnl
-syscmd(`test -r "'TWM_CONFIG_HOME`/keys"')dnl
-ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/keys')', `sinclude(TWM_CONFIG_SDIR`/keys')')
-divert(MENUS)dnl
-syscmd(`test -r "'TWM_CONFIG_HOME`/winmenu"')dnl
-ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/winmenu')', `sinclude(TWM_CONFIG_SDIR`/winmenu')')
-divert(MENUS)dnl
-`##' including TWM_CONFIG_HOME/stylemenu
-sinclude(TWM_CONFIG_HOME`/stylemenu')
 divert(MENUS)dnl
 #
 # And a menus with the usual things
@@ -101,9 +89,5 @@ menu "twmops"
 "Restart"	f.restart
 "Exit"		f.quit
 }
-divert(MENUS)dnl
-`##' including TWM_CONFIG_HOME/menu
-syscmd(`test -r "'TWM_CONFIG_HOME`/menu"')dnl
-ifelse(sysval, 0, `sinclude(TWM_CONFIG_HOME`/menu')', `sinclude(TWM_CONFIG_SDIR`/menu')')
 divert(-1)
 dnl vim: ft=m4

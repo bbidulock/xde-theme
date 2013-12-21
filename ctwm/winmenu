@@ -1,8 +1,8 @@
 divert(VARIABLES)dnl
-`##' included file TWM_CONFIG_HOME/winmenu
+`##' included file SINCLUDE
 DontMoveOff
 divert(MENUS)dnl
-`##' included file TWM_CONFIG_HOME/winmenu
+`##' included file SINCLUDE
 menu "zoomops" (twm_deffore:twm_defback)
 {
     "Zoom Ops"			f.title

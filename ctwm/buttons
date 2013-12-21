@@ -1,8 +1,8 @@
 divert(VARIABLES)dnl
-`##' included file TWM_CONFIG_HOME/buttons
+`##' included file SINCLUDE
 MoveDelta 3
 divert(FUNCTIONS)dnl
-`##' included file TWM_CONFIG_HOME/buttons
+`##' included file SINCLUDE
 #
 # Define some useful functions for motion-based actions.
 #
@@ -10,7 +10,7 @@ Function "move-or-lower" { f.move f.deltastop f.lower }
 Function "move-or-raise" { f.move f.deltastop f.raise }
 Function "move-or-iconify" { f.move f.deltastop f.iconify }
 divert(BUTTONS)dnl
-`##' included file TWM_CONFIG_HOME/buttons
+`##' included file SINCLUDE
 #
 # Set some useful bindings.  Sort of uwm-ish, sort of simple-button-ish
 #

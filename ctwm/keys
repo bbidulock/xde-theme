@@ -1,14 +1,15 @@
 divert(VARIABLES)dnl
+`##' included file SINCLUDE
 ifelse(TWM_TYPE,`vtwm',`
 `##' No default keyboard or pointer bindings.
 NoDefaultMouseOrKeyboardBindings
 ')
 divert(FUNCTIONS)dnl
-`##' included file TWM_CONFIG_HOME/keys
+`##' included file SINCLUDE
 Function "next-cycle-focus" { f.forwiconmgr f.raise }
 Function "prev-cycle-focus" { f.backiconmgr f.raise }
 divert(BINDINGS)dnl
-`##' included file TWM_CONFIG_HOME/keys
+`##' included file SINCLUDE
 `"Tab"	    = m		: all		: f.function "next-cycle-focus"'
 `"Tab"	    = m | s	: all		: f.function "prev-cycle-focus"'
 
