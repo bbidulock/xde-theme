@@ -13,3 +13,5 @@ scripts/
 _build/
 _install/
 .*.sw[op]
+rc.m4
+config
