@@ -10,8 +10,6 @@ if [ ! -x "`which $TWM_TYPE 2>/dev/null`" ]; then
     echo "ERROR: cannot find usable twm program" >&2
     exit 1;
 fi
-
-export TWM_VERSION=${2:-${TWM_VERSION:-1.0.8}}
 export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 export TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
 
@@ -55,50 +53,6 @@ getstyles() {
     echo "dnl vim: ft=m4"
 }
 
-setup() {
-    [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
-    if [ -s "$TWM_CONFIG_SDIR/version" ]; then
-	if [ ! -s "$TWM_CONFIG_HOME/version" -o ! diff "$TWM_CONFIG_SDIR/version" "$TWM_CONFIG_HOME/version" ] ; then
-	    for file in apps defaults keys menu stylemenu version winmenu; do
-		if [ ! -f "$TWM_CONFIG_SDIR/$file" -o ! diff "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file" ] ; then
-		    [ ! -f "$TWM_CONFIG_HOME/$file" ] || /bin/mv -f "$TWM_CONFIG_HOME/$file" "$TWM_CONFIG_HOME/$file.bak"
-		    /bin/cp -f "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file"
-		fi
-	    done
-	fi
-    fi
-}
-
-config() {
-    rcfile="$TWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$TWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
-
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
-
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
-
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
-
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$TWM_TYPE" -DTWM_VERSION="$TWM_VERSION" \
-       "$rcfile"
-}
-
-setup
-
 getstyles >"$TWM_CONFIG_HOME/stylemenu"
-
-config >"$TWM_CONFIG_HOME/rc"
-
-exec $TWM_TYPE -f "$TWM_CONFIG_HOME/rc"
 
 # vim: sw=4

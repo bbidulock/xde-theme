@@ -10,50 +10,12 @@ if [ ! -x "`which $TWM_TYPE 2>/dev/null`" ]; then
     echo "ERROR: cannot find usable twm program" >&2
     exit 1;
 fi
-
-export TWM_VERSION=${2:-${TWM_VERSION:-1.0.8}}
+if [ -z "$TWM_VERSION" ]; then
+    TWM_VERSION='1.0.8'
+fi
+export TWM_VERSION=${2:-$TWM_VERSION}
 export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 export TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
-
-getstyles() {
-    setstyle="$here/setstyle"
-    [ -x "$setstyle" ] || setstyle="$TWM_CONFIG_HOME/setstyle"
-    [ -x "$setstyle" ] || setstyle="$TWM_CONFIG_SDIR/setstyle"
-    [ -x "$setstyle" ] || { echo "ERROR: missing setstyle program" >&2; exit 1; }
-    setstyle=$(echo "$setstyle"|sed "s,$TWM_CONFIG_HOME,TWM_CONFIG_HOME,;s,$TWM_CONFIG_SDIR,TWM_CONFIG_SDIR,")
-
-    echo "divert(FUNCTIONS)dnl"
-    echo "divert(MENUS)dnl"
-
-    echo "Menu \"twmstyles\" (twm_deffore:twm_defback)"
-    echo "{"
-
-    echo -e "    \"System Styles\"\t\tf.title"
-    find "$TWM_CONFIG_SDIR/styles" -name stylerc 2>/dev/null | sort | while read f
-    do
-	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$TWM_CONFIG_SDIR"',TWM_CONFIG_SDIR,')
-	style=$(echo "$styledir"|sed 's,^.*/,,')
-	echo "divert(FUNCTIONS)dnl"
-	echo "Function \"set-system-style-$style\" { f.exec \"$setstyle TWM_TYPE $styledir\" f.function \"reconfig\" }"
-	echo "divert(MENUS)dnl"
-	echo -e "    \"$style\"\t\tf.function \"set-system-style-$style\""
-    done
-
-    echo -e "    \"User Styles\"\t\tf.title"
-    find "$TWM_CONFIG_HOME/styles" -name stylerc 2>/dev/null | sort | while read f
-    do
-	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$TWM_CONFIG_HOME"',TWM_CONFIG_HOME,')
-	style=$(echo "$styledir"|sed 's,^.*/,,')
-	echo "divert(FUNCTIONS)dnl"
-	echo "Function \"set-user-style-$style\" { f.exec \"$setstyle TWM_TYPE $styledir\" f.function \"reconfig\" }"
-	echo "divert(MENUS)dnl"
-	echo -e "    \"$style\"\t\tf.function \"set-user-style-$style\""
-    done
-
-    echo "}"
-    echo "divert(-1)"
-    echo "dnl vim: ft=m4"
-}
 
 setup() {
     [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
@@ -94,8 +56,6 @@ config() {
 }
 
 setup
-
-getstyles >"$TWM_CONFIG_HOME/stylemenu"
 
 config >"$TWM_CONFIG_HOME/rc"
 

@@ -10,11 +10,6 @@ if [ ! -x "`which $CTWM_TYPE 2>/dev/null`" ]; then
     echo "ERROR: cannot find usable ctwm program" >&2
     exit 1;
 fi
-
-if $CTWM_TYPE -version >/dev/null 2>&1; then
-    CTWM_VERSION=$($CTWM_TYPE -version 2>/dev/null)
-fi
-export CTWM_VERSION=${2:-${CTWM_VERSION:-3.8.1}}
 export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-${HOME:-~}/.$CTWM_TYPE}
 export CTWM_CONFIG_SDIR=${CTWM_CONFIG_SDIR:-@sharedir@/$CTWM_TYPE}
 
@@ -58,50 +53,6 @@ getstyles() {
     echo "dnl vim: ft=m4"
 }
 
-setup() {
-    [ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
-    if [ -s "$CTWM_CONFIG_SDIR/version" ]; then
-	if [ ! -s "$CTWM_CONFIG_HOME/version" -o ! diff "$CTWM_CONFIG_SDIR/version" "$CTWM_CONFIG_HOME/version" ] ; then
-	    for file in apps defaults keys menu stylemenu version winmenu; do
-		if [ ! -f "$CTWM_CONFIG_SDIR/$file" -o ! diff "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file" ] ; then
-		    [ ! -f "$CTWM_CONFIG_HOME/$file" ] || /bin/mv -f "$CTWM_CONFIG_HOME/$file" "$CTWM_CONFIG_HOME/$file.bak"
-		    /bin/cp -f "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file"
-		fi
-	    done
-	fi
-    fi
-}
-
-config() {
-    rcfile="$CTWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$CTWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
-
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
-
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
-
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
-
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$CTWM_TYPE" -DTWM_VERSION="$CTWM_VERSION" \
-       "$rcfile"
-}
-
-setup
-
 getstyles >"$CTWM_CONFIG_HOME/stylemenu"
-
-config >"$CTWM_CONFIG_HOME/rc"
-
-exec $CTWM_TYPE -f "$CTWM_CONFIG_HOME/rc"
 
 # vim: sw=4
