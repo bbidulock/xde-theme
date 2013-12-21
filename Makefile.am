@@ -567,9 +567,9 @@ nobase_dist_share_DATA += \
 	pekwm/themes/Squared-blue/theme
 
 install-data-twm:
-	$(MKDIR_P) $(DESTDIR)$(sharedir)/twm/looks
-	$(LN_S) $(sharedir)/twm/looks/Default/lookrc $(DESTDIR)$(sharedir)/twm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(sharedir)/twm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/twm/styles
+	$(LN_S) $(sharedir)/twm/styles/Default/stylerc $(DESTDIR)$(sharedir)/twm/stylerc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/twm/styles/Default
 
 nobase_dist_share_DATA += \
 	twm/apps \
@@ -588,65 +588,65 @@ nobase_nodist_share_SCRIPTS += \
 	twm/rc.m4
 
 nobase_dist_share_DATA += \
-	twm/looks/Classic/lookrc \
-	twm/looks/Squared/_lookrc
+	twm/styles/Classic/stylerc \
+	twm/styles/Squared/_stylerc
 
 nobase_dist_share_DATA += \
-	twm/looks/Squared-blue/lookrc \
-	twm/looks/Squared-blue/bitmaps/menu.xbm \
-	twm/looks/Squared-blue/bitmaps/shade.xbm \
-	twm/looks/Squared-blue/bitmaps/stick.xbm \
-	twm/looks/Squared-blue/bitmaps/lhalf.xbm \
-	twm/looks/Squared-blue/bitmaps/rhalf.xbm \
-	twm/looks/Squared-blue/bitmaps/min.xbm \
-	twm/looks/Squared-blue/bitmaps/max.xbm \
-	twm/looks/Squared-blue/bitmaps/close.xbm \
-	twm/looks/Squared-blue/bitmaps/desk.xbm \
-	twm/looks/Squared-blue/bitmaps/iconify.xbm
+	twm/styles/Squared-blue/stylerc \
+	twm/styles/Squared-blue/bitmaps/menu.xbm \
+	twm/styles/Squared-blue/bitmaps/shade.xbm \
+	twm/styles/Squared-blue/bitmaps/stick.xbm \
+	twm/styles/Squared-blue/bitmaps/lhalf.xbm \
+	twm/styles/Squared-blue/bitmaps/rhalf.xbm \
+	twm/styles/Squared-blue/bitmaps/min.xbm \
+	twm/styles/Squared-blue/bitmaps/max.xbm \
+	twm/styles/Squared-blue/bitmaps/close.xbm \
+	twm/styles/Squared-blue/bitmaps/desk.xbm \
+	twm/styles/Squared-blue/bitmaps/iconify.xbm
 
 nobase_dist_share_DATA += \
-	twm/looks/Squared-cadet/lookrc \
-	twm/looks/Squared-cadet/bitmaps/menu.xbm \
-	twm/looks/Squared-cadet/bitmaps/shade.xbm \
-	twm/looks/Squared-cadet/bitmaps/stick.xbm \
-	twm/looks/Squared-cadet/bitmaps/lhalf.xbm \
-	twm/looks/Squared-cadet/bitmaps/rhalf.xbm \
-	twm/looks/Squared-cadet/bitmaps/min.xbm \
-	twm/looks/Squared-cadet/bitmaps/max.xbm \
-	twm/looks/Squared-cadet/bitmaps/close.xbm \
-	twm/looks/Squared-cadet/bitmaps/desk.xbm \
-	twm/looks/Squared-cadet/bitmaps/iconify.xbm
+	twm/styles/Squared-cadet/stylerc \
+	twm/styles/Squared-cadet/bitmaps/menu.xbm \
+	twm/styles/Squared-cadet/bitmaps/shade.xbm \
+	twm/styles/Squared-cadet/bitmaps/stick.xbm \
+	twm/styles/Squared-cadet/bitmaps/lhalf.xbm \
+	twm/styles/Squared-cadet/bitmaps/rhalf.xbm \
+	twm/styles/Squared-cadet/bitmaps/min.xbm \
+	twm/styles/Squared-cadet/bitmaps/max.xbm \
+	twm/styles/Squared-cadet/bitmaps/close.xbm \
+	twm/styles/Squared-cadet/bitmaps/desk.xbm \
+	twm/styles/Squared-cadet/bitmaps/iconify.xbm
 
 nobase_dist_share_DATA += \
-	twm/looks/Squared-green/lookrc \
-	twm/looks/Squared-green/bitmaps/menu.xbm \
-	twm/looks/Squared-green/bitmaps/shade.xbm \
-	twm/looks/Squared-green/bitmaps/stick.xbm \
-	twm/looks/Squared-green/bitmaps/lhalf.xbm \
-	twm/looks/Squared-green/bitmaps/rhalf.xbm \
-	twm/looks/Squared-green/bitmaps/min.xbm \
-	twm/looks/Squared-green/bitmaps/max.xbm \
-	twm/looks/Squared-green/bitmaps/close.xbm \
-	twm/looks/Squared-green/bitmaps/desk.xbm \
-	twm/looks/Squared-green/bitmaps/iconify.xbm
+	twm/styles/Squared-green/stylerc \
+	twm/styles/Squared-green/bitmaps/menu.xbm \
+	twm/styles/Squared-green/bitmaps/shade.xbm \
+	twm/styles/Squared-green/bitmaps/stick.xbm \
+	twm/styles/Squared-green/bitmaps/lhalf.xbm \
+	twm/styles/Squared-green/bitmaps/rhalf.xbm \
+	twm/styles/Squared-green/bitmaps/min.xbm \
+	twm/styles/Squared-green/bitmaps/max.xbm \
+	twm/styles/Squared-green/bitmaps/close.xbm \
+	twm/styles/Squared-green/bitmaps/desk.xbm \
+	twm/styles/Squared-green/bitmaps/iconify.xbm
 
 nobase_dist_share_DATA += \
-	twm/looks/Squared-grey/lookrc \
-	twm/looks/Squared-grey/bitmaps/menu.xbm \
-	twm/looks/Squared-grey/bitmaps/shade.xbm \
-	twm/looks/Squared-grey/bitmaps/stick.xbm \
-	twm/looks/Squared-grey/bitmaps/lhalf.xbm \
-	twm/looks/Squared-grey/bitmaps/rhalf.xbm \
-	twm/looks/Squared-grey/bitmaps/min.xbm \
-	twm/looks/Squared-grey/bitmaps/max.xbm \
-	twm/looks/Squared-grey/bitmaps/close.xbm \
-	twm/looks/Squared-grey/bitmaps/desk.xbm \
-	twm/looks/Squared-grey/bitmaps/iconify.xbm
+	twm/styles/Squared-grey/stylerc \
+	twm/styles/Squared-grey/bitmaps/menu.xbm \
+	twm/styles/Squared-grey/bitmaps/shade.xbm \
+	twm/styles/Squared-grey/bitmaps/stick.xbm \
+	twm/styles/Squared-grey/bitmaps/lhalf.xbm \
+	twm/styles/Squared-grey/bitmaps/rhalf.xbm \
+	twm/styles/Squared-grey/bitmaps/min.xbm \
+	twm/styles/Squared-grey/bitmaps/max.xbm \
+	twm/styles/Squared-grey/bitmaps/close.xbm \
+	twm/styles/Squared-grey/bitmaps/desk.xbm \
+	twm/styles/Squared-grey/bitmaps/iconify.xbm
 
 install-data-ctwm:
-	$(MKDIR_P) $(DESTDIR)$(sharedir)/ctwm/looks
-	$(LN_S) $(sharedir)/ctwm/looks/Default/lookrc $(DESTDIR)$(sharedir)/ctwm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(sharedir)/ctwm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/ctwm/styles
+	$(LN_S) $(sharedir)/ctwm/styles/Default/stylerc $(DESTDIR)$(sharedir)/ctwm/stylerc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/ctwm/styles/Default
 
 nobase_dist_share_DATA += \
 	ctwm/apps \
@@ -665,65 +665,65 @@ nobase_nodist_share_SCRIPTS += \
 	ctwm/rc.m4
 
 nobase_dist_share_DATA += \
-	ctwm/looks/Classic/lookrc \
-	ctwm/looks/Squared/_lookrc
+	ctwm/styles/Classic/stylerc \
+	ctwm/styles/Squared/_stylerc
 
 nobase_dist_share_DATA += \
-	ctwm/looks/Squared-blue/lookrc \
-	ctwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/stick_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/lhalf_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/rhalf_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/min_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/max_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/close_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
-	ctwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
+	ctwm/styles/Squared-blue/stylerc \
+	ctwm/styles/Squared-blue/pixmaps/menu_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/shade_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/stick_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/lhalf_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/rhalf_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/min_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/max_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/close_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/stuck_pressed.xpm \
+	ctwm/styles/Squared-blue/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	ctwm/looks/Squared-cadet/lookrc \
-	ctwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/stick_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/lhalf_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/rhalf_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/min_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/max_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/close_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
-	ctwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
+	ctwm/styles/Squared-cadet/stylerc \
+	ctwm/styles/Squared-cadet/pixmaps/menu_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/shade_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/stick_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/lhalf_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/rhalf_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/min_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/max_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/close_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/stuck_pressed.xpm \
+	ctwm/styles/Squared-cadet/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	ctwm/looks/Squared-green/lookrc \
-	ctwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/stick_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/lhalf_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/rhalf_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/min_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/max_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/close_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
-	ctwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
+	ctwm/styles/Squared-green/stylerc \
+	ctwm/styles/Squared-green/pixmaps/menu_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/shade_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/stick_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/lhalf_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/rhalf_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/min_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/max_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/close_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/stuck_pressed.xpm \
+	ctwm/styles/Squared-green/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	ctwm/looks/Squared-grey/lookrc \
-	ctwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/stick_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/lhalf_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/rhalf_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/min_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/max_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/close_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
-	ctwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
+	ctwm/styles/Squared-grey/stylerc \
+	ctwm/styles/Squared-grey/pixmaps/menu_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/shade_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/stick_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/lhalf_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/rhalf_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/min_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/max_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/close_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/stuck_pressed.xpm \
+	ctwm/styles/Squared-grey/pixmaps/unshade_pressed.xpm
 
 install-data-vtwm:
-	$(MKDIR_P) $(DESTDIR)$(sharedir)/vtwm/looks
-	$(LN_S) $(sharedir)/vtwm/looks/Default/lookrc $(DESTDIR)$(sharedir)/vtwm/lookrc
-	$(LN_S) Classic $(DESTDIR)$(sharedir)/vtwm/looks/Default
+	$(MKDIR_P) $(DESTDIR)$(sharedir)/vtwm/styles
+	$(LN_S) $(sharedir)/vtwm/styles/Default/stylerc $(DESTDIR)$(sharedir)/vtwm/stylerc
+	$(LN_S) Classic $(DESTDIR)$(sharedir)/vtwm/styles/Default
 
 nobase_dist_share_DATA += \
 	vtwm/apps \
@@ -742,60 +742,60 @@ nobase_nodist_share_SCRIPTS += \
 	vtwm/rc.m4
 
 nobase_dist_share_DATA += \
-	vtwm/looks/Classic/lookrc \
-	vtwm/looks/Squared/_lookrc
+	vtwm/styles/Classic/stylerc \
+	vtwm/styles/Squared/_stylerc
 
 nobase_dist_share_DATA += \
-	vtwm/looks/Squared-blue/lookrc \
-	vtwm/looks/Squared-blue/pixmaps/menu_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/shade_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/stick_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/lhalf_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/rhalf_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/min_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/max_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/close_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/stuck_pressed.xpm \
-	vtwm/looks/Squared-blue/pixmaps/unshade_pressed.xpm
+	vtwm/styles/Squared-blue/stylerc \
+	vtwm/styles/Squared-blue/pixmaps/menu_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/shade_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/stick_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/lhalf_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/rhalf_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/min_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/max_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/close_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/stuck_pressed.xpm \
+	vtwm/styles/Squared-blue/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	vtwm/looks/Squared-cadet/lookrc \
-	vtwm/looks/Squared-cadet/pixmaps/menu_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/shade_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/stick_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/lhalf_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/rhalf_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/min_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/max_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/close_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/stuck_pressed.xpm \
-	vtwm/looks/Squared-cadet/pixmaps/unshade_pressed.xpm
+	vtwm/styles/Squared-cadet/stylerc \
+	vtwm/styles/Squared-cadet/pixmaps/menu_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/shade_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/stick_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/lhalf_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/rhalf_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/min_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/max_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/close_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/stuck_pressed.xpm \
+	vtwm/styles/Squared-cadet/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	vtwm/looks/Squared-green/lookrc \
-	vtwm/looks/Squared-green/pixmaps/menu_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/shade_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/stick_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/lhalf_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/rhalf_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/min_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/max_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/close_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/stuck_pressed.xpm \
-	vtwm/looks/Squared-green/pixmaps/unshade_pressed.xpm
+	vtwm/styles/Squared-green/stylerc \
+	vtwm/styles/Squared-green/pixmaps/menu_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/shade_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/stick_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/lhalf_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/rhalf_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/min_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/max_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/close_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/stuck_pressed.xpm \
+	vtwm/styles/Squared-green/pixmaps/unshade_pressed.xpm
 
 nobase_dist_share_DATA += \
-	vtwm/looks/Squared-grey/lookrc \
-	vtwm/looks/Squared-grey/pixmaps/menu_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/shade_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/stick_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/lhalf_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/rhalf_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/min_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/max_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/close_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/stuck_pressed.xpm \
-	vtwm/looks/Squared-grey/pixmaps/unshade_pressed.xpm
+	vtwm/styles/Squared-grey/stylerc \
+	vtwm/styles/Squared-grey/pixmaps/menu_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/shade_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/stick_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/lhalf_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/rhalf_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/min_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/max_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/close_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/stuck_pressed.xpm \
+	vtwm/styles/Squared-grey/pixmaps/unshade_pressed.xpm
 
 install-data-local: install-data-twm install-data-ctwm install-data-vtwm
 
