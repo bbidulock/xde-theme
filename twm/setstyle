@@ -16,8 +16,7 @@ fi
 [ -n "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 [ -d "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
-TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$TWM_TYPE}
+TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 
 [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
 

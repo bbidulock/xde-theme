@@ -15,27 +15,8 @@ if $VTWM_TYPE -V >/dev/null 2>&1; then
     VTWM_VERSION=$($VTWM_TYPE -V|head -1|awk '{print$NF}' 2>/dev/null)
 fi
 export VTWM_VERSION=${2:-${VTWM_VERSION:-5.5.0}}
-
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
-export VTWM_CONFIG_HOME=${VTWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$VTWM_TYPE}
-
-if [ -z "$VTWM_CONFIG_SDIR" ]; then
-    export VTWM_CONFIG_SDIR="@sharedir@/$VTWM_TYPE"
-    XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
-    XDG_DATA_HOME=${XDG_DATA_HOME:-${HOME:-~}/.local/share}
-    dirs=$(echo "$XDG_DATA_HOME:$XDG_DATA_DIRS"|sed 's,:, ,g')
-    for d in $dirs; do
-	if [ -d "$d/$VTWM_TYPE" -a -x "$d/$VTWM_TYPE/config" ]; then
-	    export VTWM_CONFIG_SDIR="$d/$VTWM_TYPE"
-	    if  [ "$VTWM_CONFIG_SDIR" != "$here" ]; then
-		exec "$VTWM_CONFIG_SDIR/config"
-	    fi
-	    break
-	fi
-    done
-else
-    export VTWM_CONFIG_SDIR
-fi
+export VTWM_CONFIG_HOME=${VTWM_CONFIG_HOME:-${HOME:-~}/.$VTWM_TYPE}
+export VTWM_CONFIG_SDIR=${VTWM_CONFIG_SDIR:-@sharedir@/$VTWM_TYPE}
 
 getstyles() {
     setstyle="$here/setstyle"

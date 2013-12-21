@@ -12,27 +12,8 @@ if [ ! -x "`which $TWM_TYPE 2>/dev/null`" ]; then
 fi
 
 export TWM_VERSION=${2:-${TWM_VERSION:-1.0.8}}
-
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
-export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$TWM_TYPE}
-
-if [ -z "$TWM_CONFIG_SDIR" ]; then
-    export TWM_CONFIG_SDIR="@sharedir@/$TWM_TYPE"
-    XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
-    XDG_DATA_HOME=${XDG_DATA_HOME:-${HOME:-~}/.local/share}
-    dirs=$(echo "$XDG_DATA_HOME:$XDG_DATA_DIRS"|sed 's,:, ,g')
-    for d in $dirs; do
-	if [ -d "$d/$TWM_TYPE" -a -x "$d/$TWM_TYPE/config" ]; then
-	    export TWM_CONFIG_SDIR="$d/$TWM_TYPE"
-	    if  [ "$TWM_CONFIG_SDIR" != "$here" ]; then
-		exec "$TWM_CONFIG_SDIR/config"
-	    fi
-	    break
-	fi
-    done
-else
-    export TWM_CONFIG_SDIR
-fi
+export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
+export TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
 
 getstyles() {
     setstyle="$here/setstyle"

@@ -15,27 +15,8 @@ if $CTWM_TYPE -version >/dev/null 2>&1; then
     CTWM_VERSION=$($CTWM_TYPE -version 2>/dev/null)
 fi
 export CTWM_VERSION=${2:-${CTWM_VERSION:-3.8.1}}
-
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
-export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$CTWM_TYPE}
-
-if [ -z "$CTWM_CONFIG_SDIR" ]; then
-    export CTWM_CONFIG_SDIR="@sharedir@/$CTWM_TYPE"
-    XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
-    XDG_DATA_HOME=${XDG_DATA_HOME:-${HOME:-~}/.local/share}
-    dirs=$(echo "$XDG_DATA_HOME:$XDG_DATA_DIRS"|sed 's,:, ,g')
-    for d in $dirs; do
-	if [ -d "$d/$CTWM_TYPE" -a -x "$d/$CTWM_TYPE/$prog" ]; then
-	    export CTWM_CONFIG_SDIR="$d/$CTWM_TYPE"
-	    if  [ "$CTWM_CONFIG_SDIR" != "$here" ]; then
-		exec "$CTWM_CONFIG_SDIR/$prog" $@
-	    fi
-	    break
-	fi
-    done
-else
-    export CTWM_CONFIG_SDIR
-fi
+export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-${HOME:-~}/.$CTWM_TYPE}
+export CTWM_CONFIG_SDIR=${CTWM_CONFIG_SDIR:-@sharedir@/$CTWM_TYPE}
 
 getstyles() {
     setstyle="$here/setstyle"
@@ -81,7 +62,7 @@ setup() {
     [ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
     if [ -s "$CTWM_CONFIG_SDIR/version" ]; then
 	if [ ! -s "$CTWM_CONFIG_HOME/version" -o ! diff "$CTWM_CONFIG_SDIR/version" "$CTWM_CONFIG_HOME/version" ] ; then
-	    for file in apps defaults keys menu stylemenu version winmenu; do
+	    for file in apps buttons defaults keys menu stylemenu version winmenu; do
 		if [ ! -f "$CTWM_CONFIG_SDIR/$file" -o ! diff "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file" ] ; then
 		    [ ! -f "$CTWM_CONFIG_HOME/$file" ] || /bin/mv -f "$CTWM_CONFIG_HOME/$file" "$CTWM_CONFIG_HOME/$file.bak"
 		    /bin/cp -f "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file"

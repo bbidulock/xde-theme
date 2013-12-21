@@ -16,8 +16,7 @@ fi
 [ -n "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 [ -d "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
-VTWM_CONFIG_HOME=${VTWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$VTWM_TYPE}
+VTWM_CONFIG_HOME=${VTWM_CONFIG_HOME:-${HOME:-~}/.$VTWM_TYPE}
 
 [ -d "$VTWM_CONFIG_HOME" ] || mkdir -p "$VTWM_CONFIG_HOME"
 
