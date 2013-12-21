@@ -1,27 +1,33 @@
 #!/bin/bash
 
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
+here=`(cd "$here"; pwd)`
+prog=$(echo "$prog"|sed 's,^.*/,,')
+
 if [ $# -gt 1 ] ; then
-    TWM_TYPE="$1"
+    CTWM_TYPE=${1:-${CTWM_TYPE:-ctwm}}
     styledir="$2"
 else
-    TWM_TYPE=${TWM_TYPE:-ctwm}
+    CTWM_TYPE=${CTWM_TYPE:-ctwm}
     styledir="$1"
 fi
 
 [ -n "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 [ -d "$styledir" ] || { echo "ERROR" >&2; exit 1; }
 
-TWM_CONFIG_HOME="${TWM_CONFIG_HOME:-$HOME/.$TWM_TYPE}"
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
+CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$CTWM_TYPE}
 
-[ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
+[ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
 
-rm -f "$TWM_CONFIG_HOME/lookrc"
-ln -s "$styledir/lookrc" "$TWM_CONFIG_HOME/"
+rm -f "$CTWM_CONFIG_HOME/stylerc"
+ln -s "$styledir/stylerc" "$CTWM_CONFIG_HOME/"
 
-cat >"$TWM_CONFIG_HOME/look"<<TWMEOF
+cat >"$CTWM_CONFIG_HOME/style"<<TWMEOF
 divert(-1)
 define(\`TWM_STYLE_DIR',\`$styledir')
-sinclude(\`$styledir/lookrc')
+sinclude(\`$styledir/stylerc')
 dnl vim:ft=m4
 TWMEOF
 

@@ -1,25 +1,49 @@
 #!/bin/bash
 
-getstyles=$0
-here=$(echo $getstyles|sed 's,/[^/]*$,,')
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
 here=`(cd "$here"; pwd)`
-getstyles=$(echo "$getstyles"|sed 's,^.*/,,')
-getstyles="$here/$getstyles";
-setstyle="$here/setstyle"
+prog=$(echo "$prog"|sed 's,^.*/,,')
 
-TWM_TYPE=${1:-${TWM_TYPE:-ctwm}}
+export CTWM_TYPE=${1:-${CTWM_TYPE:-ctwm}}
+if [ ! -x "`which $CTWM_TYPE 2>/dev/null`" ]; then
+    echo "ERROR: cannot find usable ctwm program" >&2
+    exit 1;
+fi
 
-TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-$HOME/.$TWM_TYPE}
-TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
-USER=${LOGNAME:-$USER}
+if $CTWM_TYPE -version >/dev/null 2>&1; then
+    CTWM_VERSION=$($CTWM_TYPE -version 2>/dev/null)
+fi
+export CTWM_VERSION=${2:-${CTWM_VERSION:-3.8.1}}
 
-[ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
+export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-$XDG_CONFIG_HOME/$CTWM_TYPE}
 
-[ -x "$setstyle" ] || setstyle="$TWM_CONFIG_HOME/setstyle"
-[ -x "$setstyle" ] || setstyle="$TWM_CONFIG_SDIR/setstyle"
-[ -x "$setstyle" ] || { echo "ERROR: missing setstyle program" >&2; exit 1; }
+if [ -z "$CTWM_CONFIG_SDIR" ]; then
+    export CTWM_CONFIG_SDIR="@sharedir@/$CTWM_TYPE"
+    XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
+    XDG_DATA_HOME=${XDG_DATA_HOME:-${HOME:-~}/.local/share}
+    dirs=$(echo "$XDG_DATA_HOME:$XDG_DATA_DIRS"|sed 's,:, ,g')
+    for d in $dirs; do
+	if [ -d "$d/$CTWM_TYPE" -a -x "$d/$CTWM_TYPE/$prog" ]; then
+	    export CTWM_CONFIG_SDIR="$d/$CTWM_TYPE"
+	    if  [ "$CTWM_CONFIG_SDIR" != "$here" ]; then
+		exec "$CTWM_CONFIG_SDIR/$prog" $@
+	    fi
+	    break
+	fi
+    done
+else
+    export CTWM_CONFIG_SDIR
+fi
 
 getstyles() {
+    setstyle="$here/setstyle"
+    [ -x "$setstyle" ] || setstyle="$CTWM_CONFIG_HOME/setstyle"
+    [ -x "$setstyle" ] || setstyle="$CTWM_CONFIG_SDIR/setstyle"
+    [ -x "$setstyle" ] || { echo "ERROR: missing setstyle program" >&2; exit 1; }
+    setstyle=$(echo "$setstyle"|sed "s,$CTWM_CONFIG_HOME,TWM_CONFIG_HOME,;s,$CTWM_CONFIG_SDIR,TWM_CONFIG_SDIR,")
+
     echo "divert(FUNCTIONS)dnl"
     echo "divert(MENUS)dnl"
 
@@ -27,9 +51,9 @@ getstyles() {
     echo "{"
 
     echo -e "    \"System Styles\"\t\tf.title"
-    find "$TWM_CONFIG_SDIR/looks" -name lookrc 2>/dev/null | sort | while read f
+    find "$CTWM_CONFIG_SDIR/styles" -name stylerc 2>/dev/null | sort | while read f
     do
-	styledir=$(echo "$f"|sed 's,/lookrc$,,')
+	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$CTWM_CONFIG_SDIR"',TWM_CONFIG_SDIR,')
 	style=$(echo "$styledir"|sed 's,^.*/,,')
 	echo "divert(FUNCTIONS)dnl"
 	echo "Function \"set-system-style-$style\" { f.exec \"$setstyle TWM_TYPE $styledir\" f.function \"reconfig\" }"
@@ -38,9 +62,9 @@ getstyles() {
     done
 
     echo -e "    \"User Styles\"\t\tf.title"
-    find "$TWM_CONFIG_HOME/looks" -name lookrc 2>/dev/null | sort | while read f
+    find "$CTWM_CONFIG_HOME/styles" -name stylerc 2>/dev/null | sort | while read f
     do
-	styledir=$(echo "$f"|sed 's,/lookrc$,,')
+	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$CTWM_CONFIG_HOME"',TWM_CONFIG_HOME,')
 	style=$(echo "$styledir"|sed 's,^.*/,,')
 	echo "divert(FUNCTIONS)dnl"
 	echo "Function \"set-user-style-$style\" { f.exec \"$setstyle TWM_TYPE $styledir\" f.function \"reconfig\" }"
@@ -53,8 +77,50 @@ getstyles() {
     echo "dnl vim: ft=m4"
 }
 
-getstyles >"$TWM_CONFIG_HOME/stylemenu"
+setup() {
+    [ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
+    if [ -s "$CTWM_CONFIG_SDIR/version" ]; then
+	if [ ! -s "$CTWM_CONFIG_HOME/version" -o ! diff "$CTWM_CONFIG_SDIR/version" "$CTWM_CONFIG_HOME/version" ] ; then
+	    for file in apps defaults keys menu stylemenu version winmenu; do
+		if [ ! -f "$CTWM_CONFIG_SDIR/$file" -o ! diff "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file" ] ; then
+		    [ ! -f "$CTWM_CONFIG_HOME/$file" ] || /bin/mv -f "$CTWM_CONFIG_HOME/$file" "$CTWM_CONFIG_HOME/$file.bak"
+		    /bin/cp -f "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file"
+		fi
+	    done
+	fi
+    fi
+}
 
-exit 0
+config() {
+    rcfile="$CTWM_CONFIG_HOME/rc.m4"
+    [ -s "$rcfile" ] || rcfile="$CTWM_CONFIG_SDIR/rc.m4"
+    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+
+    USER=${LOGNAME:-$USER}
+    HOME=${HOME:-~}
+
+    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
+    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+
+    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
+    case "$CLASS" in
+    (*Color)    COLOR='Yes' ;;
+    (*)	    COLOR='No' ;;
+    esac
+
+    m4 -DUSER="$USER" -DHOME="$HOME" \
+       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
+       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
+       -DTWM_TYPE="$CTWM_TYPE" -DTWM_VERSION="$CTWM_VERSION" \
+       "$rcfile"
+}
+
+setup
+
+getstyles >"$CTWM_CONFIG_HOME/stylemenu"
+
+config >"$CTWM_CONFIG_HOME/rc"
+
+exec $CTWM_TYPE -f "$CTWM_CONFIG_HOME/rc"
 
 # vim: sw=4

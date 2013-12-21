@@ -27,6 +27,5 @@ AC_CONFIG_FILES([Makefile
 		 openbox/Makefile
 		 gtk/Makefile
 		 ctwm/config twm/config vtwm/config
-		 ctwm/getstyles twm/getstyles vtwm/getstyles
 		 ctwm/rc.m4 twm/rc.m4 vtwm/rc.m4])
 AC_OUTPUT

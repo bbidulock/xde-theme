@@ -4,6 +4,6 @@ define(`COLOR2',    `e3e5eb')
 define(`COLOR3',    `484848')
 define(`COLOR4',    `e3e5eb')
 define(`COLOR5',    `535353')
-sinclude(TWM_STYLE_DIR`/../Squared/_lookrc')
+sinclude(TWM_STYLE_DIR`/../Squared/_stylerc')
 divert(-1)
 dnl vim: ft=m4

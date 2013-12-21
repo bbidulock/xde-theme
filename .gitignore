@@ -12,3 +12,4 @@ configure
 scripts/
 _build/
 _install/
+.*.sw[op]

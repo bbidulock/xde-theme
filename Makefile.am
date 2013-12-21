@@ -585,7 +585,6 @@ nobase_dist_share_SCRIPTS += \
 
 nobase_nodist_share_SCRIPTS += \
 	twm/config \
-	twm/getstyles \
 	twm/rc.m4
 
 nobase_dist_share_DATA += \
@@ -663,7 +662,6 @@ nobase_dist_share_SCRIPTS += \
 
 nobase_nodist_share_SCRIPTS += \
 	ctwm/config \
-	ctwm/getstyles \
 	ctwm/rc.m4
 
 nobase_dist_share_DATA += \
@@ -741,7 +739,6 @@ nobase_dist_share_SCRIPTS += \
 
 nobase_nodist_share_SCRIPTS += \
 	vtwm/config \
-	vtwm/getstyles \
 	vtwm/rc.m4
 
 nobase_dist_share_DATA += \

@@ -3,31 +3,27 @@ divert(MENUS)dnl
 Menu "twmstyles" (twm_deffore:twm_defback)
 {
     "System Styles"		f.title
+divert(FUNCTIONS)dnl
+Function "set-system-style-Classic" { f.exec "TWM_CONFIG_SDIR/setstyle TWM_TYPE TWM_CONFIG_SDIR/styles/Classic" f.function "reconfig" }
+divert(MENUS)dnl
+    "Classic"		f.function "set-system-style-Classic"
+divert(FUNCTIONS)dnl
+Function "set-system-style-Squared-blue" { f.exec "TWM_CONFIG_SDIR/setstyle TWM_TYPE TWM_CONFIG_SDIR/styles/Squared-blue" f.function "reconfig" }
+divert(MENUS)dnl
+    "Squared-blue"		f.function "set-system-style-Squared-blue"
+divert(FUNCTIONS)dnl
+Function "set-system-style-Squared-cadet" { f.exec "TWM_CONFIG_SDIR/setstyle TWM_TYPE TWM_CONFIG_SDIR/styles/Squared-cadet" f.function "reconfig" }
+divert(MENUS)dnl
+    "Squared-cadet"		f.function "set-system-style-Squared-cadet"
+divert(FUNCTIONS)dnl
+Function "set-system-style-Squared-green" { f.exec "TWM_CONFIG_SDIR/setstyle TWM_TYPE TWM_CONFIG_SDIR/styles/Squared-green" f.function "reconfig" }
+divert(MENUS)dnl
+    "Squared-green"		f.function "set-system-style-Squared-green"
+divert(FUNCTIONS)dnl
+Function "set-system-style-Squared-grey" { f.exec "TWM_CONFIG_SDIR/setstyle TWM_TYPE TWM_CONFIG_SDIR/styles/Squared-grey" f.function "reconfig" }
+divert(MENUS)dnl
+    "Squared-grey"		f.function "set-system-style-Squared-grey"
     "User Styles"		f.title
-divert(FUNCTIONS)dnl
-Function "set-user-style-Airforce" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Airforce" f.function "reconfig" }
-divert(MENUS)dnl
-    "Airforce"		f.function "set-user-style-Airforce"
-divert(FUNCTIONS)dnl
-Function "set-user-style-Classic" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Classic" f.function "reconfig" }
-divert(MENUS)dnl
-    "Classic"		f.function "set-user-style-Classic"
-divert(FUNCTIONS)dnl
-Function "set-user-style-Squared-blue" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Squared-blue" f.function "reconfig" }
-divert(MENUS)dnl
-    "Squared-blue"		f.function "set-user-style-Squared-blue"
-divert(FUNCTIONS)dnl
-Function "set-user-style-Squared-cadet" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Squared-cadet" f.function "reconfig" }
-divert(MENUS)dnl
-    "Squared-cadet"		f.function "set-user-style-Squared-cadet"
-divert(FUNCTIONS)dnl
-Function "set-user-style-Squared-green" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Squared-green" f.function "reconfig" }
-divert(MENUS)dnl
-    "Squared-green"		f.function "set-user-style-Squared-green"
-divert(FUNCTIONS)dnl
-Function "set-user-style-Squared-grey" { f.exec "/home/brian/.ctwm/setstyle TWM_TYPE /home/brian/.ctwm/looks/Squared-grey" f.function "reconfig" }
-divert(MENUS)dnl
-    "Squared-grey"		f.function "set-user-style-Squared-grey"
 }
 divert(-1)
 dnl vim: ft=m4

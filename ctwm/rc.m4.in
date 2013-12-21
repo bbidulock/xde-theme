@@ -13,14 +13,12 @@ define(`MENUS',`9')
 ifdef(`TWM_TYPE',`',`define(`TWM_TYPE',`ctwm')')
 ifdef(`TWM_VERSION',`',`define(`TWM_VERSION',`3.8.1')')
 ifelse(TWM_TYPE, `twm', `', `define(`GRAYSCALE',`-1')')
-define(`TWM_CONFIG_HOME',esyscmd(`echo -n "${TWM_CONFIG_HOME:-$HOME/.'TWM_TYPE`}"'))
+define(`TWM_CONFIG_HOME',esyscmd(`echo -n "${TWM_CONFIG_HOME:-${XDG_CONFIG_HOME:-${HOME:-~}/.config}/'TWM_TYPE`}"'))
 define(`TWM_CONFIG_SDIR',esyscmd(`echo -n "${TWM_CONFIG_SDIR:-@sharedir@/'TWM_TYPE`}"'))
 ifdef(`HOME',`',`define(`HOME',esyscmd(`echo -n "${HOME:-~}"'))')
 ifdef(`USER',`',`define(`USER',esyscmd(`echo -n "${LOGNAME:-${HOME:-~}}"'))')
 syscmd(`test -x "'TWM_CONFIG_SDIR`/getstyles"')
 ifelse(sysval, 0, `syscmd(`"'TWM_CONFIG_SDIR`/getstyles" 'TWM_TYPE` 'TWM_VERSION`>"'TWM_CONFIG_HOME`/stylemenu"')')
-syscmd(`test -x "'TWM_CONFIG_HOME`/getstyles"')
-ifelse(sysval, 0, `syscmd(`"'TWM_CONFIG_HOME`/getstyles" 'TWM_TYPE` 'TWM_VERSION`>"'TWM_CONFIG_HOME`/stylemenu"')')
 divert(PROLOGUE)dnl
 ##
 ## ctwm configuration file
@@ -60,8 +58,8 @@ divert(MENUS)
 #-----------#
 divert(-1)
 sinclude(TWM_CONFIG_HOME`/defaults'))dnl
-define(`TWM_STYLE_DIR',esyscmd(`readlink -n -f "'TWM_CONFIG_HOME`/lookrc" 2>/dev/null|sed "s,/[^/]*$,,"'))
-sinclude(TWM_CONFIG_HOME`/lookrc')dnl
+define(`TWM_STYLE_DIR',esyscmd(`readlink -n -f "'TWM_CONFIG_HOME`/stylerc" 2>/dev/null|sed "s,/[^/]*$,,"'))
+sinclude(TWM_CONFIG_HOME`/stylerc')dnl
 divert(COLOR)dnl
 }
 divert(GRAYSCALE)dnl

@@ -1,6 +1,32 @@
 #!/bin/bash
 
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
+here=`(cd "$here"; pwd)`
+prog=$(echo "$prog"|sed 's,^.*/,,')
+
 style="$1"
+
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:-~}/.config}
+export JWM_CONFIG_HOME=${JWM_CONFIG_HOME:-$XDG_CONFIG_HOME/jwm}
+
+if [ -z "$JWM_CONFIG_SDIR" ]; then
+    export JWM_CONFIG_SDIR="@sharedir@/jwm"
+    XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
+    XDG_DATA_HOME=${XDG_DATA_HOME:-${HOME:-~}/.local/share}
+    dirs=$(echo "$XDG_DATA_HOME:$XDG_DATA_DIRS"|sed 's,:, ,g')
+    for d in $dirs; do
+	if [ -d "$d/jwm" -a -x "$d/jwm/$prog" ]; then
+	    export JWM_CONFIG_SDIR="$d/jwm"
+	    if  [ "$JWM_CONFIG_SDIR" != "$here" ]; then
+		exec "$JWM_CONFIG_SDIR/$prog" $@
+	    fi
+	    break
+	fi
+    done
+else
+    export JWM_CONFIG_SDIR
+fi
 
 if test -n "$style" -a -f "$style"; then
 	cat >"${JWM_CONFIG_DIR:-$HOME/.jwm}/style"<<EOF
