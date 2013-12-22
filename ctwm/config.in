@@ -7,7 +7,7 @@ prog=$(echo "$prog"|sed 's,^.*/,,')
 
 export CTWM_TYPE=${1:-${CTWM_TYPE:-ctwm}}
 if [ ! -x "`which $CTWM_TYPE 2>/dev/null`" ]; then
-    echo "ERROR: cannot find usable ctwm program" >&2
+    echo "ERROR: cannot find usable $CTWM_TYPE program" >&2
     exit 1;
 fi
 if [ -z "$CTWM_VERSION" ]; then
@@ -20,31 +20,28 @@ fi
 export CTWM_VERSION=${2:-$CTWM_VERSION}
 export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-${HOME:-~}/.$CTWM_TYPE}
 export CTWM_CONFIG_SDIR=${CTWM_CONFIG_SDIR:-@sharedir@/$CTWM_TYPE}
+export CTWM_RCFILE="${3:-${CTWM_RCFILE:-$CTWM_CONFIG_HOME/rc}}"
 
-config() {
-    rcfile="$CTWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$CTWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+m4file="$CTWM_CONFIG_HOME/rc.m4"
+[ -s "$m4file" ] || m4file="$CTWM_CONFIG_SDIR/rc.m4"
+[ -s "$m4file" ] || { echo "ERROR: missing file $m4file" >&2; exit 1; }
 
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
+USER=${LOGNAME:-$USER}
+HOME=${HOME:-~}
 
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
+HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
 
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
+CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
+case "$CLASS" in
+(*Color)    COLOR='Yes' ;;
+(*)	    COLOR='No' ;;
+esac
 
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$CTWM_TYPE" -DTWM_VERSION="$CTWM_VERSION" \
-       "$rcfile"
-}
-
-config >"$CTWM_CONFIG_HOME/rc"
+m4 -DUSER="$USER" -DHOME="$HOME" \
+   -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
+   -DCLASS="$CLASS" -DCOLOR="$COLOR" \
+   -DTWM_TYPE="$CTWM_TYPE" -DTWM_VERSION="$CTWM_VERSION" \
+   "$m4file" >"$CTWM_CONFIG_HOME/rc"
 
 # vim: sw=4

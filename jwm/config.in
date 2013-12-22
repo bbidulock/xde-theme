@@ -1,0 +1,27 @@
+#!/bin/bash
+
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
+here=`(cd "$here"; pwd)`
+prog=$(echo "$prog"|sed 's,^.*/,,')
+
+export JWM_TYPE=${1:-${JWM_TYPE:-jwm}}
+if [ ! -x "`which $JWM_TYPE 2>/dev/null`" ]; then
+    echo "ERROR: cannot find usable $JWM_TYPE program" >&2
+    exit 1;
+fi
+if [ -z "$JWM_VERSION" ]; then
+    if $JWM_TYPE -v >/dev/null 2>&1; then
+	JWM_VERSION=$($JWM_TYPE -v|head -1|ask '{print$2}'|sed 's,v,,' 2>/dev/null)
+    else
+	JWM_VERSION='2.2.0'
+    fi
+fi
+export JWM_VERSION=${2:-$JWM_VERSION}
+export JWM_CONFIG_HOME=${JWM_CONFIG_HOME:-${HOME:-~}/.$JWM_TYPE}
+export JWM_CONFIG_SDIR=${JWM_CONFIG_SDIR:-@shared@/$JWM_TYPE}
+export JWM_RCFILE="${3:-${JWM_RCFILE:-$JWM_CONFIG_HOME/rc}}"
+
+[ -d "$JWM_CONFIG_HOME" ] || mkdir -p "$JWM_CONFIG_HOME"
+
+# vim: sw=4

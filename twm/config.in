@@ -16,31 +16,28 @@ fi
 export TWM_VERSION=${2:-$TWM_VERSION}
 export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 export TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
+export TWM_RCFILE="${3:-${TWM_RCFILE:-$TWM_CONFIG_HOME/rc}}"
 
-config() {
-    rcfile="$TWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$TWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+m4file="$TWM_CONFIG_HOME/rc.m4"
+[ -s "$m4file" ] || m4file="$TWM_CONFIG_SDIR/rc.m4"
+[ -s "$m4file" ] || { echo "ERROR: missing file $m4file" >&2; exit 1; }
 
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
+USER=${LOGNAME:-$USER}
+HOME=${HOME:-~}
 
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
+HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
 
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
+CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
+case "$CLASS" in
+(*Color)    COLOR='Yes' ;;
+(*)	    COLOR='No' ;;
+esac
 
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$TWM_TYPE" -DTWM_VERSION="$TWM_VERSION" \
-       "$rcfile"
-}
-
-config >"$TWM_CONFIG_HOME/rc"
+m4 -DUSER="$USER" -DHOME="$HOME" \
+   -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
+   -DCLASS="$CLASS" -DCOLOR="$COLOR" \
+   -DTWM_TYPE="$TWM_TYPE" -DTWM_VERSION="$TWM_VERSION" \
+   "$m4file" >"$TWM_CONFIG_HOME/rc"
 
 # vim: sw=4

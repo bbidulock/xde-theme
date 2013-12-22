@@ -277,31 +277,7 @@
 	      <Close icon="/usr/share/icons/gnome/16x16/actions/window-close.png" label="Close" />
 	   </Menu>
 	   <Desktops icon="/usr/share/icons/Mist/16x16/apps/preferences-desktop-display.png" label="Desktops"/>
-	   <Menu icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Themes">
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Airforce">/usr/share/jwm/setstyle /usr/share/jwm/themes/Airforce/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Archlinux">/usr/share/jwm/setstyle /usr/share/jwm/themes/Archlinux/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Atc">/usr/share/jwm/setstyle /usr/share/jwm/themes/Atc/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Aviation">/usr/share/jwm/setstyle /usr/share/jwm/themes/Aviation/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Blackbirds">/usr/share/jwm/setstyle /usr/share/jwm/themes/Blackbirds/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Circuits">/usr/share/jwm/setstyle /usr/share/jwm/themes/Circuits/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Dishes">/usr/share/jwm/setstyle /usr/share/jwm/themes/Dishes/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Pedestals">/usr/share/jwm/setstyle /usr/share/jwm/themes/Pedestals/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Penguins">/usr/share/jwm/setstyle /usr/share/jwm/themes/Penguins/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Radar">/usr/share/jwm/setstyle /usr/share/jwm/themes/Radar/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Telcom">/usr/share/jwm/setstyle /usr/share/jwm/themes/Telcom/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Towers">/usr/share/jwm/setstyle /usr/share/jwm/themes/Towers/style</Program>
-	   </Menu>
-	   <Menu icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Styles">
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-blue">/usr/share/jwm/setstyle /usr/share/jwm/styles/Squared-blue/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-cadet">/usr/share/jwm/setstyle /usr/share/jwm/styles/Squared-cadet/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-green">/usr/share/jwm/setstyle /usr/share/jwm/styles/Squared-green/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-grey">/usr/share/jwm/setstyle /usr/share/jwm/styles/Squared-grey/style</Program>
-	      <Separator/>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-blue">/usr/share/jwm/setstyle /home/brian/.jwm/styles/Squared-blue/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-cadet">/usr/share/jwm/setstyle /home/brian/.jwm/styles/Squared-cadet/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-green">/usr/share/jwm/setstyle /home/brian/.jwm/styles/Squared-green/style</Program>
-	      <Program icon="/usr/share/icons/gnome/16x16/apps/style.png" label="Squared-grey">/usr/share/jwm/setstyle /home/brian/.jwm/styles/Squared-grey/style</Program>
-	   </Menu>
+	   <Include>exec:/usr/share/jwm/getstyles</Include>
 	   <Program icon="/usr/share/icons/gnome/16x16/actions/gtk-refresh.png" label="Regenerate Menu">xde-menugen -o /home/brian/.jwm/menu.new</Program>
    </Menu>
    <Separator/>

@@ -7,7 +7,7 @@ prog=$(echo "$prog"|sed 's,^.*/,,')
 
 export JWM_TYPE=${1:-${JWM_TYPE:-jwm}}
 if [ ! -x "`which $JWM_TYPE >/dev/null`" ]; then
-    echo "ERROR: cannot find usable jwm program" >&2
+    echo "ERROR: cannot find usable $JWM_TYPE program" >&2
     exit 1;
 fi
 if [ -z "$JWM_VERSION" ]; then
@@ -24,7 +24,7 @@ export JWM_CONFIG_SDIR=${JWM_CONFIG_SDIR:-@shared@/$JWM_TYPE}
 [ -d "$JWM_CONFIG_HOME" ] || mkdir -p "$JWM_CONFIG_HOME"
 if [ -s "$JWM_CONFIG_SDIR/version" ]; then
     if [ ! -s "$JWM_CONFIG_HOME/version" -o ! diff "$JWM_CONFIG_SDIR/version" "$JWM_CONFIG_HOME/version" ] ; then
-	for file in config desktop groups keys menu rc root tray; do
+	for file in defaults desktop groups keys menu rc root tray; do
 	    if [ ! -f "$JWM_CONFIG_SDIR/$file" -o ! diff "$JWM_CONFIG_SDIR/$file" "$JWM_CONFIG_HOME/$file" ] ; then
 		[ ! -f "$JWM_CONFIG_HOME/$file" ] || /bin/mv -f "$JWM_CONFIG_HOME/$file" "$JWM_CONFIG_HOME/$file.bak"
 		cat "$JWM_CONFIG_SDIR/$file" \
@@ -32,6 +32,44 @@ if [ -s "$JWM_CONFIG_SDIR/version" ]; then
 		    >"$JWM_CONFIG_HOME/$file"
 	    fi
 	done
+	cat>"$JWM_CONFIG_HOME/paths"<<-JWMEOF
+	    <?xml version="1.0"?>
+	    <JWM>
+	       <IconPath>$JWM_CONFIG_HOME/icons</IconPath>
+	       <IconPath>$JWM_CONFIG_HOME/styles</IconPath>
+	       <IconPath>$JWM_CONFIG_HOME/themes</IconPath>
+	       <IconPath>$JWM_CONFIG_SDIR/icons</IconPath>
+	       <IconPath>$JWM_CONFIG_SDIR/styles</IconPath>
+	       <IconPath>$JWM_CONFIG_SDIR/themes</IconPath>
+	       <IconPath>/usr/share/icons/Mist/16x16/apps</IconPath>
+	       <IconPath>/usr/share/icons/hicolor/16x16/apps</IconPath>
+	       <IconPath>/usr/share/icons/gnome/16x16/apps</IconPath>
+	       <IconPath>/usr/share/pixmaps</IconPath>
+	       <IconPath>$HOME/.icons</IconPath>
+	    </JWM>
+JWMEOF
+	cat>"$JWM_CONFIG_HOME/rc"<<-JWMEOF
+	    <?xml version="1.0"?>
+	    <JWM>
+	       <Include>$JWM_CONFIG_HOME/root</Include>
+	       <Include>$JWM_CONFIG_HOME/groups</Include>
+	       <Include>$JWM_CONFIG_HOME/tray</Include>
+	       <Include>$JWM_CONFIG_HOME/style</Include>
+	       <Include>$JWM_CONFIG_HOME/desktop</Include>
+	       <Include>$JWM_CONFIG_HOME/defaults</Include>
+	       <Include>$JWM_CONFIG_HOME/paths</Include>
+	       <Include>$JWM_CONFIG_HOME/keys</Include>
+	    </JWM>
+JWMEOF
+	cat>"$JWM_CONFIG_HOME/root"<<-JWMEOF
+	    <?xml version="1.0"?>
+	    <JWM>
+	       <RootMenu height="16" onroot="13">
+	          <Include>$JWM_CONFIG_HOME/menu</Include>
+	       </RootMenu>
+	    </JWM>
+JWMEOF
+
     fi
 fi
 
