@@ -21,48 +21,43 @@ export CTWM_VERSION=${2:-$CTWM_VERSION}
 export CTWM_CONFIG_HOME=${CTWM_CONFIG_HOME:-${HOME:-~}/.$CTWM_TYPE}
 export CTWM_CONFIG_SDIR=${CTWM_CONFIG_SDIR:-@sharedir@/$CTWM_TYPE}
 
-setup() {
-    [ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
-    if [ -s "$CTWM_CONFIG_SDIR/version" ]; then
-	if [ ! -s "$CTWM_CONFIG_HOME/version" -o ! diff "$CTWM_CONFIG_SDIR/version" "$CTWM_CONFIG_HOME/version" ] ; then
-	    for file in apps defaults keys menu stylemenu version winmenu; do
-		if [ ! -f "$CTWM_CONFIG_SDIR/$file" -o ! diff "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file" ] ; then
-		    [ ! -f "$CTWM_CONFIG_HOME/$file" ] || /bin/mv -f "$CTWM_CONFIG_HOME/$file" "$CTWM_CONFIG_HOME/$file.bak"
-		    /bin/cp -f "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file"
-		fi
-	    done
-	fi
+[ -d "$CTWM_CONFIG_HOME" ] || mkdir -p "$CTWM_CONFIG_HOME"
+if [ -s "$CTWM_CONFIG_SDIR/version" ]; then
+    if [ ! -s "$CTWM_CONFIG_HOME/version" -o ! diff "$CTWM_CONFIG_SDIR/version" "$CTWM_CONFIG_HOME/version" ] ; then
+	for file in apps defaults keys menu stylemenu version winmenu; do
+	    if [ ! -f "$CTWM_CONFIG_SDIR/$file" -o ! diff "$CTWM_CONFIG_SDIR/$file" "$CTWM_CONFIG_HOME/$file" ] ; then
+		[ ! -f "$CTWM_CONFIG_HOME/$file" ] || /bin/mv -f "$CTWM_CONFIG_HOME/$file" "$CTWM_CONFIG_HOME/$file.bak"
+		cat "$CTWM_CONFIG_SDIR/$file" \
+		    | sed -r 's,\$HOME\>,'"${HOME:-~}"',g' \
+		    >"$CTWM_CONFIG_HOME/$file"
+	    fi
+	done
     fi
-}
+fi
 
-config() {
-    rcfile="$CTWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$CTWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+if [ -x "`which xde-menugen 2>/dev/null`" ]; then
+    xde-menugen --format $CTWM_TYPE >"$CTWM_CONFIG_HOME/menu"
+fi
 
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
+config="$here/config"
+[ -x "$config" ] || config="$CTWM_CONFIG_HOME/config"
+[ -x "$config" ] || config="$CTWM_CONFIG_SDIR/config"
+[ -x "$config" ] && $config
 
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+getstyles="$here/getstyles"
+[ -x "$getstyles" ] || getstyles="$CTWM_CONFIG_HOME/getstyles"
+[ -x "$getstyles" ] || getstyles="$CTWM_CONFIG_SDIR/getstyles"
+[ -x "$getstyles" ] && $getstyles
 
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
+export CTWM_RCFILE="${HOME:-~}/.${CTWM_TYPE}rc"
 
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$CTWM_TYPE" -DTWM_VERSION="$CTWM_VERSION" \
-       "$rcfile"
-}
+if [ -L "$CTWM_RCFILE" ]; then
+    /bin/rm -f "$CTWM_RCFILE"
+elif [ -s  "$CTWM_RCFILE" ]; then
+    /bin/mv -f "${CTWM_RCFILE}" "${CTWM_RCFILE}.bak"
+fi
+/bin/ln -sf "$CTWM_CONFIG_HOME/rc.m4" "$CTWM_RCFILE"
 
-setup
-
-config >"$CTWM_CONFIG_HOME/rc"
-
-exec $CTWM_TYPE -f "$CTWM_CONFIG_HOME/rc.m4"
+exec $CTWM_TYPE
 
 # vim: sw=4

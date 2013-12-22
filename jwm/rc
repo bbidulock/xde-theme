@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<JWM>
+   <Include>/home/brian/.jwm/root</Include>
+   <Include>/home/brian/.jwm/groups</Include>
+   <Include>/home/brian/.jwm/tray</Include>
+   <Include>/home/brian/.jwm/style</Include>
+   <Include>/home/brian/.jwm/desktop</Include>
+   <Include>/home/brian/.jwm/defaults</Include>
+   <Include>/home/brian/.jwm/paths</Include>
+   <Include>/home/brian/.jwm/keys</Include>
+</JWM>

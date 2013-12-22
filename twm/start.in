@@ -17,47 +17,40 @@ export TWM_VERSION=${2:-$TWM_VERSION}
 export TWM_CONFIG_HOME=${TWM_CONFIG_HOME:-${HOME:-~}/.$TWM_TYPE}
 export TWM_CONFIG_SDIR=${TWM_CONFIG_SDIR:-@sharedir@/$TWM_TYPE}
 
-setup() {
-    [ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
-    if [ -s "$TWM_CONFIG_SDIR/version" ]; then
-	if [ ! -s "$TWM_CONFIG_HOME/version" -o ! diff "$TWM_CONFIG_SDIR/version" "$TWM_CONFIG_HOME/version" ] ; then
-	    for file in apps defaults keys menu stylemenu version winmenu; do
-		if [ ! -f "$TWM_CONFIG_SDIR/$file" -o ! diff "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file" ] ; then
-		    [ ! -f "$TWM_CONFIG_HOME/$file" ] || /bin/mv -f "$TWM_CONFIG_HOME/$file" "$TWM_CONFIG_HOME/$file.bak"
-		    /bin/cp -f "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file"
-		fi
-	    done
-	fi
+[ -d "$TWM_CONFIG_HOME" ] || mkdir -p "$TWM_CONFIG_HOME"
+if [ -s "$TWM_CONFIG_SDIR/version" ]; then
+    if [ ! -s "$TWM_CONFIG_HOME/version" -o ! diff "$TWM_CONFIG_SDIR/version" "$TWM_CONFIG_HOME/version" ] ; then
+	for file in apps defaults keys menu stylemenu version winmenu; do
+	    if [ ! -f "$TWM_CONFIG_SDIR/$file" -o ! diff "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file" ] ; then
+		[ ! -f "$TWM_CONFIG_HOME/$file" ] || /bin/mv -f "$TWM_CONFIG_HOME/$file" "$TWM_CONFIG_HOME/$file.bak"
+		/bin/cp -f "$TWM_CONFIG_SDIR/$file" "$TWM_CONFIG_HOME/$file"
+	    fi
+	done
     fi
-}
+fi
 
-config() {
-    rcfile="$TWM_CONFIG_HOME/rc.m4"
-    [ -s "$rcfile" ] || rcfile="$TWM_CONFIG_SDIR/rc.m4"
-    [ -s "$rcfile" ] || { echo "ERROR: missing file $rcfile" >&2; exit 1; }
+if [ -x "`which xde-menugen 2>/dev/null`" ]; then
+    xde-menugen --format $TWM_TYPE >"$TWM_CONFIG_HOME/menu"
+fi
 
-    USER=${LOGNAME:-$USER}
-    HOME=${HOME:-~}
+config="$here/config"
+[ -x "$config" ] || config="$TWM_CONFIG_HOME/config"
+[ -x "$config" ] || config="$TWM_CONFIG_SDIR/config"
+[ -x "$config" ] && $config
 
-    WIDTH=$(xwininfo -root|grep 'Width:'|awk '{print$2}')
-    HEIGHT=$(xwininfo -root|grep 'Height:'|awk '{print$2}')
+getstyles="$here/getstyles"
+[ -x "$getstyles" ] || getstyles="$TWM_CONFIG_HOME/getstyles"
+[ -x "$getstyles" ] || getstyles="$TWM_CONFIG_SDIR/getstyles"
+[ -x "$getstyles" ] && $getstyles
 
-    CLASS=$(xwininfo -root|grep 'Visual Class:'|awk '{print$3}')
-    case "$CLASS" in
-    (*Color)    COLOR='Yes' ;;
-    (*)	    COLOR='No' ;;
-    esac
+export TWM_RCFILE="${HOME:-~}/.${TWM_TYPE}rc"
 
-    m4 -DUSER="$USER" -DHOME="$HOME" \
-       -DWIDTH="$WIDTH" -DHEIGHT="$HEIGHT" \
-       -DCLASS="$CLASS" -DCOLOR="$COLOR" \
-       -DTWM_TYPE="$TWM_TYPE" -DTWM_VERSION="$TWM_VERSION" \
-       "$rcfile"
-}
-
-setup
-
-config >"$TWM_CONFIG_HOME/rc"
+if [ -L "$TWM_RCFILE" ]; then
+    /bin/rm -f "$TWM_RCFILE"
+elif [ -s  "$TWM_RCFILE" ]; then
+    /bin/mv -f "${TWM_RCFILE}" "${TWM_RCFILE}.bak"
+fi
+/bin/ln -sf "$TWM_CONFIG_HOME/rc" "$TWM_RCFILE"
 
 exec $TWM_TYPE -f "$TWM_CONFIG_HOME/rc"
 

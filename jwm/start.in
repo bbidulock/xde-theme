@@ -1,0 +1,63 @@
+#!/bin/bash
+
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
+here=`(cd "$here"; pwd)`
+prog=$(echo "$prog"|sed 's,^.*/,,')
+
+export JWM_TYPE=${1:-${JWM_TYPE:-jwm}}
+if [ ! -x "`which $JWM_TYPE >/dev/null`" ]; then
+    echo "ERROR: cannot find usable jwm program" >&2
+    exit 1;
+fi
+if [ -z "$JWM_VERSION" ]; then
+    if $JWM_TYPE -v >/dev/null 2>&1; then
+	JWM_VERSION=$($JWM_TYPE -v|head -1|ask '{print$2}'|sed 's,v,,' 2>/dev/null)
+    else
+	JWM_VERSION='2.2.0'
+    fi
+fi
+export JWM_VERSION=${2:-$JWM_VERSION}
+export JWM_CONFIG_HOME=${JWM_CONFIG_HOME:-${HOME:-~}/.$JWM_TYPE}
+export JWM_CONFIG_SDIR=${JWM_CONFIG_SDIR:-@shared@/$JWM_TYPE}
+
+[ -d "$JWM_CONFIG_HOME" ] || mkdir -p "$JWM_CONFIG_HOME"
+if [ -s "$JWM_CONFIG_SDIR/version" ]; then
+    if [ ! -s "$JWM_CONFIG_HOME/version" -o ! diff "$JWM_CONFIG_SDIR/version" "$JWM_CONFIG_HOME/version" ] ; then
+	for file in config desktop groups keys menu rc root tray; do
+	    if [ ! -f "$JWM_CONFIG_SDIR/$file" -o ! diff "$JWM_CONFIG_SDIR/$file" "$JWM_CONFIG_HOME/$file" ] ; then
+		[ ! -f "$JWM_CONFIG_HOME/$file" ] || /bin/mv -f "$JWM_CONFIG_HOME/$file" "$JWM_CONFIG_HOME/$file.bak"
+		cat "$JWM_CONFIG_SDIR/$file" \
+		    | sed -r 's,\$HOME\>,'"${HOME:-~}"',g' \
+		    >"$JWM_CONFIG_HOME/$file"
+	    fi
+	done
+    fi
+fi
+
+if [ -x "`which xde-menugen 2>/dev/null`" ]; then
+    xde-menugen --format $JWM_TYPE >"$JWM_CONFIG_HOME/menu"
+fi
+
+config="$here/config"
+[ -x "$config" ] || config="$JWM_CONFIG_HOME/config"
+[ -x "$config" ] || config="$JWM_CONFIG_SDIR/config"
+[ -x "$config" ] && $config
+
+getstyles="$here/getstyles"
+[ -x "$getstyles" ] || getstyles="$JWM_CONFIG_HOME/getstyles"
+[ -x "$getstyles" ] || getstyles="$JWM_CONFIG_SDIR/getstyles"
+[ -x "$getstyles" ] && $getstyles
+
+export JWM_RCFILE="${HOME:-~}/.${JWM_TYPE}rc"
+
+if [ -L "$JWM_RCFILE" ]; then
+    /bin/rm -f "$JWM_RCFILE"
+elif [ -s  "$JWM_RCFILE" ]; then
+    /bin/mv -f "${JWM_RCFILE}" "${JWM_RCFILE}.bak"
+fi
+/bin/ln -sf "$JWM_CONFIG_HOME/rc" "$JWM_RCFILE"
+
+exec $JWM_TYPE
+
+# vim: sw=4

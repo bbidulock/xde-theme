@@ -344,6 +344,23 @@ SUBDIRS += gtk
 nobase_dist_share_SCRIPTS += \
 	jwm/setstyle
 
+nobase_nodist_share_SCRIPTS += \
+	jwm/config \
+	jwm/getstyles \
+	jwm/start
+
+nobase_dist_share_DATA += \
+	jwm/defaults \
+	jwm/desktop \
+	jwm/groups \
+	jwm/keys \
+	jwm/menu \
+	jwm/paths \
+	jwm/rc \
+	jwm/root \
+	jwm/style \
+	jwm/tray
+
 nobase_dist_share_DATA += \
 	jwm/icons/window-above.xpm \
 	jwm/icons/window-below.xpm \
