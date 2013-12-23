@@ -9,7 +9,7 @@
 
       <TrayButton border="true" label="" popup="Web Browser" icon="/usr/share/icons/gnome/16x16/apps/web-browser.png">exec:firefox</TrayButton>
       <TrayButton border="true" label="" popup="File Manager" icon="/usr/share/icons/gnome/16x16/apps/file-manager.png">exec:pcmanfm</TrayButton>
-      <TrayButton border="true" label="" popup="Terminal" icon="/usr/share/icons/gnome/16x16/apps/terminal.png">exec:lxterminal</TrayButton>
+      <TrayButton border="true" label="" popup="Terminal" icon="/usr/share/icons/gnome/16x16/apps/terminal.png">exec:roxterm</TrayButton>
       <TrayButton border="true" label="" popup="Visual Editor" icon="/usr/share/icons/gnome/16x16/apps/text-editor.png">exec:gvim</TrayButton>
       <TrayButton border="true" label="" popup="Run Command" icon="/usr/share/icons/gnome/16x16/actions/gtk-execute.png">exec:xde-run</TrayButton>
       <TrayButton border="true" label="" popup="Calculator" icon="/usr/share/icons/gnome/16x16/apps/accessories-calculator.png">exec:calculator</TrayButton>

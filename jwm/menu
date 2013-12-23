@@ -3,20 +3,20 @@
     <Program icon="/usr/share/icons/gnome/16x16/apps/web-browser.png" label="1) Web Browser">firefox</Program>
     <Program icon="/usr/share/icons/gnome/16x16/apps/file-manager.png" label="2) File Manager">pcmanfm</Program>
     <Program icon="/usr/share/icons/gnome/16x16/apps/text-editor.png" label="3) Text Editor">gvim -f</Program>
-    <Program icon="/usr/share/icons/gnome/16x16/apps/terminal.png" label="4) Terminal">lxterminal</Program>
+    <Program icon="/usr/share/icons/gnome/16x16/apps/terminal.png" label="4) Terminal">roxterm</Program>
     <Program icon="/usr/share/icons/gnome/16x16/actions/system-run.png" label="5) Run Command">xde-run</Program>
     <Separator/>
-    <Menu icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Archlinux" labeled="false">
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="AUR">xdg-open https://aur.archlinux.org</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Bugs">xdg-open https://bugs.archlinux.org</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Developers">xdg-open http://www.archlinux.org/developers/</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Documentation">xdg-open https://wiki.archlinux.org/index.php/Official_Arch_Linux_Install_Guide</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Donate">xdg-open http://www.archlinux.org/donate/</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Forum">xdg-open https://bbs.archlinux.org</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Homepage">xdg-open http://www.archlinux.org</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="SVN">xdg-open http://projects.archlinux.org/svntogit/</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Schwag">xdg-open http://www.zazzle.com/archlinux/</Program>
-         <Program icon="/usr/share/icons/hicolor/32x32/apps/arch-logo.png" label="Wiki">xdg-open https://wiki.archlinux.org</Program>
+    <Menu icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Archlinux" labeled="false">
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="AUR">xdg-open https://aur.archlinux.org</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Bugs">xdg-open https://bugs.archlinux.org</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Developers">xdg-open http://www.archlinux.org/developers/</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Documentation">xdg-open https://wiki.archlinux.org/index.php/Official_Arch_Linux_Install_Guide</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Donate">xdg-open http://www.archlinux.org/donate/</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Forum">xdg-open https://bbs.archlinux.org</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Homepage">xdg-open http://www.archlinux.org</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="SVN">xdg-open http://projects.archlinux.org/svntogit/</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Schwag">xdg-open http://www.zazzle.com/archlinux/</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/arch-logo.png" label="Wiki">xdg-open https://wiki.archlinux.org</Program>
     </Menu> <!-- Archlinux -->
     <Menu icon="/usr/share/icons/gnome/16x16/categories/gnome-util.png" label="Accessories" labeled="false">
          <Program icon="/usr/share/icons/hicolor/32x32/apps/p7zip.png" label="7-Zip FM">7zFM</Program>
@@ -48,7 +48,7 @@
     </Menu> <!-- Accessories -->
     <Menu icon="/usr/share/icons/gnome/16x16/categories/gnome-joystick.png" label="Games" labeled="false">
          <Program icon="/usr/share/pixmaps/xgalaga.png" label="XGalaga">xgalaga</Program>
-         <Program icon="" label="aafire">aafire</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="aafire">aafire</Program>
     </Menu> <!-- Games -->
     <Menu icon="/usr/share/icons/gnome/16x16/categories/gnome-graphics.png" label="Graphics" labeled="false">
          <Program icon="/usr/share/icons/hicolor/16x16/apps/blender.png" label="Blender">blender</Program>
@@ -59,13 +59,13 @@
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="GV">gv</Program>
          <Program icon="/usr/share/pixmaps/gaw.png" label="Gaw Gtk Analog Wave viewer">gaw</Program>
          <Program icon="/home/brian/.icons/geeqie.png" label="Geeqie">geeqie -r</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Image Viewer">ede-image-view</Program>
          <Program icon="/usr/share/icons/hicolor/48x48/apps/gpicview.png" label="Image Viewer">gpicview</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Image Viewer">ede-image-view</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/inkscape.png" label="Inkscape">inkscape</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Konstruktor">konstruktor</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/libreoffice-draw.png" label="LibreOffice Draw">libreoffice --draw</Program>
          <Program icon="/usr/share/pixmaps/stopmotion.png" label="Stopmotion">/usr/bin/stopmotion</Program>
-         <Program icon="/usr/share/pixmaps/wings3d.png" label="Wings3d">wings3d</Program>
+         <Program icon="/usr/share/pixmaps/wings3d.png" label="Wings3D">wings3d</Program>
          <Program icon="/home/brian/.icons/xfig.png" label="xfig">/usr/bin/xfig</Program>
          <Program icon="/usr/share/pixmaps/xzgv.xpm" label="xzgv">xzgv</Program>
     </Menu> <!-- Graphics -->
@@ -95,15 +95,15 @@
          <Program icon="/usr/share/icons/gnome/16x16/apps/libreoffice-writer.png" label="LibreOffice Writer">libreoffice --writer</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="RAKT PDF Viewer">raktpdf</Program>
          <Program icon="/home/brian/.icons/xpdf.xpm" label="Xpdf">xpdf</Program>
-         <Program icon="" label="Zathura">zathura</Program>
-         <Program icon="" label="apvlv">apvlv</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Zathura">zathura</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="apvlv">apvlv</Program>
     </Menu> <!-- Office -->
     <Menu icon="/usr/share/icons/gnome/16x16/categories/gnome-devel.png" label="Programming" labeled="false">
          <Program icon="/home/brian/.icons/CMakeSetup32.png" label="CMake">cmake-gui</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Eeschema">eeschema</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/fluid.png" label="FLUID">fluid</Program>
          <Program icon="/usr/share/octave/3.6.4/imagelib/octave-logo.svg" label="GNU Octave">xterm -T "GNU Octave" -e /usr/bin/octave</Program>
-         <Program icon="/usr/share/icons/hicolor/48x48/apps/kicad.png" label="KiCad">kicad</Program>
+         <Program icon="/usr/share/icons/hicolor/scalable/apps/kicad.svg" label="KiCad">kicad</Program>
          <Program icon="/usr/share/icons/hicolor/32x32/apps/assistant-qt4.png" label="Qt4 Assistant ">assistant-qt4</Program>
          <Program icon="/usr/share/icons/hicolor/128x128/apps/designer-qt4.png" label="Qt4 Designer">designer-qt4</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/linguist-qt4.png" label="Qt4 Linguist ">linguist-qt4</Program>
@@ -112,12 +112,12 @@
     </Menu> <!-- Programming -->
     <Menu icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Science &amp; Math" labeled="false">
          <Program icon="/usr/share/octave/3.6.4/imagelib/octave-logo.svg" label="GNU Octave">xterm -T "GNU Octave" -e /usr/bin/octave</Program>
-         <Program icon="" label="GSpiceUI">gspiceui</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="GSpiceUI">gspiceui</Program>
     </Menu> <!-- Science & Math -->
     <Menu icon="/usr/share/icons/gnome/16x16/categories/gnome-multimedia.png" label="Sound &amp; Video" labeled="false">
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Alsaplayer">alsaplayer</Program>
-         <Program icon="/usr/share/icons/hicolor/48x48/apps/audacious.png" label="Audacious">audacious</Program>
-         <Program icon="/usr/share/icons/hicolor/48x48/apps/audacious2.png" label="Audacious2">audacious2</Program>
+         <Program icon="/usr/share/icons/hicolor/scalable/apps/audacious.svg" label="Audacious">audacious</Program>
+         <Program icon="/usr/share/icons/hicolor/scalable/apps/audacious2.svg" label="Audacious2">audacious2</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/multimedia-volume-control.png" label="Audio Mixer">xfce4-mixer</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Consonance">consonance</Program>
          <Program icon="/usr/share/pixmaps/ffado.png" label="FFADO Mixer">ffado-mixer</Program>
@@ -138,7 +138,6 @@
          <Program icon="/usr/share/pixmaps/cairo-compmgr/cairo-compmgr.png" label="Cairo Composite Manager">cairo-compmgr</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Conky Status Display">conky</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="DHCP Client Daemon Applet">/usr/bin/dhcpcd-gtk</Program>
-         <Program icon="/usr/share/fbpanel/images/logo.png" label="Fluxbox Panel">fbpanel</Program>
          <Program icon="/usr/share/icons/Mist/16x16/apps/start-here.png" label="Fluxbox Tray Menu.">/usr/bin/ftmenu</Program>
          <Program icon="/usr/share/icons/gnome/16x16/devices/keyboard.png" label="Fluxbox XKB Switcher">fbxkb</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/gsmartcontrol.png" label="GSmartControl">/usr/bin/gsmartcontrol</Program>
@@ -150,19 +149,19 @@
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Nepomuk Backup">nepomukbackup</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Nepomuk Cleaner">nepomukcleaner</Program>
          <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="Pango Viewer">pango-view -t "Hello world!"</Program>
+         <Program icon="/usr/share/pixmaps/PathFinder.png" label="PathFinder">PathFinder</Program>
          <Program icon="/usr/share/pixmaps/rox.png" label="ROX Filer">rox</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="ROXTerm">roxterm</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/actions/system-run.png" label="Run Command">gmrun</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/actions/system-run.png" label="Run Command">fbrun</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/roxterm.png" label="ROXTerm">roxterm</Program>
          <Program icon="/usr/share/icons/gnome/16x16/actions/system-run.png" label="Run Command">xde-run</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/actions/system-run.png" label="Run Command">gmrun</Program>
          <Program icon="/usr/share/icons/gnome/16x16/categories/applications-system.png" label="Services">systemadm</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/apps/system-software-install.png" label="Software">gpk-application</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/system-software-update.png" label="Software Update">gpk-update-viewer</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/utilities-system-monitor.png" label="Task Manager">lxtask</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/utilities-terminal.png" label="Terminal">gnome-terminal</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/Thunar.png" label="Thunar File Manager">thunar</Program>
          <Program icon="/home/brian/.icons/xterm-color_48x48.xpm" label="UXTerm">uxterm</Program>
          <Program icon="/home/brian/.icons/wmaker-keyboard.png" label="Unclutter">/usr/bin/unclutter</Program>
+         <Program icon="/usr/share/pixmaps/vifm.png" label="Vifm">xterm -T "Vifm" -e vifm</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/wireshark.png" label="Wireshark">wireshark</Program>
          <Program icon="/usr/share/icons/hicolor/48x48/apps/perlpanel-panel.png" label="XDE Panel">xde-panel</Program>
          <Program icon="/home/brian/.icons/xterm-color_48x48.xpm" label="XTerm">xterm</Program>
@@ -178,7 +177,7 @@
          <Program icon="/usr/share/icons/gnome/16x16/categories/preferences-desktop.png" label="Openbox Window Properties">obxprop|gxmessage -name obxprop -geometry 400x400 -font 'Liberation Mono 8' -title 'X Window Properties' -file -</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Clock">xclock -geometry 164x164</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Display Atoms">xlsatoms | gxmessage -name xlsatoms -geometry 400x400 -font 'Liberation Mono 8' -title 'X Display Atoms' -file -</Program>
-         <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Display Clients">xlsclients -a -l | gxmessage -name xlsclients -geometry 400x400 'Liberation Mono 8' -title 'X Display Clients' -file -</Program>
+         <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Display Clients">xlsclients -a -l | gxmessage -name xlsclients -geometry 400x400 -font 'Liberation Mono 8' -title 'X Display Clients' -file -</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Display Properties">xdpyinfo|gxmessage -name xdpyinfo -geometry 450x450 -font 'Liberation Mono 8' -title 'X Display Properties' -file -</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Display Refresh">xrefresh</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/xlogo.png" label="X Events">xterm -T 'X Events' -e xev</Program>
@@ -235,8 +234,8 @@
          <Program icon="/usr/share/icons/gnome/16x16/actions/system-lock-screen.png" label="Screen Lock">ede-screen-lock</Program>
          <Program icon="/home/brian/.icons/wmaker-keyboard.png" label="Simple Tray XKB Indicator">sbxkb</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/tigervnc.png" label="TigerVNC viewer">/usr/bin/vncviewer</Program>
-         <Program icon="/usr/share/icons/hicolor/48x48/apps/geda-gattrib.png" label="gEDA Attribute Editor">gattrib</Program>
-         <Program icon="/usr/share/icons/hicolor/48x48/apps/geda-gschem.png" label="gEDA Schematic Editor">gschem</Program>
+         <Program icon="/usr/share/icons/hicolor/scalable/apps/geda-gattrib.svg" label="gEDA Attribute Editor">gattrib</Program>
+         <Program icon="/usr/share/icons/hicolor/scalable/apps/geda-gschem.svg" label="gEDA Schematic Editor">gschem</Program>
     </Menu> <!-- Other -->
     <Separator/>
     <Menu icon="/usr/share/icons/gnome/16x16/categories/preferences-desktop.png" label="Preferences" labeled="false">
@@ -244,6 +243,7 @@
          <Program icon="/usr/share/icons/Mist/16x16/devices/computer.png" label="Configure EDE">ede-conf</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/preferences-desktop-theme.png" label="Customize Look and Feel">lxappearance</Program>
          <Program icon="/usr/share/icons/Mist/16x16/places/user-desktop.png" label="Desktop Preferences">pcmanfm --desktop-pref</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/exec.png" label="FOX Desktop Setup">ControlPanel</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/system-file-manager.png" label="File Manager">thunar-settings</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/fwbuilder.png" label="Firewall Builder">fwbuilder</Program>
          <Program icon="/usr/share/icons/gnome/16x16/apps/preferences-desktop-theme.png" label="Gtk Theme Switch 2">gtk-theme-switch2</Program>
@@ -255,10 +255,12 @@
          <Program icon="/usr/share/icons/Mist/16x16/devices/display.png" label="Monitor Settings">lxrandr</Program>
          <Program icon="/usr/share/icons/gnome/16x16/categories/preferences-system-network.png" label="Network Connections">nm-connection-editor</Program>
          <Program icon="/home/brian/.icons/obconf.png" label="Openbox Configuration Manager">obconf</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/apps/system-software-install.png" label="Packages">gpk-application</Program>
          <Program icon="/usr/share/pixmaps/tint2conf.png" label="Panel tint2">tint2conf</Program>
          <Program icon="/usr/share/icons/hicolor/16x16/apps/notification-properties.png" label="Pop-Up Notifications">/usr/bin/notification-properties</Program>
-         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/empty.png" label="Preferred Applications">ede-preferred-applications</Program>
          <Program icon="/usr/share/icons/gnome/16x16/categories/preferences-desktop.png" label="Preferred Applications">libfm-pref-apps</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/mimetypes/empty.png" label="Preferred Applications">ede-preferred-applications</Program>
+         <Program icon="/usr/share/icons/gnome/16x16/devices/printer.png" label="Print Settings">system-config-printer</Program>
          <Program icon="/usr/share/icons/gnome/16x16/devices/drive-removable-media.png" label="Removable Drives and Media">thunar-volman-settings</Program>
     </Menu> <!-- Preferences -->
     <Separator/>

@@ -27,6 +27,14 @@
    </Group>
 
    <Group>
+	<Name>roxterm</Name>
+	<Class>Roxterm</Class>
+	<Option>vmax</Option>
+	<Option>icon:terminal.png</Option>
+	<Option>tiled</Option>
+   </Group>
+
+   <Group>
 	<Name>gvim</Name>
 	<Class>Gvim</Class>
 	<Option>vmax</Option>

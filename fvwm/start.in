@@ -1,0 +1,79 @@
+#!/bin/bash
+
+prog=$0
+here=$(echo $prog|sed 's,/[^/]*$,,')
+here=`(cd "$here"; pwd)`
+prog=$(echo "$prog"|sed 's,^.*/,,')
+
+export FVWM_TYPE=${1:-${FVWM_TYPE:-fvwm}}
+if [ ! -x "`which $FVWM_TYPE 2>/dev/null`" ]; then
+    echo "ERROR: cannot find usable $FVWM_TYPE program" >&2
+    exit 1;
+fi
+if [ -z "$FVWM_VERSION" ]; then
+    if $FVWM_TYPE -V >/dev/null 2>&1; then
+	FVWM_VERSION=$($FVWM_TYPE -V|head -1|awk '{print$2}' 2>/dev/null)
+    else
+	FVWM_VERSION='2.6.5'
+    fi
+fi
+export FVWM_VERSION=${2:-$FVWM_VERSION}
+export FVWM_CONFIG_HOME=${FVWM_CONFIG_HOME:-${HOME:-~}/.$FVWM_TYPE}
+export FVWM_CONFIG_SDIR=${FVWM_CONFIG_SDIR:-@sharedir@/$FVWM_TYPE}
+export FVWM_USERDIR="$FVWM_CONFIG_HOME"
+
+HOME=${HOME:-~}
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+
+[ -d "$FVWM_CONFIG_HOME" ] || mkdir -p "$FVWM_CONFIG_HOME"
+if [ -s "$FVWM_CONFIG_SDIR/version" ]; then
+    if [ ! -s "$FVWM_CONFIG_HOME/version" -o ! diff "$FVWM_CONFIG_SDIR/version" "$FVWM_CONFIG_HOME/version" ] ; then
+	for file in bindings decorations functions globalfeel iconstyles menus modules startup styles; do
+	    if [ ! -f "$FVWM_CONFIG_SDIR/$file" -o ! diff "$FVWM_CONFIG_SDIR/$file" "$FVWM_CONFIG_HOME/$file" ] ; then
+		[ ! -f "$FVWM_CONFIG_HOME/$file" ] || /bin/mv -f "$FVWM_CONFIG_HOME/$file" "$FVWM_CONFIG_HOME/$file.bak"
+		cat "$FVWM_CONFIG_SDIR/$file" \
+		    | sed -r 's,\$HOME\>,'"${HOME:-~}"',g' \
+		    >"$FVWM_CONFIG_HOME/$file"
+	    fi
+	done
+	cat>"$FVWM_CONFIG_HOME/paths"<<-FVWMEOF
+	    ImagePath /usr/share/icons/fvwm:+
+	    ImagePath $HOME/.icons:+
+	    ImagePath /usr/share/pixmaps:+
+	    ImagePath /usr/share/icons/gnome/16x16/apps:+
+	    ImagePath /usr/share/icons/hicolor/16x16/apps:+
+	    ImagePath /usr/share/icons/Mist/16x16/apps:+
+	    ImagePath $FVWM_CONFIG_HOME/icons:+
+	    ImagePath $FVWM_CONFIG_HOME/styles:+
+	    ImagePath $FVWM_CONFIG_SDIR/icons:+
+	    ImagePath $FVWM_CONFIG_SDIR/styles:+
+FVWMEOF
+    fi
+fi
+
+if [ -x "`which xde-menugen 2>/dev/null`" ]; then
+    xde-menugen --format $FVWM_TYPE >"$FVWM_CONFIG_HOME/menu"
+fi
+
+config="$here/config"
+[ -x "$config" ] || config="$FVWM_CONFIG_HOME/config"
+[ -x "$config" ] || config="$FVWM_CONFIG_SDIR/config"
+[ -x "$config" ] && $config
+
+getstyles="$here/getstyles"
+[ -x "$getstyles" ] || getstyles="$FVWM_CONFIG_HOME/getstyles"
+[ -x "$getstyles" ] || getstyles="$FVWM_CONFIG_SDIR/getstyles"
+[ -x "$getstyles" ] && $getstyles
+
+export FVWM_RCFILE="${3:-${FVWM_RCFILE:-${HOME:-~}/.fvwm2rc}}"
+
+if [ -L "$FVWM_RCFILE" ]; then
+    /bin/rm -f "$FVWM_RCFILE"
+elif [ -s  "$FVWM_RCFILE" ]; then
+    /bin/mv -f "${FVWM_RCFILE}" "${FVWM_RCFILE}.bak"
+fi
+/bin/ln -sf "$FVWM_CONFIG_HOME/rc" "$FVWM_RCFILE"
+
+exec $FVWM_TYPE
+
+# vim: sw=4

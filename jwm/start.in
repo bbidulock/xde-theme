@@ -19,7 +19,7 @@ if [ -z "$JWM_VERSION" ]; then
 fi
 export JWM_VERSION=${2:-$JWM_VERSION}
 export JWM_CONFIG_HOME=${JWM_CONFIG_HOME:-${HOME:-~}/.$JWM_TYPE}
-export JWM_CONFIG_SDIR=${JWM_CONFIG_SDIR:-@shared@/$JWM_TYPE}
+export JWM_CONFIG_SDIR=${JWM_CONFIG_SDIR:-@sharedir@/$JWM_TYPE}
 
 [ -d "$JWM_CONFIG_HOME" ] || mkdir -p "$JWM_CONFIG_HOME"
 if [ -s "$JWM_CONFIG_SDIR/version" ]; then

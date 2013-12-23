@@ -1,0 +1,15 @@
+
+ImagePath /usr/share/icons/fvwm:+
+ImagePath /home/brian/.icons:+
+ImagePath /usr/share/pixmaps:+
+ImagePath /usr/share/icons/gnome/16x16/apps:+
+ImagePath /usr/share/icons/hicolor/16x16/apps:+
+ImagePath /usr/share/icons/Mist/16x16/apps:+
+ImagePath /home/brian/.config/fvwm/styles:+
+ImagePath /home/brian/.config/fvwm/icons:+
+ImagePath /home/brian/.fvwm/styles:+
+ImagePath /home/brian/.fvwm/icons:+
+ImagePath /usr/share/fvwm/styles:+
+ImagePath /usr/share/fvwm/icons:+
+
+# vim: set ft=fvwm:

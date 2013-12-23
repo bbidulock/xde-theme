@@ -1,0 +1,12 @@
+Read /usr/share/fvwm/paths
+Read /usr/share/fvwm/decorations
+Read /usr/share/fvwm/globalfeel
+Read /usr/share/fvwm/startup
+Read /usr/share/fvwm/styles
+Read /usr/share/fvwm/iconstyles
+Read /usr/share/fvwm/functions
+Read /usr/share/fvwm/bindings
+Read /usr/share/fvwm/menus
+Read /usr/share/fvwm/modules
+
+# vim: set ft=fvwm:
