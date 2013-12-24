@@ -56,6 +56,14 @@ divert(MENUS)
 #-----------#
 #-- MENUS --#
 #-----------#
+divert(-1)dnl
+syscmd(`test -L "'TWM_CONFIG_HOME`/stylerc"')dnl
+ifelse(sysval, 0,
+	`pushdef(`SINCLUDE',TWM_CONFIG_HOME`/stylerc')',
+	`pushdef(`SINCLUDE',TWM_CONFIG_SDIR`/stylerc')')dnl
+define(`TWM_STYLE_DIR',esyscmd(`readlink -n -f "'SINCLUDE`" 2>/dev/null|sed "s,/[^/]*$,,"'))dnl
+sinclude(SINCLUDE)dnl
+popdef(`SINCLUDE')dnl
 divert(VARIABLES)dnl
 syscmd(`test -r "'TWM_CONFIG_HOME`/apps"')dnl
 ifelse(sysval, 0,
@@ -97,14 +105,6 @@ syscmd(`test -r "'TWM_CONFIG_HOME`/defaults"')dnl
 ifelse(sysval, 0,
 	`pushdef(`SINCLUDE',TWM_CONFIG_HOME`/defaults')',
 	`pushdef(`SINCLUDE',TWM_CONFIG_SDIR`/defaults')')dnl
-sinclude(SINCLUDE)dnl
-popdef(`SINCLUDE')dnl
-divert(-1)dnl
-syscmd(`test -L "'TWM_CONFIG_HOME`/stylerc"')dnl
-ifelse(sysval, 0,
-	`pushdef(`SINCLUDE',TWM_CONFIG_HOME`/stylerc')',
-	`pushdef(`SINCLUDE',TWM_CONFIG_SDIR`/stylerc')')dnl
-define(`TWM_STYLE_DIR',esyscmd(`readlink -n -f "'SINCLUDE`" 2>/dev/null|sed "s,/[^/]*$,,"'))dnl
 sinclude(SINCLUDE)dnl
 popdef(`SINCLUDE')dnl
 divert(COLOR)dnl

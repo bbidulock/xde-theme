@@ -13,7 +13,7 @@ if [ -z "$VERSION" ]; then
 	fi
 fi
 
-sed -i -e "s:[[]xde-styles[]],[[][^]]*[]]:[xde-styles],[$VERSION]:
-	   s:AC_REVISION([[][^]]*[]]):AC_REVISION([$VERSION]):" configure.ac
+sed -e "s:[[]xde-styles[]],[[][^]]*[]]:[xde-styles],[$VERSION]:
+	s:AC_REVISION([[][^]]*[]]):AC_REVISION([$VERSION]):" configure.template >configure.ac
 
 autoreconf -fiv
