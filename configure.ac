@@ -1,7 +1,7 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-styles],[1.1.21],[http://github.com/bbidulock/xde-styles],[xde-styles])
-AC_REVISION([1.1.21])
+AC_INIT([xde-styles],[1.1.22],[http://github.com/bbidulock/xde-styles],[xde-styles])
+AC_REVISION([1.1.22])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([scripts])

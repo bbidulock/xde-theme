@@ -1,5 +1,19 @@
 # created with git log --stat=76 | fmt -sct -w80
 
+commit f9a82eb3c484ade4675429132d321982b788da74
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 23 18:04:49 2013 -0700
+
+    more files to outpu
+
+ .gitignore       |  9 +++++
+ ChangeLog        | 93 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ configure.ac     | 23 ++++++++++---
+ fvwm/start.in    |  0
+ jwm/getstyles.in |  0
+ jwm/start.in     |  0
+ 6 files changed, 121 insertions(+), 4 deletions(-)
+
 commit 31c1be035ade9d0d78cfb2a73ace221a1f3639f7
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon Dec 23 07:36:46 2013 -0700
