@@ -3,7 +3,7 @@ divert(VARIABLES)dnl
 DontMoveOff
 divert(MENUS)dnl
 `##' included file SINCLUDE
-menu "zoomops" (twm_deffore:twm_defback)
+menu "zoomops" twm_MenuColor
 {
     "Zoom Ops"			f.title
     "Full zoom"			f.fullzoom
@@ -24,7 +24,7 @@ ifelse(TWM_TYPE,`ctwm',
     "Bottom expand"		f.fill "bottom"')
 }
 
-menu "moveops" (twm_deffore:twm_defback)
+menu "moveops" twm_MenuColor
 {
     "Move Ops"			f.title
     "Move"			f.move
@@ -38,7 +38,7 @@ ifelse(TWM_TYPE,`ctwm',`
 ')
 }
 
-menu "windowops" (twm_deffore:twm_defback)
+menu "windowops" twm_MenuColor
 {
     "Window Ops"		f.title
     "(De)Iconify"		f.iconify

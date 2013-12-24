@@ -1,6 +1,6 @@
 divert(FUNCTIONS)dnl
 divert(MENUS)dnl
-Menu "twmstyles" (twm_deffore:twm_defback)
+Menu "twmstyles" twm_MenuColor
 {
     "System Styles"		f.title
 divert(FUNCTIONS)dnl

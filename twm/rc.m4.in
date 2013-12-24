@@ -98,7 +98,7 @@ ifelse(sysval, 0,
 	`pushdef(`SINCLUDE',TWM_CONFIG_HOME`/menu')',
 	`pushdef(`SINCLUDE',TWM_CONFIG_SDIR`/menu')')dnl
 `##' included file SINCLUDE
-undivert(SINCLUDE)dnl
+sinclude(SINCLUDE)dnl
 popdef(`SINCLUDE')dnl
 divert(-1)dnl
 syscmd(`test -r "'TWM_CONFIG_HOME`/defaults"')dnl

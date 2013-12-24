@@ -23,7 +23,7 @@ getstyles() {
     echo "divert(FUNCTIONS)dnl"
     echo "divert(MENUS)dnl"
 
-    echo "Menu \"twmstyles\" (twm_deffore:twm_defback)"
+    echo "Menu \"twmstyles\" twm_MenuColor"
     echo "{"
 
     echo -e "    \"System Styles\"\t\tf.title"

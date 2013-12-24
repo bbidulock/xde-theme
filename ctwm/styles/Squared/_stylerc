@@ -347,6 +347,7 @@ divert(-1)
 
 define(`twm_deffore',			`"`#''COLOR4`"')
 define(`twm_defback',			`"`#''COLOR1`"')
+define(`twm_MenuColor',			`("#'COLOR4`":"#'COLOR1`")')
 define(`twm_BorderColor',		`"`#''COLOR1`"')
 define(`twm_BorderTileForeground',	`"`#''COLOR1`"')
 define(`twm_BorderTileBackground',	`"`#''COLOR2`"')
