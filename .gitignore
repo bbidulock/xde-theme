@@ -15,3 +15,12 @@ _install/
 .*.sw[op]
 rc.m4
 config
+ctwm/getstyles
+ctwm/start
+fvwm/start
+jwm/getstyles
+jwm/start
+twm/getstyles
+twm/start
+vtwm/getstyles
+vtwm/start

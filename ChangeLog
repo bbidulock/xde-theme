@@ -1,5 +1,98 @@
 # created with git log --stat=76 | fmt -sct -w80
 
+commit 31c1be035ade9d0d78cfb2a73ace221a1f3639f7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 23 07:36:46 2013 -0700
+
+    working up fvwm
+
+ ctwm/rc.m4.in    |  3 +-
+ fvwm/config.in   | 29 +++++++++++++++++++
+ fvwm/iconstyles  |  6 ++++
+ fvwm/paths       | 15 ++++++++++
+ fvwm/rc          | 12 ++++++++
+ fvwm/start.in    | 79 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fvwm/startup     | 22 +++++++++++++++
+ fvwm/styles      | 19 +++++++++++++
+ jwm/config.in    |  2 +-
+ jwm/getstyles.in |  2 +-
+ jwm/groups       |  8 ++++++
+ jwm/keys         |  6 ++--
+ jwm/menu         | 62 +++++++++++++++++++++--------------------
+ jwm/start.in     |  2 +-
+ jwm/tray         |  2 +-
+ twm/rc.m4.in     |  3 +-
+ vtwm/rc.m4.in    |  3 +-
+ 17 files changed, 235 insertions(+), 40 deletions(-)
+
+commit 4dbe8cfa6fb834fcc3a390684818fdc60c90b132
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 22 01:55:30 2013 -0700
+
+    more jwm workup
+
+ ctwm/config.in   |  41 +++++++++-----------
+ jwm/config.in    |  27 +++++++++++++
+ jwm/getstyles.in | 106 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ jwm/menu         |  26 +------------
+ jwm/start.in     |  42 +++++++++++++++++++-
+ twm/config.in    |  39 +++++++++----------
+ vtwm/config.in   |  39 +++++++++----------
+ 7 files changed, 229 insertions(+), 91 deletions(-)
+
+commit 4698875f24985571a3bc5823c7611d8ed0b308f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 20:20:51 2013 -0700
+
+    working up jwm configuration
+
+ Makefile.am      |  17 +++
+ ctwm/start.in    |  67 +++++------
+ jwm/config.in    |   0
+ jwm/defaults     |  22 ++++
+ jwm/desktop      |  41 +++++++
+ jwm/getstyles.in |   0
+ jwm/groups       |  44 ++++++++
+ jwm/keys         | 116 +++++++++++++++++++
+ jwm/menu         | 311 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ jwm/paths        |  17 +++
+ jwm/rc           |  12 ++
+ jwm/root         |   7 ++
+ jwm/start.in     |  63 +++++++++++
+ jwm/style        |   4 +
+ jwm/tray         |  55 +++++++++
+ twm/start.in     |  63 +++++------
+ vtwm/start.in    |  67 +++++------
+ 17 files changed, 799 insertions(+), 107 deletions(-)
+
+commit 40a0c8239944fde1ce9c745c7e7a33e9b85841b8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 08:18:35 2013 -0700
+
+    trim twm config and start programs
+
+ ctwm/config.in    | 71 +++++----------------------------------------------
+ ctwm/getstyles.in | 49 -----------------------------------
+ ctwm/start.in     | 55 ++++++---------------------------------
+ twm/config.in     | 68 ++++--------------------------------------------
+ twm/getstyles.in  | 46 ---------------------------------
+ twm/start.in      | 48 +++-------------------------------
+ vtwm/config.in    | 71 +++++----------------------------------------------
+ vtwm/getstyles.in | 49 -----------------------------------
+ vtwm/start.in     | 55 ++++++---------------------------------
+ 9 files changed, 39 insertions(+), 473 deletions(-)
+
+commit 48c54277f80957269fc3189491f0c17049c38093
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 07:40:58 2013 -0700
+
+    finalizing twm variants
+
+ .gitignore   |    2 +
+ ChangeLog    | 2290 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ configure.ac |    4 +-
+ 3 files changed, 2294 insertions(+), 2 deletions(-)
+
 commit 14564bcd0dc87edf705789f62defa6b3da8102af
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Dec 21 04:26:37 2013 -0700

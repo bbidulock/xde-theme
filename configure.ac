@@ -1,7 +1,7 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-styles],[1.1.16],[http://github.com/bbidulock/xde-styles],[xde-styles])
-AC_REVISION([1.1.16])
+AC_INIT([xde-styles],[1.1.21],[http://github.com/bbidulock/xde-styles],[xde-styles])
+AC_REVISION([1.1.21])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR([scripts])
@@ -26,6 +26,21 @@ AC_SUBST([sharedir])
 AC_CONFIG_FILES([Makefile
 		 openbox/Makefile
 		 gtk/Makefile
-		 ctwm/config twm/config vtwm/config
-		 ctwm/rc.m4 twm/rc.m4 vtwm/rc.m4])
+		 fvwm/start
+		 jwm/config
+		 jwm/getstyles
+		 jwm/start
+		 ctwm/config
+		 ctwm/getstyles
+		 ctwm/rc.m4
+		 ctwm/start
+		 vtwm/config
+		 vtwm/getstyles
+		 vtwm/rc.m4
+		 vtwm/start
+		 twm/config
+		 twm/getstyles
+		 twm/rc.m4
+		 twm/start
+		 ])
 AC_OUTPUT
