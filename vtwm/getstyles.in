@@ -27,7 +27,7 @@ getstyles() {
     echo "{"
 
     echo -e "    \"System Styles\"\t\tf.title"
-    find "$VTWM_CONFIG_SDIR/styles" -name stylerc 2>/dev/null | sort | while read f
+    find -L "$VTWM_CONFIG_SDIR/styles" -name stylerc 2>/dev/null | sort | while read f
     do
 	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$VTWM_CONFIG_SDIR"',TWM_CONFIG_SDIR,')
 	style=$(echo "$styledir"|sed 's,^.*/,,')
@@ -38,7 +38,7 @@ getstyles() {
     done
 
     echo -e "    \"User Styles\"\t\tf.title"
-    find "$VTWM_CONFIG_HOME/styles" -name stylerc 2>/dev/null | sort | while read f
+    find -L "$VTWM_CONFIG_HOME/styles" -name stylerc 2>/dev/null | sort | while read f
     do
 	styledir=$(echo "$f"|sed 's,/stylerc$,,;s,'"$VTWM_CONFIG_HOME"',TWM_CONFIG_HOME,')
 	style=$(echo "$styledir"|sed 's,^.*/,,')
