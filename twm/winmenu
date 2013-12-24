@@ -1,8 +1,8 @@
 divert(VARIABLES)dnl
-`##' included file TWM_CONFIG_HOME/winmenu
+`##' included file SINCLUDE
 DontMoveOff
 divert(MENUS)dnl
-`##' included file TWM_CONFIG_HOME/winmenu
+`##' included file SINCLUDE
 menu "zoomops" twm_MenuColor
 {
     "Zoom Ops"			f.title

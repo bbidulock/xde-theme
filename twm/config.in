@@ -7,7 +7,7 @@ prog=$(echo "$prog"|sed 's,^.*/,,')
 
 export TWM_TYPE=${1:-${TWM_TYPE:-twm}}
 if [ ! -x "`which $TWM_TYPE 2>/dev/null`" ]; then
-    echo "ERROR: cannot find usable twm program" >&2
+    echo "ERROR: cannot find usable $TWM_TYPE program" >&2
     exit 1;
 fi
 if [ -z "$TWM_VERSION" ]; then

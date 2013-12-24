@@ -1,5 +1,5 @@
 divert(VARIABLES)dnl
-`##' included file TWM_CONFIG_SDIR/apps
+`##' included file SINCLUDE
 ### APPLICATION SPECIFIC ###
 
 ifelse(TWM_TYPE, `ctwm',
@@ -278,7 +278,7 @@ NailedDown {
 }
 ')
 divert(COLOR)dnl
-`##' included file TWM_CONFIG_SDIR/apps
+`##' included file SINCLUDE
     ## Hilighted window border color.
     BorderColor			twm_BorderColor {
 	#   "res_class"	"color"
@@ -331,8 +331,8 @@ ifelse(TWM_TYPE, `vtwm', `
     DoorBackground		twm_DoorBackground {
     }')
 divert(GRAYSCALE)dnl
-`##' included file TWM_CONFIG_SDIR/apps
+`##' included file SINCLUDE
 divert(MONOCHROME)dnl
-`##' included file TWM_CONFIG_SDIR/apps
+`##' included file SINCLUDE
 divert(-1)
 dnl vim: ft=m4

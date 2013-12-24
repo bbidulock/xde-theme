@@ -19,6 +19,8 @@ ifdef(`HOME',`',`define(`HOME',esyscmd(`echo -n "${HOME:-~}"'))')
 ifdef(`USER',`',`define(`USER',esyscmd(`echo -n "${LOGNAME:-${HOME:-~}}"'))')
 syscmd(`test -x "'TWM_CONFIG_SDIR`/getstyles"')
 ifelse(sysval, 0, `syscmd(`"'TWM_CONFIG_SDIR`/getstyles" 'TWM_TYPE` 'TWM_VERSION`>"'TWM_CONFIG_HOME`/stylemenu"')')
+syscmd(`test -x "'TWM_CONFIG_HOME`/getstyles"')
+ifelse(sysval, 0, `syscmd(`"'TWM_CONFIG_HOME`/getstyles" 'TWM_TYPE` 'TWM_VERSION`>"'TWM_CONFIG_HOME`/stylemenu"')')
 divert(PROLOGUE)dnl
 ##
 ## twm configuration file

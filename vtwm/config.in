@@ -7,7 +7,7 @@ prog=$(echo "$prog"|sed 's,^.*/,,')
 
 export VTWM_TYPE=${1:-${VTWM_TYPE:-vtwm}}
 if [ ! -x "`which $VTWM_TYPE 2>/dev/null`" ]; then
-    echo "ERROR: cannot find usable vtwm program" >&2
+    echo "ERROR: cannot find usable $VTWM_TYPE program" >&2
     exit 1;
 fi
 if [ -z "$VTWM_VERSION" ]; then
