@@ -34,5 +34,4 @@ xde-theme
 *.o
 stamp-h*
 *.man
-
-
+xde-style

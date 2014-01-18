@@ -4,10 +4,13 @@ SUBDIRS =
 AM_CPPFLAGS = -include autoconf.h -DNAME=\"xde-theme\"
 AM_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
 
-bin_PROGRAMS = xde-theme
+bin_PROGRAMS = xde-theme xde-style
 
 xde_theme_SOURCES = xde-theme.c
 xde_theme_LDADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+
+xde_style_SOURCES = xde-style.c
+xde_style_LDADD =  $(X11_LIBS)
 
 man1_MANS = \
 	    xde-theme.man
