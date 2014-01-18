@@ -1,8 +1,32 @@
 
-ACLOCAL_AMFLAGS = -I m4
-AUTOMAKE_OPTIONS = nostdinc
-
 SUBDIRS =
+
+AM_CPPFLAGS = -include autoconf.h -DNAME=\"xde-theme\"
+AM_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
+
+bin_PROGRAMS = xde-theme
+
+xde_theme_SOURCES = xde-theme.c
+xde_theme_LDADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+
+man1_MANS = \
+	    xde-theme.man
+
+xde-theme.man: xde-theme.pod
+	pod2man --center="User Commands" \
+		--date="$(DATE)" \
+		--errors="none" \
+		--fixed="CW" \
+		--fixedbold="CB" \
+		--fixeditalic="CI" \
+		--fixedbolditalic="CX" \
+		--name="XDE-THEME" \
+		--nourls \
+		--release="$(PACKAGE) $(VERSION)" \
+		--section="1" \
+		$< >$@
+
+EXTRA_DIST = LICENSE README TODO ChangeLog xde-theme.pod
 
 nobase_dist_share_DATA =
 nobase_nodist_share_DATA =

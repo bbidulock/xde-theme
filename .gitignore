@@ -26,4 +26,13 @@ vtwm/getstyles
 vtwm/start
 configure.ac
 ChangeLog
+.deps/
+autoconf.h
+*.in
+*~
+xde-theme
+*.o
+stamp-h*
+*.man
+
 
