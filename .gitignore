@@ -35,3 +35,6 @@ xde-theme
 stamp-h*
 *.man
 xde-style
+cscope.*
+core
+.nfs*

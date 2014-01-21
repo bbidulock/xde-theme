@@ -117,6 +117,8 @@ Options options = {
 	NULL
 };
 
+#define CHECK_DIRS 3
+
 typedef struct {
 	Window netwm_check;		/* NetWM/EWMH check window */
 	Window winwm_check;		/* GNOME1/WMH check window */
@@ -129,9 +131,16 @@ typedef struct {
 	char **argv;			/* window manager command line argv[] */
 	int argc;			/* window manager command line argc */
 	char **command;			/* window manager WM_COMMAND */
-	char *rcdir;			/* window manager rc directory */
+	XClassHint ch;			/* window manager WM_CLASS */
 	char *rcfile;			/* window manager rc file */
-	XClassHint ch;
+	union {
+		struct {
+			char *pdir;	/* WM private directory */
+			char *udir;	/* WM user directory */
+			char *sdir;	/* WM system directory */
+		};
+		char *dirs[CHECK_DIRS];
+	};
 } WindowManager;
 
 WindowManager wmnow, wmnew;
@@ -581,6 +590,7 @@ static void
 setup_echinus()
 {
 }
+
 Window
 check_netwm(WindowManager *wm)
 {
