@@ -99,6 +99,7 @@ typedef struct {
 	Bool set;
 	Bool system;
 	Bool user;
+	Bool link;
 	Bool dryrun;
 	int screen;
 	char *style;
@@ -112,6 +113,7 @@ Options options = {
 	False,
 	True,
 	True,
+	False,
 	False,
 	-1,
 	NULL
@@ -157,6 +159,7 @@ typedef struct {
 	};
 	char *stylefile;		/* Window manager style file */
 	char *style;			/* WM current style */
+	char *stylename;		/* WM current style name */
 	Bool noenv;			/* Do we have an environment? */
 	char *env;			/* Window manager environment */
 	size_t nenv;			/* Number of characters in environment */
@@ -729,8 +732,12 @@ char *
 get_proc_comm(pid_t pid)
 {
 	size_t size;
+	char *comm;
 
-	return get_proc_file(pid, "comm", &size);
+	if ((comm = get_proc_file(pid, "comm", &size)))
+		if (strrchr(comm, '\n'))
+			*strrchr(comm, '\n') = '\0';
+	return comm;
 }
 
 void
@@ -813,6 +820,8 @@ check_name(Window check)
       first_word:
 	if ((name = strpbrk(wm->name, " \t\n\r:;,.")) && name != wm->name)
 		*name = '\0';
+	for (name = wm->name; *name; name++)
+		*name = tolower(*name);
 	OPRINTF("got wm name %s\n", wm->name);
 	return wm->name;
 }
@@ -1007,8 +1016,8 @@ find_wm_comm()
 
 char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
 	"fvwm", "wmaker", "afterstep", "metacity", "twm", "ctwm", "vtwm",
-	"echinus", "uwm", "awesome", "matwm", "waimea", "wind", "2bwm", "wmx",
-	"flwm", "mwm", "dtwm", "spectrwm", "yeahwm", NULL
+	"etwm", "echinus", "uwm", "awesome", "matwm", "waimea", "wind", "2bwm",
+	"wmx", "flwm", "mwm", "dtwm", "spectrwm", "yeahwm", NULL
 };
 
 /** @brief Find the wm process without name or pid.
@@ -1025,7 +1034,7 @@ find_wm_proc_any()
 	DIR *dir;
 	struct dirent *d;
 	pid_t pid;
-	char *name, *buf, *pos, *end, *dsp;
+	char *name, *buf, *pos, *end, *dsp, *dspnum;
 	size_t size;
 	int i;
 
@@ -1033,43 +1042,61 @@ find_wm_proc_any()
 		return False;
 
 	if (!(dir = opendir("/proc"))) {
-		fprintf(stderr, "ERROR: /proc: %s\n", strerror(errno));
+		EPRINTF("/proc: %s\n", strerror(errno));
 		return False;
 	}
-	dsp = strdup(getenv("DISPLAY") ? : "");
+	dsp = getenv("DISPLAY") ? : "";
+	dspnum = strdup(dsp);
+	if (strrchr(dspnum, '.'))
+		*strrchr(dspnum, '.') = '\0';
 	while ((d = readdir(dir))) {
 		if (strspn(d->d_name, "0123456789") != strlen(d->d_name))
 			continue;
 		pid = atoi(d->d_name);
-		if (!(name = get_proc_file(pid, "comm", &size)))
+		if (!(name = get_proc_file(pid, "comm", &size))) {
+			DPRINTF("no comm for pid %d\n", (int)pid);
 			continue;
+		}
+		if (strrchr(name, '\n'))
+			*strrchr(name, '\n') = '\0';
+		OPRINTF("checking if '%s' is a window manager\n", name);
 		for (i = 0; wm_list[i]; i++)
 			if (!strcmp(wm_list[i], name))
 				break;
 		if (!wm_list[i]) {
+			OPRINTF("%s is not a window manager\n", name);
 			free(name);
 			continue;
 		}
-		if (!(buf = get_proc_file(pid, "environ", &size)))
+		OPRINTF("%s is a window manager\n", name);
+		if (!(buf = get_proc_file(pid, "environ", &size))) {
+			DPRINTF("no environ for pid %d\n", (int)pid);
 			continue;
+		}
+		OPRINTF("checking DISPLAY for %s\n", name);
 		for (pos = buf, end = buf + size; pos < end; pos += strlen(pos) + 1)
 			if (!strncmp(pos, "DISPLAY=", 8))
 				break;
-		if (pos >= buf) {
+		if (pos >= end) {
 			free(buf);
+			OPRINTF("no DISPLAY= for %s\n", name);
 			free(name);
 			continue;
 		}
-		if (!strcmp(dsp, pos + 8)) {
+		OPRINTF("testing %s for %s\n", pos, name);
+		pos += strlen("DISPLAY=");
+		if (!strcmp(dsp, pos) || !strcmp(dspnum, pos)) {
 			free(buf);
 			wm->name = name;
 			wm->pid = pid;
 			break;
 		}
+		OPRINTF("%s not on %s or %s\n", name, dsp, dspnum);
 		free(buf);
 		free(name);
 	}
 	closedir(dir);
+	free(dspnum);
 	return wm->pid ? True : False;
 }
 
@@ -1102,7 +1129,7 @@ find_wm_proc_by_name()
 	if (!wm->name)
 		return False;
 	if (!(dir = opendir("/proc"))) {
-		fprintf(stderr, "ERROR: /proc: %s\n", strerror(errno));
+		EPRINTF("/proc: %s\n", strerror(errno));
 		return False;
 	}
       dsp = strdup(getenv("DISPLAY") ? : "");
@@ -1112,6 +1139,8 @@ find_wm_proc_by_name()
 		pid = atoi(d->d_name);
 		if (!(buf = get_proc_file(pid, "comm", &size)))
 			continue;
+		if (strrchr(buf, '\n'))
+			*strrchr(buf, '\n') = '\0';
 		if (strcmp(buf, wm->name)) {
 			free(buf);
 			continue;
@@ -1149,6 +1178,8 @@ find_wm_proc_by_pid()
 	size_t size;
 
 	if ((buf = get_proc_file(wm->pid, "comm", &size))) {
+		if (strrchr(buf, '\n'))
+			*strrchr(buf, '\n') = '\0';
 		free(wm->name);
 		wm->name = buf;
 		return True;
@@ -1285,6 +1316,86 @@ check_wm()
 	return False;
 }
 
+void
+show_wm()
+{
+	if (wm->netwm_check)
+		OPRINTF("%d %s: NetWM 0x%lx\n", screen, wm->name, wm->netwm_check);
+	if (wm->winwm_check)
+		OPRINTF("%d %s: WinWM 0x%lx\n", screen, wm->name, wm->winwm_check);
+	if (wm->maker_check)
+		OPRINTF("%d %s: Maker 0x%lx\n", screen, wm->name, wm->maker_check);
+	if (wm->icccm_check)
+		OPRINTF("%d %s: ICCCM 0x%lx\n", screen, wm->name, wm->icccm_check);
+	if (wm->redir_check)
+		OPRINTF("%d %s: Redir 0x%lx\n", screen, wm->name, wm->redir_check);
+	if (wm->pid)
+		OPRINTF("%d %s: pid %ld\n", screen, wm->name, wm->pid);
+	if (wm->host)
+		OPRINTF("%d %s: host %s\n", screen, wm->name, wm->host);
+	if (wm->argv && wm->argc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->argc; i++)
+			len += strlen(wm->argv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->argc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->argv[i]);
+			strcat(cmd, "'");
+		}
+		OPRINTF("%d %s: cmdline %s\n", screen, wm->name, cmd);
+	}
+	if (wm->cargv && wm->cargc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->cargc; i++)
+			len += strlen(wm->cargv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->cargc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->cargv[i]);
+			strcat(cmd, "'");
+		}
+		OPRINTF("%d %s: command %s\n", screen, wm->name, cmd);
+	}
+	if (wm->ch.res_name || wm->ch.res_class)
+		OPRINTF("%d %s: '%s', '%s'\n", screen, wm->name,
+				wm->ch.res_name ? : "(none)",
+				wm->ch.res_class ? : "(none)");
+	if (wm->rcfile)
+		OPRINTF("%d %s: rcfile %s\n", screen, wm->name, wm->rcfile);
+	if (wm->pdir)
+		OPRINTF("%d %s: pdir %s\n", screen, wm->name, wm->pdir);
+	if (wm->udir)
+		OPRINTF("%d %s: udir %s\n", screen, wm->name, wm->udir);
+	if (wm->sdir)
+		OPRINTF("%d %s: sdir %s\n", screen, wm->name, wm->sdir);
+	if (wm->stylefile)
+		OPRINTF("%d %s: stylefile %s\n", screen, wm->name, wm->stylefile);
+	if (wm->style)
+		OPRINTF("%d %s: style %s\n", screen, wm->name, wm->style);
+	if (wm->stylename)
+		OPRINTF("%d %s: stylename %s\n", screen, wm->name, wm->stylename);
+}
+
+void
+show_wms()
+{
+	int s;
+
+	for (s = 0; s < nscr; s++) {
+		screen = s;
+		scr = screens + screen;
+		root = scr->root;
+		wm = scr->wm;
+		if (wm)
+			show_wm();
+	}
+}
+
 Bool
 detect_wm()
 {
@@ -1300,6 +1411,8 @@ detect_wm()
 			OPRINTF("found wm %s(%ld) for screen %d\n",
 					wm->name, wm->pid, screen);
 			have_wm = True;
+			if (options.output > 1)
+				show_wm();
 		}
 	}
 	if (!have_wm)
@@ -1312,10 +1425,14 @@ detect_wm()
 char *
 get_optarg(char *optname)
 {
-	int i, l = strlen(optname);
+	int i, l;
 	char **argv;
 	int argc;
 
+	if (!optname)
+		return NULL;
+
+	l = strlen(optname);
 	argv = wm->argv ? : wm->cargv ? : NULL;
 	argc = wm->argv ? wm->argc : wm->cargv ? wm->cargc : 0;
 
@@ -1349,10 +1466,59 @@ get_simple_dirs(char *wmname)
 	wm->sdir = calloc(strlen("/usr/share/") + strlen(wmname) + 1, sizeof(*wm->sdir));
 	strcpy(wm->sdir, "/usr/share/");
 	strcat(wm->sdir, wmname);
-	if (strcmp(wm->pdir, home)) {
+	if (!strcmp(wm->pdir, home)) {
 		free(wm->pdir);
 		wm->pdir = strdup(wm->udir);
 	}
+}
+
+void
+get_rcfile_simple(char *wmname, char *option)
+{
+	char *home = get_proc_environ("HOME") ? : ".";
+	char *file = get_optarg(option);
+	int len;
+	struct stat st;
+
+	free(wm->rcfile);
+	if (file) {
+		if (file[0] == '/')
+			wm->rcfile = strdup(file);
+		else {
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+			strcpy(wm->rcfile, home);
+			strcat(wm->rcfile, "/");
+			strcat(wm->rcfile, file);
+		}
+	} else {
+		char rc[32];
+
+		snprintf(rc, sizeof(rc), "/.%src", wmname);
+		len = strlen(home) + strlen(rc) + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+		strcpy(wm->rcfile, home);
+		strcat(wm->rcfile, rc);
+		/* often this is symlinked into the actual directory */
+		if (!lstat(wm->rcfile, &st) && S_ISLNK(st.st_mode)) {
+			file = calloc(PATH_MAX + 1, sizeof(*file));
+			if (readlink(wm->rcfile, file, PATH_MAX) == -1)
+				EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			if (file[0] == '/') {
+				free(wm->rcfile);
+				wm->rcfile = strdup(file);
+			} else if (file[0]) {
+				free(wm->rcfile);
+				len = strlen(home) + strlen(file) + 2;
+				wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+				strcpy(wm->rcfile, home);
+				strcat(wm->rcfile, "/");
+				strcat(wm->rcfile, file);
+			}
+			free(file);
+		}
+	}
+	get_simple_dirs(wmname);
 }
 
 Bool
@@ -1360,10 +1526,23 @@ test_file(char *path)
 {
 	struct stat st;
 
-	if (path && stat(path, &st))
-		if (S_ISREG(st.st_mode))
+	if (!path) {
+		EPRINTF("%s", "null path\n");
+		return False;
+	}
+
+	OPRINTF("testing file '%s' for existence\n", path);
+
+	if (!stat(path, &st)) {
+		if (S_ISREG(st.st_mode)) {
 			if (!access(path, R_OK))
 				return True;
+			else
+				DPRINTF("cannot read %s\n", path);
+		} else
+			DPRINTF("%s not regular file\n", path);
+	} else
+		EPRINTF("%s: %s\n", path, strerror(errno));
 	return False;
 }
 
@@ -1416,33 +1595,75 @@ get_rcfile_FLUXBOX()
 
 /** @brief Find a fluxbox style file from a style name.
   *
-  * Fluxbox style files are named files in /usr/share/fluxbox/styles or
-  * ~/.fluxbox/styles, or are named subdirectories of those directories that
-  * contain a theme.cfg file.
+  * Fluxbox style files are named files or directories in
+  * /usr/share/fluxbox/styles or ~/.fluxbox/styles.  When a named directory,
+  * the directory must contain a file named theme.cfg.
   */
 char *
 find_style_FLUXBOX()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
+	char *path = NULL;
+	int len, i;
+	struct stat st;
 
 	get_rcfile_FLUXBOX();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s", wm->dirs[i], options.style);
-		if (test_file(path)) {
-			res = strdup(path);
-			break;
+	if (options.style[0] == '/') {
+		len = strlen(options.style) + strlen("/theme.cfg") + 1;
+		path = calloc(len, sizeof(*path));
+		strcpy(path, options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
 		}
-		strcat(path, "/theme.cfg");
-		if (test_file(path)) {
-			res = strdup(path);
+		if (S_ISDIR(st.st_mode)) {
+			strcat(path, "/theme.cfg");
+			if (stat(path, &st)) {
+				EPRINTF("%s %s\n", path, strerror(errno));
+				free(path);
+				return NULL;
+			}
+			*strrchr(path, '/') = '\0';
+		} else if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not directory or file\n", path);
+			free(path);
+			return NULL;
+		}
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/") +
+			    strlen(options.style) + strlen("/theme.cfg") + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(path, "/theme.cfg");
+				if (stat(path, &st)) {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
+				*strrchr(path, '/') = '\0';
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not directory or file\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
 			break;
 		}
 	}
-	free(path);
-	return res;
+	return path;
 }
 
 /** @brief Get the current fluxbox style.
@@ -1454,25 +1675,32 @@ char *
 get_style_FLUXBOX()
 {
 	XrmValue value;
-	char *type;
+	char *type, *pos;
 
 	if (wm->style)
 		return wm->style;
 
 	get_rcfile_FLUXBOX();
 	if (!test_file(wm->rcfile)) {
-		fprintf(stderr, "ERROR: rcfile '%s' does not exist\n", wm->rcfile);
+		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		return NULL;
 	}
 	init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
-		fprintf(stderr, "ERROR: cannot read database file '%s'\n", wm->rcfile);
+		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		return NULL;
 	}
-	if (XrmGetResource
-	    (wm->db, "session.styleFile", "Session.StyleFile", &type, &value))
-		return (wm->style = strndup((char *) value.addr, value.size));
-	return NULL;
+	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
+			    &type, &value)) {
+		EPRINTF("%s", "no session.styleFile resource in database\n");
+		return NULL;
+	}
+	free(wm->style);
+	wm->style = strndup((char *) value.addr, value.size);
+	free(wm->stylename);
+	wm->stylename = (pos = strrchr(wm->style, '/')) ?
+	    strdup(pos + 1) : strdup(wm->style);
+	return wm->style;
 }
 
 /** @brief Set the fluxbox style.
@@ -1503,35 +1731,99 @@ set_style_FLUXBOX()
 	char *stylefile, *line, *style;
 	int len;
 
+	get_rcfile_FLUXBOX();
 	if (!wm->pid) {
-		fprintf(stderr, "ERROR: cannot set fluxbox style without pid\n");
-		return;
+		EPRINTF("%s", "cannot set fluxbox style without pid\n");
+		goto no_pid;
 	}
 	if (!test_file(wm->rcfile)) {
-		fprintf(stderr, "ERROR: rcfile '%s' does not exist\n", wm->rcfile);
-		return;
+		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
+		goto no_rcfile;
 	}
 	if (!(stylefile = find_style_FLUXBOX())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
-		return;
+		EPRINTF("cannot find style '%s'\n", options.style);
+		goto no_stylefile;
 	}
-	if ((style = get_style_FLUXBOX()) && !strcmp(style, stylefile)) {
-		free(stylefile);
-		return;		/* no change */
-	}
-	if (!wm->db) {
-		fprintf(stderr, "ERROR: could not read database file '%s'\n", wm->rcfile);
-		return;
+	if ((style = get_style_FLUXBOX()) && !strcmp(style, stylefile))
+		goto no_change;
+	init_xrm();
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
+		goto no_db;
 	}
 	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
 	line = calloc(len, sizeof(*line));
 	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
 	XrmPutLineResource(&wm->db, line);
-	free(stylefile);
+	free(line);
 	if (options.dryrun)
-		return;
+		goto no_change;
 	XrmPutFileDatabase(wm->db, wm->rcfile);
 	kill(wm->pid, SIGUSR2);
+      no_change:
+	if (wm->db) {
+		XrmDestroyDatabase(wm->db);
+		wm->db = NULL;
+	}
+      no_db:
+	free(stylefile);
+      no_stylefile:
+      no_rcfile:
+      no_pid:
+	return;
+}
+
+void
+list_dir_FLUXBOX(char *xdir, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir)
+		return;
+	len = strlen(xdir) + strlen("/styles") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/styles");
+	if ((dir = opendir(dirname))) {
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) +
+			    strlen("/theme.cfg") + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(file, "/theme.cfg");
+				if (stat(file, &st)) {
+					DPRINTF("%s: %s\n", file, strerror(errno));
+					free(file);
+					continue;
+				}
+				*strrchr(file, '/') = '\0';
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a directory or file\n", file);
+				free(file);
+				continue;
+			}
+			fprintf(stdout, "%s %s%s\n", d->d_name, file,
+				(style && !strcmp(style, file)) ? " *" : "");
+			free(file);
+		}
+		closedir(dir);
+	} else
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+	free(dirname);
 }
 
 /** @brief List fluxbox styles.
@@ -1539,6 +1831,18 @@ set_style_FLUXBOX()
 void
 list_styles_FLUXBOX()
 {
+	char *style = get_style_FLUXBOX();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_FLUXBOX(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_FLUXBOX(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_FLUXBOX(wm->sdir, style);
+	}
 }
 
 /** @} */
@@ -1561,28 +1865,7 @@ list_styles_FLUXBOX()
 void
 get_rcfile_BLACKBOX()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-rc");
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-	} else {
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.blackboxrc") + 1,
-			   sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.blackboxrc");
-	}
-	get_simple_dirs("blackbox");
+	return get_rcfile_simple("blackbox", "-rc");
 }
 
 /** @brief Find a blackbox style file from a style name.
@@ -1593,28 +1876,83 @@ get_rcfile_BLACKBOX()
 char *
 find_style_BLACKBOX()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
+	char *path = NULL;
+	int len, i;
+	struct stat st;
 
 	get_rcfile_BLACKBOX();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s", wm->dirs[i], options.style);
-		if (test_file(path)) {
-			res = strdup(path);
+	if (options.style[0] == '/') {
+		path = strdup(options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not a file\n", path);
+			free(path);
+			return NULL;
+		}
+	} else if (strchr(options.style, '/')) {
+		EPRINTF("%s: path is not absolute\n", options.style);
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/") +
+			    strlen(options.style) + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
 			break;
 		}
 	}
-	free(path);
-	return res;
+	return path;
 }
 
 char *
 get_style_BLACKBOX()
 {
+	XrmValue value;
+	char *type, *pos;
+
+	if (wm->style)
+		return wm->style;
+
 	get_rcfile_BLACKBOX();
-	return NULL;
+	if (!test_file(wm->rcfile)) {
+		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
+		return NULL;
+	}
+	init_xrm();
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
+		return NULL;
+	}
+	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
+			    &type, &value)) {
+		EPRINTF("%s", "no session.styleFile resource in database\n");
+		return NULL;
+	}
+	free(wm->style);
+	wm->style = strndup((char *) value.addr, value.size);
+	free(wm->stylename);
+	wm->stylename = (pos = strrchr(wm->style, '/')) ?
+	    strdup(pos + 1) : strdup(wm->style);
+	return wm->style;
 }
 
 /*
@@ -1634,50 +1972,105 @@ get_style_BLACKBOX()
 void
 set_style_BLACKBOX()
 {
-	XrmDatabase db;
-	char *type, *stylefile, *line;
-	XrmValue value;
+	char *stylefile, *line, *style;
 	int len;
 
 	if (!wm->pid) {
-		fprintf(stderr, "ERROR: cannot set blackbox style without pid\n");
-		return;
+		EPRINTF("%s", "cannot set blackbox style without pid\n");
+		goto no_pid;
 	}
 	if (!test_file(wm->rcfile)) {
-		fprintf(stderr, "ERROR: rcfile '%s' does not exist\n", wm->rcfile);
-		return;
+		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
+		goto no_rcfile;
 	}
 	if (!(stylefile = find_style_BLACKBOX())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		goto no_stylefile;
 	}
+	if ((style = get_style_BLACKBOX()) && !strcmp(style, stylefile))
+		goto no_change;
 	init_xrm();
-	if (!(db = XrmGetFileDatabase(wm->rcfile))) {
-		fprintf(stderr, "ERROR: cannot read database file '%s'\n", wm->rcfile);
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		goto no_db;
 	}
-	if (XrmGetResource(db, "session.styleFile", "Session.StyleFile", &type, &value))
-		if (!strncmp(stylefile, (char *) value.addr, value.size))
-			goto no_change;
 	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
 	line = calloc(len, sizeof(*line));
 	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
-	XrmPutLineResource(&db, line);
+	XrmPutLineResource(&wm->db, line);
+	free(line);
 	if (options.dryrun)
 		goto no_change;
-	XrmPutFileDatabase(db, wm->rcfile);
+	XrmPutFileDatabase(wm->db, wm->rcfile);
 	kill(wm->pid, SIGUSR1);
       no_change:
-	XrmDestroyDatabase(db);
+	if (wm->db) {
+		XrmDestroyDatabase(wm->db);
+		wm->db = NULL;
+	}
       no_db:
 	free(stylefile);
       no_stylefile:
+      no_rcfile:
+      no_pid:
 	return;
+}
+
+void
+list_dir_BLACKBOX(char *xdir, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir)
+		return;
+	len = strlen(xdir) + strlen("/styles") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/styles");
+	if ((dir = opendir(dirname))) {
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (stat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (S_ISREG(st.st_mode))
+				fprintf(stdout, "%s %s%s\n", d->d_name, file,
+					(style && !strcmp(style, file)) ? " *" : "");
+			free(file);
+		}
+		closedir(dir);
+	} else
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+	free(dirname);
 }
 
 void
 list_styles_BLACKBOX()
 {
+	char *style = get_style_BLACKBOX();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_BLACKBOX(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_BLACKBOX(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_BLACKBOX(wm->sdir, style);
+	}
 }
 
 /** @} */
@@ -1768,7 +2161,7 @@ find_style_OPENBOX()
 	char *pos, *end;
 
 	if (strchr(options.style, '/')) {
-		fprintf(stderr, "ERROR: path in openbox style name '%s'\n", wm->style);
+		EPRINTF("path in openbox style name '%s'\n", wm->style);
 		return NULL;
 	}
 
@@ -1804,7 +2197,7 @@ find_style_OPENBOX()
 	free(path);
 	free(dirs);
 	free(file);
-	fprintf(stderr, "ERROR: could not find path for style '%s'\n", wm->style);
+	EPRINTF("could not find path for style '%s'\n", wm->style);
 	return NULL;
       got_it:
 	free(dirs);
@@ -1860,7 +2253,7 @@ set_style_OPENBOX()
 	char *stylefile;
 
 	if (!(stylefile = find_style_OPENBOX())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 
@@ -1885,8 +2278,76 @@ set_style_OPENBOX()
 }
 
 void
+list_dir_OPENBOX(char *xdir)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen("/themes") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/themes");
+	if ((dir = opendir(dirname))) {
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) +
+				strlen("/openbox-3/themerc") + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			strcat(file, "/openbox-3/themerc");
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+			fprintf(stdout, "%s %s\n", d->d_name, file);
+			free(file);
+		}
+		closedir(dir);
+	} else
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+	free(dirname);
+}
+
+void
 list_styles_OPENBOX()
 {
+	char *data, *home, *dirs, *dir, *end;
+	int len;
+
+	home = strdup(getenv("HOME") ?: ".");
+	len = strlen(home) + strlen("/.local.share") + 1;
+	dirs = calloc(len, sizeof(*dirs));
+	strcpy(dirs, home);
+	strcat(dirs, "/.local/share");
+	data = strdup(getenv("XDG_DATA_DIRS") ?: "/usr/local/share:/usr/share");
+	home = strdup(getenv("XDG_DATA_HOME") ?: dirs);
+	free(dirs);
+	len = strlen(home) + strlen(data) + 2;
+	dirs = calloc(len, sizeof(*dirs));
+	strcpy(dirs, home);
+	strcat(dirs, ":");
+	strcat(dirs, data);
+	free(data);
+	free(home);
+	for (dir = dirs, end = dir + strlen(dir); dir < end; dir += strlen(dir) + 1) {
+		*strchrnul(dir, ':') = '\0';
+		list_dir_OPENBOX(dir);
+	}
+	free(dirs);
 }
 
 /** @} */
@@ -1973,7 +2434,7 @@ find_style_ICEWM()
 	int i, len;
 
 	if (options.style[0] == '.' || options.style[0] == '/') {
-		fprintf(stderr, "ERROR: path in icewm style name '%s'\n", wm->style);
+		EPRINTF("path in icewm style name '%s'\n", wm->style);
 		return NULL;
 	}
 	get_rcfile_ICEWM();
@@ -2068,7 +2529,7 @@ set_style_ICEWM()
 	XEvent ev;
 
 	if (!(stylefile = find_style_ICEWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		goto no_stylefile;
 	}
 	free(stylefile);
@@ -2078,11 +2539,11 @@ set_style_ICEWM()
 	snprintf(themerc, len, "%s/theme", wm->pdir);
 
 	if (!(f = fopen(themerc, "r"))) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
+		EPRINTF("%s: %s\n", themerc, strerror(errno));
 		goto no_themerc;
 	}
 	if (fstat(fileno(f), &st)) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
+		EPRINTF("%s: %s\n", themerc, strerror(errno));
 		goto no_stat;
 	}
 	buf = calloc(st.st_size + 1, sizeof(*buf));
@@ -2101,7 +2562,7 @@ set_style_ICEWM()
 	if (options.dryrun)
 		goto no_change;
 	if (!(f = freopen(themerc, "w", f))) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
+		EPRINTF("%s: %s\n", themerc, strerror(errno));
 		goto no_change;
 	}
 	fprintf(f, "Theme=\"%s\"\n", options.style);
@@ -2139,8 +2600,103 @@ set_style_ICEWM()
 }
 
 void
+list_dir_ICEWM(char *xdir, char *style)
+{
+	DIR *dir, *sub;
+	char *dirname, *subdir, *file, *pos, *name;
+	struct dirent *d, *e;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen("/themes") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/themes");
+	if (!(dir = opendir(dirname))) {
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + 2;
+		subdir = calloc(len, sizeof(*subdir));
+		strcpy(subdir, dirname);
+		strcat(subdir, "/");
+		strcat(subdir, d->d_name);
+		if (stat(subdir, &st)) {
+			EPRINTF("%s: %s\n", subdir, strerror(errno));
+			free(subdir);
+			continue;
+		}
+		if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not a directory\n", subdir);
+			free(subdir);
+			continue;
+		}
+		if (!(sub = opendir(subdir))) {
+			EPRINTF("%s: %s\n", subdir, strerror(errno));
+			free(subdir);
+			continue;
+		}
+		while ((e = readdir(sub))) {
+			if (e->d_name[0] == '.')
+				continue;
+			if (!(pos = strstr(e->d_name, ".theme")) ||
+			    pos != e->d_name + strlen(e->d_name) - 6)
+				continue;
+			len = strlen(subdir) + strlen(e->d_name) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, subdir);
+			strcat(file, "/");
+			strcat(file, e->d_name);
+			if (stat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a regular file\n", file);
+				free(file);
+				continue;
+			}
+			*(pos = strstr(e->d_name, ".theme")) = '\0';
+			len = strlen(d->d_name) + strlen(e->d_name) + 2;
+			name = calloc(len, sizeof(*name));
+			strcpy(name, d->d_name);
+			strcat(name, "/");
+			strcat(name, e->d_name);
+			fprintf(stdout, "%s %s%s\n", name, file,
+				(style && !strcmp(style, file)) ? " *" : "");
+			*pos = '.';
+			free(name);
+			free(file);
+		}
+		closedir(sub);
+		free(subdir);
+	}
+	closedir(dir);
+	free(dirname);
+}
+
+void
 list_styles_ICEWM()
 {
+	char *style = get_style_ICEWM();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_ICEWM(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_ICEWM(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_ICEWM(wm->sdir, style);
+	}
 }
 
 /** @} */
@@ -2152,54 +2708,202 @@ list_styles_ICEWM()
 void
 get_rcfile_JWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-rc");
-
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-	} else {
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.jwmrc") + 1, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.jwmrc");
-	}
-	get_simple_dirs("jwm");
+	return get_rcfile_simple("jwm", "-rc");
 }
 
+/** @brief Find a jwm style from a style name.
+  *
+  * JWM style files are named files or directories in /usr/share/jwm/styles or
+  * ~/.jwm/styles.  When a named directory, the directory must contain a file
+  * named style.
+  */
 char *
 find_style_JWM()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
+	char *path = NULL;
+	int len, i;
+	struct stat st;
 
 	get_rcfile_JWM();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s/style", wm->dirs[i],
-			 options.style);
-		if (test_file(path)) {
-			res = strdup(path);
+	if (options.style[0] == '/') {
+		len = strlen(options.style) + strlen("/style") + 1;
+		path = calloc(len, sizeof(*path));
+		strcpy(path, options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
+		}
+		if (S_ISDIR(st.st_mode)) {
+			strcat(path, "/style");
+			if (stat(path, &st)) {
+				EPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				return NULL;
+			}
+		} else if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not directory or file\n", path);
+			free(path);
+			return NULL;
+		}
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/") +
+			    strlen(options.style) + strlen("/style") + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(path, "/style");
+				if (stat(path, &st)) {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not directory or file\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
 			break;
 		}
 	}
-	free(path);
-	return res;
+	return path;
 }
 
+/** @brief Get the style for jwm.
+  *
+  * There are two ways to implement the style system for echinus: symbolic links
+  * or <Include></Include> statements.  Both accept absolute or relative paths.
+  * The style file in turn links to or include a style file from the appropriate
+  * styles subdirectory.
+  *
+  * The symbolic link approach is likely best.  Either acheives the same result.
+  */
 char *
 get_style_JWM()
 {
+	char *stylerc = NULL, *stylefile = NULL;
+	int i, len;
+	struct stat st;
+
 	get_rcfile_JWM();
-	return NULL;
+	for (i = 0; i < CHECK_DIRS; i++) {
+		if (i == 1)
+			continue;
+		if (!wm->dirs[i] || !wm->dirs[i][0])
+			continue;
+		len = strlen(wm->dirs[i]) + strlen("/style") + 1;
+		stylerc = calloc(len, sizeof(*stylerc));
+		strcpy(stylerc, wm->dirs[i]);
+		strcat(stylerc, "/style");
+		if (lstat(stylerc, &st)) {
+			DPRINTF("%s: %s\n", stylerc, strerror(errno));
+			free(stylerc);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			FILE *f;
+			char *buf, *b, *e;
+
+			if (!(f = fopen(stylerc, "r"))) {
+				DPRINTF("%s: %s\n", stylerc, strerror(errno));
+				free(stylerc);
+				continue;
+			}
+			buf = calloc(PATH_MAX + 1, sizeof(*buf));
+			while (fgets(buf, PATH_MAX, f)) {
+				if (!(b = strstr(buf, "<Include>")))
+					continue;
+				if (!(e = strstr(buf, "</Include>")))
+					continue;
+				b += strlen("<Include>");
+				if (b >= e)
+					continue;
+				*e = '\0';
+				memmove(buf, b, strlen(b) + 1);
+				stylefile = buf;
+				break;
+			}
+			fclose(f);
+			if (!stylefile) {
+				free(buf);
+				continue;
+			}
+		} else if (S_ISLNK(st.st_mode)) {
+			stylefile = calloc(PATH_MAX + 1, sizeof(*stylefile));
+			if (readlink(stylerc, stylefile, PATH_MAX) <= 0) {
+				DPRINTF("%s: %s\n", stylerc, strerror(errno));
+				free(stylefile);
+				stylefile = NULL;
+				free(stylerc);
+				continue;
+			}
+		} else {
+			DPRINTF("%s: not link or file\n", stylerc);
+			free(stylerc);
+			continue;
+		}
+		if (stylefile[0] != '/') {
+			/* make absolute path */
+			memmove(stylefile + strlen(wm->dirs[i]) + 1,
+				stylefile, strlen(stylefile) + 1);
+			memcpy(stylefile, stylerc, strlen(wm->dirs[i]) + 1);
+		}
+		free(stylerc);
+		stylerc = NULL;
+		break;
+	}
+	if (stylefile) {
+		char *pos;
+
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylename);
+		if ((pos = strstr(stylefile, "/style")))
+			*pos = '\0';
+		wm->stylename = (pos = strrchr(stylefile, '/')) ?
+		    strdup(pos + 1) : strdup(stylefile);
+		free(stylefile);
+	}
+	return wm->style;
+}
+
+/** @brief Reload a jwm style.
+  *
+  * JWM can be reloaded or restarted by sending a _JWM_RELOAD or _JWM_RESTART
+  * ClientMessage to the root window, or by executing jwm -reload or jwm
+  * -restart.
+  */
+void
+reload_style_JWM()
+{
+	XEvent ev;
+
+	ev.xclient.type = ClientMessage;
+	ev.xclient.display = dpy;
+	ev.xclient.window = root;
+	ev.xclient.message_type = XInternAtom(dpy, "_JWM_RELOAD", False);
+	ev.xclient.format = 32;
+	ev.xclient.data.l[0] = 0;
+	ev.xclient.data.l[1] = 0;
+	ev.xclient.data.l[2] = 0;
+	ev.xclient.data.l[3] = 0;
+	ev.xclient.data.l[4] = 0;
+	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask,
+		   &ev);
+	XSync(dpy, False);
 }
 
 /*
@@ -2228,80 +2932,128 @@ get_style_JWM()
 void
 set_style_JWM()
 {
-	FILE *f;
-	struct stat st;
-	char *stylefile, *themerc, *buf, *line;
+	char *stylefile, *style, *stylerc;
 	int len;
-	size_t read, total;
-	XEvent ev;
 
+	get_rcfile_JWM();
 	if (!(stylefile = find_style_JWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find jwm style '%s'\n", options.style);
 		goto no_stylefile;
 	}
-
-	len = strlen(wm->pdir) + strlen("/style") + 1;
-	themerc = calloc(len, sizeof(*themerc));
-	snprintf(themerc, len, "%s/style", wm->pdir);
-
-	if (!(f = fopen(themerc, "r"))) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
-		goto no_themerc;
-	}
-	if (fstat(fileno(f), &st)) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
-		goto no_stat;
-	}
-	buf = calloc(st.st_size + 1, sizeof(*buf));
-	/* read entire file into buffer */
-	for (total = 0; total < st.st_size; total += read)
-		if ((read = fread(buf + total, 1, st.st_size - total, f)))
-			if (total < st.st_size)
-				goto no_buf;
-
-	len = strlen(stylefile) + strlen("<Include></Include>") + 1;
-	line = calloc(len, sizeof(*line));
-	snprintf(line, len, "<Include>%s</Include>", stylefile);
-	if (strstr(buf, line))
+	if ((style = get_style_JWM()) && !strcmp(style, stylefile))
 		goto no_change;
 	if (options.dryrun)
 		goto no_change;
-	if (!(f = freopen(themerc, "w", f))) {
-		fprintf(stderr, "ERROR: %s: %s\n", themerc, strerror(errno));
-		goto no_change;
+	len = strlen(wm->pdir) + strlen("/style") + 1;
+	stylerc = calloc(len, sizeof(*stylerc));
+	strcpy(stylerc, wm->pdir);
+	strcat(stylerc, "/style");
+	if (options.link) {
+		unlink(stylerc);
+		if (symlink(stylefile, stylerc)) {
+			EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+			goto no_link;
+		}
+	} else {
+		FILE *f;
+
+		unlink(stylerc);
+		if (!(f = fopen(stylerc, "w"))) {
+			EPRINTF("%s: %s\n", stylerc, strerror(errno));
+			goto no_file;
+		}
+		fprintf(f, "<?xml version=\"1.0\"?>\n");
+		fprintf(f, "<JWM>\n");
+		fprintf(f, "   <Include>%s</Include>\n", stylefile);
+		fprintf(f, "</JWM>\n");
+		fclose(f);
 	}
-	fprintf(f, "<?xml version=\"1.0\"?>\n");
-	fprintf(f, "<JWM>\n");
-	fprintf(f, "   %s\n", line);
-	fprintf(f, "</JWM>\n");
-	ev.xclient.type = ClientMessage;
-	ev.xclient.display = dpy;
-	ev.xclient.window = root;
-	ev.xclient.message_type = XInternAtom(dpy, "_JWM_RELOAD", False);
-	ev.xclient.format = 32;
-	ev.xclient.data.l[0] = 0;
-	ev.xclient.data.l[1] = 0;
-	ev.xclient.data.l[2] = 0;
-	ev.xclient.data.l[3] = 0;
-	ev.xclient.data.l[4] = 0;
-	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask,
-		   &ev);
+	reload_style_JWM();
+      no_file:
+      no_link:
+	free(stylerc);
       no_change:
-	free(line);
-      no_buf:
-	free(buf);
-      no_stat:
-	fclose(f);
-      no_themerc:
-	free(themerc);
+	free(stylefile);
       no_stylefile:
 	return;
+}
 
+void
+list_dir_JWM(char *xdir, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen("/styles") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/styles");
+	if (!(dir = opendir(dirname))) {
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen("/style") + 2;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dirname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			fprintf(stdout, "%s %s\n", d->d_name, file);
+			free(file);
+			continue;
+		} else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		}
+		strcat(file, "/style");
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			free(file);
+			continue;
+		}
+		fprintf(stdout, "%s %s%s\n", d->d_name, file,
+			(style && !strcmp(style, file)) ? " *" : "");
+		free(file);
+	}
+	closedir(dir);
+	free(dirname);
 }
 
 void
 list_styles_JWM()
 {
+	char *style = get_style_JWM();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_JWM(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_JWM(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_JWM(wm->sdir, style);
+	}
 }
 
 /** @} */
@@ -2402,19 +3154,19 @@ set_style_PEKWM()
 	size_t read, total;
 
 	if (!wm->pid) {
-		fprintf(stderr, "ERROR: cannot set pekwm style without pid\n");
+		EPRINTF("%s", "cannot set pekwm style without pid\n");
 		goto no_stylefile;
 	}
 	if (!(stylefile = find_style_PEKWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		goto no_stylefile;
 	}
 	if (!(f = fopen(wm->rcfile, "r"))) {
-		fprintf(stderr, "ERROR: %s: %s\n", wm->rcfile, strerror(errno));
+		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
 		goto no_rcfile;
 	}
 	if (fstat(fileno(f), &st)) {
-		fprintf(stderr, "ERROR: %s: %s\n", wm->rcfile, strerror(errno));
+		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
 		goto no_stat;
 	}
 	buf = calloc(st.st_size + 1, sizeof(*buf));
@@ -2431,7 +3183,7 @@ set_style_PEKWM()
 	if (options.dryrun)
 		goto no_change;
 	if (!(f = freopen(wm->rcfile, "w", f))) {
-		fprintf(stderr, "ERROR: %s: %s\n", wm->rcfile, strerror(errno));
+		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
 		goto no_change;
 	}
 	for (pos = buf, end = buf + st.st_size; pos < end; pos = pos + strlen(pos) + 1) {
@@ -2532,7 +3284,7 @@ set_style_FVWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_FVWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -2636,7 +3388,7 @@ set_style_WMAKER()
 	char *stylefile;
 
 	if (!(stylefile = find_style_WMAKER())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -2677,7 +3429,7 @@ set_style_AFTERSTEP()
 	char *stylefile;
 
 	if (!(stylefile = find_style_AFTERSTEP())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -2723,10 +3475,374 @@ set_style_METACITY()
 	char *stylefile;
 
 	if (!(stylefile = find_style_METACITY())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
+
+/** @} */
+
+/* @name XTWM
+ *
+ * There is really no window manager named xtwm, but twm, ctwm, vtwm and etwm
+ * are all similar so this section contains factored routines.
+ */
+/** @{ */
+
+void
+get_rcfile_XTWM(char *xtwm)
+{
+	char *home = get_proc_environ("HOME") ? : ".";
+	char *file = get_optarg("-f");
+	int len;
+	struct stat st;
+
+	free(wm->rcfile);
+	if (file) {
+		if (file[0] == '/')
+			wm->rcfile = strdup(file);
+		else {
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+			strcpy(wm->rcfile, home);
+			strcat(wm->rcfile, "/");
+			strcat(wm->rcfile, file);
+		}
+	} else {
+		char buf[16], rc[16];
+
+		/* check if ~/.%src.%d exists first where %d is the screen number */
+		snprintf(rc, sizeof(rc), "/.%src", xtwm);
+		snprintf(buf, sizeof(buf), ".%d", screen);
+		len = strlen(home) + strlen(rc) + strlen(buf) + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+		strcpy(wm->rcfile, home);
+		strcat(wm->rcfile, rc);
+		strcat(wm->rcfile, buf);
+		if (stat(wm->rcfile, &st) || !S_ISREG(st.st_mode))
+			*strrchr(wm->rcfile, '.') = '\0';
+		if (stat(wm->rcfile, &st) || !S_ISREG(st.st_mode)) {
+			/* then check ~/.twmrc.%d and ~/.twmrc */
+			strcpy(wm->rcfile, home);
+			strcat(wm->rcfile, "/.twmrc");
+			strcat(wm->rcfile, buf);
+			if (stat(wm->rcfile, &st) || !S_ISREG(st.st_mode))
+				*strrchr(wm->rcfile, '.') = '\0';
+		}
+		/* often this is symlinked into the actual directory */
+		if (!lstat(wm->rcfile, &st) && S_ISLNK(st.st_mode)) {
+			file = calloc(PATH_MAX + 1, sizeof(*file));
+			if (readlink(wm->rcfile, file, PATH_MAX) == -1)
+				EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			if (file[0] == '/') {
+				free(wm->rcfile);
+				wm->rcfile = strdup(file);
+			} else if (file[0]) {
+				free(wm->rcfile);
+				len = strlen(home) + strlen(file) + 2;
+				wm->rcfile = calloc(len, sizeof(*wm->rcfile));
+				strcpy(wm->rcfile, home);
+				strcat(wm->rcfile, "/");
+				strcat(wm->rcfile, file);
+			}
+			free(file);
+		}
+	}
+	get_simple_dirs(xtwm);
+}
+
+char *
+find_style_XTWM(char *xtwm)
+{
+	char *path = NULL;
+	int len, i;
+	struct stat st;
+
+	get_rcfile_XTWM(xtwm);
+	if (options.style[0] == '/') {
+		len = strlen(options.style) + strlen("/stylerc") + 1;
+		path = calloc(len, sizeof(*path));
+		strcpy(path, options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
+		}
+		if (S_ISDIR(st.st_mode)) {
+			strcat(path, "/stylerc");
+			if (stat(path, &st)) {
+				EPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				return NULL;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				EPRINTF("%s is not a file\n", path);
+				free(path);
+				return NULL;
+			}
+		} else if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not a file or directory\n", path);
+			free(path);
+			return NULL;
+		}
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/")
+			    + strlen(options.style) + strlen("/stylerc") + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(path, "/stylerc");
+				if (stat(path, &st)) {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
+				if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s is not a file\n", path);
+					free(path);
+					path = NULL;
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s not a file or directory\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
+			break;
+		}
+	}
+	return path;
+}
+
+/** @brief Get the style for a twm variant.
+  *
+  * The style is a symbolic link in the private configuration directory named
+  * stylerc.
+  */
+char *
+get_style_XTWM(char *xtwm)
+{
+	char *stylerc = NULL, *stylefile = NULL;
+	int i, len;
+	struct stat st;
+
+	if (wm->style)
+		return wm->style;
+
+	get_rcfile_XTWM(xtwm);
+	for (i = 0; i < CHECK_DIRS; i++) {
+		if (i == 1)
+			continue;
+		if (!wm->dirs[i] || !wm->dirs[i][0])
+			continue;
+		len = strlen(wm->dirs[i]) + strlen("/stylerc") + 1;
+		stylerc = calloc(len, sizeof(*stylerc));
+		strcpy(stylerc, wm->dirs[i]);
+		strcat(stylerc, "/stylerc");
+		if (lstat(stylerc, &st)) {
+			DPRINTF("%s: %s\n", stylerc, strerror(errno));
+			free(stylerc);
+			stylerc = NULL;
+			continue;
+		}
+		if (!S_ISLNK(st.st_mode)) {
+			DPRINTF("%s not a symlink\n", stylerc);
+			free(stylerc);
+			stylerc = NULL;
+			continue;
+		}
+		stylefile = calloc(PATH_MAX + 1, sizeof(*stylefile));
+		if (readlink(stylerc, stylefile, PATH_MAX) <= 0) {
+			DPRINTF("%s: %s\n", stylerc, strerror(errno));
+			free(stylefile);
+			stylefile = NULL;
+			free(stylerc);
+			stylerc = NULL;
+			continue;
+		}
+		if (stylefile[0] != '/') {
+			/* make absolute path */
+			memmove(stylefile + strlen(wm->dirs[i]) + 1,
+				stylefile, strlen(stylefile) + 1);
+			memcpy(stylefile, stylerc, strlen(wm->dirs[i]) + 1);
+		}
+		free(stylerc);
+		stylerc = NULL;
+		break;
+	}
+	if (stylefile) {
+		char *pos;
+
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylename);
+		if ((pos = strstr(stylefile, "/stylerc")))
+			*pos = '\0';
+		wm->stylename = (pos = strrchr(stylefile, '/')) ?
+		    strdup(pos + 1) : strdup(stylefile);
+		free(stylefile);
+	}
+	return wm->style;
+}
+
+/** @brief Reload an twm variant style.
+  *
+  * ctwm and etwm can be restarted by sending SIGHUP to the process.  vtwm will
+  * restart on a SIGUSR1.  twm has no restart mechanism and we will have to
+  * eventually try to get the session manager to restart it.
+  */
+void
+reload_style_XTWM(char *xtwm)
+{
+	if (!strcmp(xtwm, "ctwm") || !strcmp(xtwm, "etwm"))
+		kill(wm->pid, SIGHUP);
+	else if (!strcmp(xtwm, "vtwm"))
+		kill(wm->pid, SIGUSR1);
+	else 
+		EPRINTF("don't know how to restart %s\n", xtwm);
+}
+
+/** @brief Set the style for a twm variant.
+  *
+  * Ourt style system for twm variants places a symbolic link in the user or
+  * private directory called stylerc that links to the style file in the style
+  * directory.
+  */
+void
+set_style_XTWM(char *xtwm)
+{
+	char *stylefile, *style, *stylerc;
+	int len;
+
+	get_rcfile_XTWM(xtwm);
+	if (!wm->pid) {
+		EPRINTF("cannot set %s style without a pid\n", xtwm);
+		goto no_pid;
+	}
+	if (!test_file(wm->rcfile)) {
+		EPRINTF("%s rcfile '%s' does not exist\n", xtwm, wm->rcfile);
+		goto no_rcfile;
+	}
+	if (!(stylefile = find_style_XTWM(xtwm))) {
+		EPRINTF("cannot find %s style '%s'\n", xtwm, options.style);
+		goto no_stylefile;
+	}
+	if ((style = get_style_XTWM(xtwm)) && !strcmp(style, stylefile))
+		goto no_change;
+	if (options.dryrun)
+		goto no_change;
+	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
+	stylerc = calloc(len, sizeof(*stylerc));
+	strcpy(stylerc, wm->pdir);
+	strcat(stylerc, "/stylerc");
+	unlink(stylerc);
+	if (symlink(stylefile, stylerc)) {
+		EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+		goto no_link;
+	}
+	reload_style_XTWM(xtwm);
+      no_link:
+	free(stylerc);
+      no_change:
+	free(stylefile);
+      no_stylefile:
+      no_rcfile:
+      no_pid:
+	return;
+}
+
+void
+list_dir_XTWM(char *xdir, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen("/styles") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/styles");
+	if (!(dir = opendir(dirname))) {
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen("/stylerc") + 2;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dirname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			fprintf(stdout, "%s %s\n", d->d_name, file);
+			free(file);
+			continue;
+		} else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		}
+		strcat(file, "/stylerc");
+		if (stat(file, &st)) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			free(file);
+			continue;
+		}
+		fprintf(stdout, "%s %s%s\n", d->d_name, file,
+			(style && !strcmp(style, file)) ? " *" : "");
+		free(file);
+	}
+	closedir(dir);
+	free(dirname);
+}
+
+void
+list_styles_XTWM(char *xtwm)
+{
+	char *style = get_style_XTWM(xtwm);
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_XTWM(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_XTWM(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_XTWM(wm->sdir, style);
+	}
+}
+
+
 
 /** @} */
 
@@ -2737,101 +3853,31 @@ set_style_METACITY()
 void
 get_rcfile_TWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-	} else {
-		/* check if ~/.twmrc.%d exists first where %d is the screen number */
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.twmrc") + 1, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.twmrc");
-	}
-	get_simple_dirs("twm");
+	return get_rcfile_XTWM("twm");
 }
 
 char *
 find_style_TWM()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
-
-	get_rcfile_TWM();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s/stylerc", wm->dirs[i],
-			 options.style);
-		if (test_file(path)) {
-			res = strdup(path);
-			break;
-		}
-	}
-	free(path);
-	return res;
+	return find_style_XTWM("twm");
 }
 
 char *
 get_style_TWM()
 {
-	get_rcfile_TWM();
-	return NULL;
+	return get_style_XTWM("twm");
 }
 
-/** @brief Set the style for twm.
-  *
-  * Our style system for twm places a symbolic link in the user or private
-  * directory called stylerc that links to the style file in the style
-  * directory.
-  */
 void
 set_style_TWM()
 {
-	char *stylefile, *link, *targ;
-	int len;
-
-	if (!(stylefile = find_style_TWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
-		goto no_stylefile;
-	}
-	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
-	targ = calloc(len, sizeof(*targ));
-	snprintf(targ, len, "%s/stylerc", wm->pdir);
-
-	link = calloc(PATH_MAX, sizeof(*link));
-	if (readlink(targ, link, PATH_MAX - 1) > 0)
-		if (strcmp(targ, stylefile) == 0)
-			goto no_change;
-	if (!options.dryrun)
-		goto no_change;
-	unlink(targ);
-	if (symlink(stylefile, targ))
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-
-	/* TODO: get wm to restart */
-
-      no_change:
-	free(targ);
-	free(link);
-	free(stylefile);
-      no_stylefile:
-	return;
+	return set_style_XTWM("twm");
 }
 
 void
 list_styles_TWM()
 {
+	return list_styles_XTWM("twm");
 }
 
 /** @} */
@@ -2843,107 +3889,31 @@ list_styles_TWM()
 void
 get_rcfile_CTWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-	} else {
-		/* check if ~/.ctwmrc.%d exists first where %d is the screen number */
-		/* then check ~/.twmrc.%d and ~/.twmrc */
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.ctwmrc") + 1, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.ctwmrc");
-	}
-	get_simple_dirs("ctwm");
+	return get_rcfile_XTWM("ctwm");
 }
 
 char *
 find_style_CTWM()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
-
-	get_rcfile_CTWM();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s/stylerc", wm->dirs[i],
-			 options.style);
-		if (test_file(path)) {
-			res = strdup(path);
-			break;
-		}
-	}
-	free(path);
-	return res;
+	return find_style_XTWM("ctwm");
 }
 
 char *
 get_style_CTWM()
 {
-	get_rcfile_CTWM();
-	return NULL;
+	return get_style_XTWM("ctwm");
 }
 
-/** @brief Set the style for ctwm.
-  *
-  * Our style system for ctwm places a symbolic link in the user or private
-  * directory called stylerc that links to the style file in the style
-  * directory.
-  *
-  * Note that a SIGHUP will restart ctwm.
-  */
 void
 set_style_CTWM()
 {
-	char *stylefile, *link, *targ;
-	int len;
-
-	if (!(stylefile = find_style_CTWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
-		goto no_stylefile;
-	}
-	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
-	targ = calloc(len, sizeof(*targ));
-	snprintf(targ, len, "%s/stylerc", wm->pdir);
-
-	link = calloc(PATH_MAX, sizeof(*link));
-	if (readlink(targ, link, PATH_MAX - 1) > 0)
-		if (strcmp(targ, stylefile) == 0)
-			goto no_change;
-	if (options.dryrun)
-		goto no_change;
-	unlink(targ);
-	if (symlink(stylefile, targ))
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-
-	if (wm->pid)
-		kill(wm->pid, SIGHUP);
-	else
-		fprintf(stderr, "ERROR: cannot restart ctwm without a pid\n");
-
-      no_change:
-	free(targ);
-	free(link);
-	free(stylefile);
-      no_stylefile:
-	return;
+	return set_style_XTWM("ctwm");
 }
 
 void
 list_styles_CTWM()
 {
+	return list_styles_XTWM("ctwm");
 }
 
 /** @} */
@@ -2955,107 +3925,67 @@ list_styles_CTWM()
 void
 get_rcfile_VTWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-	} else {
-		/* check if ~/.vtwmrc.%d exists first where %d is the screen number */
-		/* then check ~/.twmrc.%d and ~/.twmrc */
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.vtwmrc") + 1, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.vtwmrc");
-	}
-	get_simple_dirs("vtwm");
+	return get_rcfile_XTWM("vtwm");
 }
 
 char *
 find_style_VTWM()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
-
-	get_rcfile_VTWM();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s/stylerc", wm->dirs[i],
-			 options.style);
-		if (test_file(path)) {
-			res = strdup(path);
-			break;
-		}
-	}
-	free(path);
-	return res;
+	return find_style_XTWM("vtwm");
 }
 
 char *
 get_style_VTWM()
 {
-	get_rcfile_VTWM();
-	return NULL;
+	return get_style_XTWM("vtwm");
 }
 
-/** @brief Set the style for vtwm.
-  *
-  * Our style system for vtwm places a symbolic link in the user or private
-  * directory called stylerc that links to the style file in the style
-  * directory.
-  *
-  * Note that a SIGUSR1 will restart vtwm.
-  */
 void
 set_style_VTWM()
 {
-	char *stylefile, *link, *targ;
-	int len;
-
-	if (!(stylefile = find_style_VTWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
-		goto no_stylefile;
-	}
-	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
-	targ = calloc(len, sizeof(*targ));
-	snprintf(targ, len, "%s/stylerc", wm->pdir);
-
-	link = calloc(PATH_MAX, sizeof(*link));
-	if (readlink(targ, link, PATH_MAX - 1) > 0)
-		if (strcmp(targ, stylefile) == 0)
-			goto no_change;
-	if (options.dryrun)
-		goto no_change;
-	unlink(targ);
-	if (symlink(stylefile, targ))
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-
-	if (wm->pid)
-		kill(wm->pid, SIGUSR1);
-	else
-		fprintf(stderr, "ERROR: cannot restart vtwm without a pid\n");
-
-      no_change:
-	free(targ);
-	free(link);
-	free(stylefile);
-      no_stylefile:
-	return;
+	return set_style_XTWM("vtwm");
 }
 
 void
 list_styles_VTWM()
 {
+	return list_styles_XTWM("vtwm");
+}
+
+/** @} */
+
+/** @name ETWM
+  */
+/** @{ */
+
+void
+get_rcfile_ETWM()
+{
+	return get_rcfile_XTWM("etwm");
+}
+
+char *
+find_style_ETWM()
+{
+	return find_style_XTWM("etwm");
+}
+
+char *
+get_style_ETWM()
+{
+	return get_style_XTWM("etwm");
+}
+
+void
+set_style_ETWM()
+{
+	return set_style_XTWM("etwm");
+}
+
+void
+list_styles_ETWM()
+{
+	return list_styles_XTWM("etwm");
 }
 
 /** @} */
@@ -3069,54 +3999,206 @@ get_rcfile_ECHINUS()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
 	char *file = get_optarg("-f");
+	int len;
 
 	free(wm->rcfile);
 	if (file) {
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
 	} else {
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.echinus/echinusrc") + 1,
-			   sizeof(*wm->rcfile));
+		len = strlen(home) + strlen("/.echinus/echinusrc") + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.echinus/echinusrc");
 	}
 	get_simple_dirs("echinus");
 }
 
+/** @brief Find an echinus style from a style name.
+  *
+  * Echinus style files are named files or directories in
+  * /usr/share/echinus/styles or ~/.echinus/styles.  When a named directory, the
+  * directory must contain a file named stylerc.
+  */
 char *
 find_style_ECHINUS()
 {
-	char *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i;
+	char *path = NULL;
+	int len, i;
+	struct stat st;
 
 	get_rcfile_ECHINUS();
-	for (i = 0; i < CHECK_DIRS; i++) {
-		if (!wm->dirs[i] || !wm->dirs[i][0])
-			continue;
-		snprintf(path, PATH_MAX, "%s/styles/%s/stylerc", wm->dirs[i],
-			 options.style);
-		if (test_file(path)) {
-			res = strdup(path);
+	if (options.style[0] == '/') {
+		len = strlen(options.style) + strlen("/stylerc") + 1;
+		path = calloc(len, sizeof(*path));
+		strcpy(path, options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
+		}
+		if (S_ISDIR(st.st_mode)) {
+			strcat(path, "/stylerc");
+			if (stat(path, &st)) {
+				EPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				return NULL;
+			}
+		} else if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not directory or file\n", path);
+			free(path);
+			return NULL;
+		}
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/") +
+			    strlen(options.style) + strlen("/stylerc") + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(path, "/stylerc");
+				if (stat(path, &st)) {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not directory or file\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
 			break;
 		}
 	}
-	free(path);
-	return res;
+	return path;
 }
 
+/** @brief Get the style for echinus.
+  *
+  * There are two ways to implement the style system for echinus: symbolic links
+  * or #include statements.  Both accept absolute and relative paths.  The
+  * stylerc file in turn links to or includes a stylerc file from the
+  * appropriate styles subdirectory.
+  *
+  * The symbolic link approach is likely best.  Either acheives the same result.
+  */
 char *
 get_style_ECHINUS()
 {
+	char *stylerc = NULL, *stylefile = NULL;
+	int i, len;
+	struct stat st;
+
 	get_rcfile_ECHINUS();
-	return NULL;
+	for (i = 0; i < CHECK_DIRS; i++) {
+		if (i == 1)
+			continue;
+		if (!wm->dirs[i] || !wm->dirs[i][0])
+			continue;
+		len = strlen(wm->dirs[i]) + strlen("/stylerc") + 1;
+		stylerc = calloc(len, sizeof(*stylerc));
+		strcpy(stylerc, wm->dirs[i]);
+		strcat(stylerc, "/stylerc");
+		if (lstat(stylerc, &st)) {
+			DPRINTF("%s: %s\n", stylerc, strerror(errno));
+			free(stylerc);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			FILE *f;
+			char *buf, *b, *e;
+
+			if (!(f = fopen(stylerc, "r"))) {
+				DPRINTF("%s: %s\n", stylerc, strerror(errno));
+				free(stylerc);
+				continue;
+			}
+			buf = calloc(PATH_MAX + 1, sizeof(*buf));
+			while (fgets(buf, PATH_MAX, f)) {
+				if (strncmp(buf, "#include", 8))
+					continue;
+				if (!(b = strchr(buf, '"')))
+					continue;
+				if (!(e = strrchr(buf, '"')))
+					continue;
+				b++;
+				if (b >= e)
+					continue;
+				*e = '\0';
+				memmove(buf, b, strlen(b) + 1);
+				stylefile = buf;
+				break;
+			}
+			fclose(f);
+			if (!stylefile) {
+				free(buf);
+				continue;
+			}
+		} else if (S_ISLNK(st.st_mode)) {
+			stylefile = calloc(PATH_MAX + 1, sizeof(*stylefile));
+			if (readlink(stylerc, stylefile, PATH_MAX) <= 0) {
+				DPRINTF("%s: %s\n", stylerc, strerror(errno));
+				free(stylefile);
+				stylefile = NULL;
+				free(stylerc);
+				continue;
+			}
+		} else {
+			DPRINTF("%s: not a link or file\n", stylerc);
+			free(stylerc);
+			continue;
+		}
+		if (stylefile[0] != '/') {
+			/* make absolute path */
+			memmove(stylefile + strlen(wm->dirs[i]) + 1,
+				stylefile, strlen(stylefile) + 1);
+			memcpy(stylefile, stylerc, strlen(wm->dirs[i]) + 1);
+		}
+		free(stylerc);
+		stylerc = NULL;
+		break;
+	}
+	if (stylefile) {
+		char *pos;
+
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylename);
+		if ((pos = strstr(stylefile, "/stylerc")))
+			*pos = '\0';
+		wm->stylename = (pos = strrchr(stylefile, '/')) ?
+		    strdup(pos + 1) : strdup(stylefile);
+		free(stylefile);
+	}
+	return wm->style;
+}
+
+void
+reload_style_ECHINUS()
+{
+	if (wm->pid)
+		kill(wm->pid, SIGHUP);
+	else
+		EPRINTF("%s", "cannot restart echinus without a pid\n");
 }
 
 /** @brief Set the style for echinus.
@@ -3124,77 +4206,138 @@ get_style_ECHINUS()
   * Our style system for echinus places an '#include' statement in the rc file
   * that includes the stylerc file in the same directory as the rc file.  The
   * stylerc file in turn includes a stylerc file from the appropriate styles
-  * subdirectory.
+  * subdirectory.  Alternately, we can make the stylerc file a symbolic link to
+  * the style directory stylerc file.
   *
   * Sending a SIGHUP will get echinus to restart.
   */
 void
 set_style_ECHINUS()
 {
-	FILE *f;
-	struct stat st;
-	char *stylefile, *stylerc, *buf, *line;
+	char *stylefile, *style, *stylerc;
 	int len;
-	size_t read, total;
 
+	get_rcfile_ECHINUS();
+	if (!wm->pid) {
+		EPRINTF("%s", "cannot set echinus style without a pid\n");
+		goto no_pid;
+	}
 	if (!(stylefile = find_style_ECHINUS())) {
-		EPRINTF("cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find echinus style '%s'\n", options.style);
 		goto no_stylefile;
 	}
-
-	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
-	stylerc = calloc(len, sizeof(*stylerc));
-	snprintf(stylerc, len, "%s/stylerc", wm->pdir);
-
-	if (!(f = fopen(stylerc, "r"))) {
-		EPRINTF("%s: %s\n", stylerc, strerror(errno));
-		goto no_stylerc;
-	}
-	if (fstat(fileno(f), &st)) {
-		EPRINTF("%s: %s\n", stylerc, strerror(errno));
-		goto no_stat;
-	}
-	buf = calloc(st.st_size + 1, sizeof(*buf));
-	/* read entire file into buffer */
-	for (total = 0; total < st.st_size; total += read)
-		if ((read = fread(buf + total, 1, st.st_size - total, f)))
-			if (total < st.st_size)
-				goto no_buf;
-
-	len = strlen("#include \"\"") + strlen(stylefile) + 1;
-	line = calloc(len, sizeof(*line));
-	snprintf(line, len, "#include \"%s\"", stylefile);
-	if (strncmp(buf, line, strlen(line)) == 0)
+	if ((style = get_style_ECHINUS()) && !strcmp(style, stylefile))
 		goto no_change;
 	if (options.dryrun)
 		goto no_change;
-	if (!(f = freopen(stylerc, "w", f))) {
-		EPRINTF("%s: %s\n", stylerc, strerror(errno));
-		goto no_change;
-	}
-	fprintf(f, "%s\n", line);
+	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
+	stylerc = calloc(len, sizeof(*stylerc));
+	strcpy(stylerc, wm->pdir);
+	strcat(stylerc, "/style");
+	if (options.link) {
+		unlink(stylerc);
+		if (symlink(stylefile, stylerc)) {
+			EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+			goto no_link;
+		}
+	} else {
+		FILE *f;
 
-	if (wm->pid)
-		kill(wm->pid, SIGHUP);
-	else
-		EPRINTF("cannot restart echinus with a pid\n");
-      no_change:
-	free(line);
-      no_buf:
-	free(buf);
-      no_stat:
-	fclose(f);
-      no_stylerc:
+		unlink(stylerc);
+		if (!(f = fopen(stylerc, "w"))) {
+			EPRINTF("%s: %s\n", stylerc, strerror(errno));
+			goto no_file;
+		}
+		fprintf(f, "#include \"%s\"\n", stylefile);
+		fclose(f);
+	}
+	reload_style_ECHINUS();
+      no_file:
+      no_link:
 	free(stylerc);
+      no_change:
 	free(stylefile);
       no_stylefile:
+      no_pid:
 	return;
+}
 
+void
+list_dir_ECHINUS(char *xdir, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen("/styles") + 1;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/styles");
+	if (!(dir = opendir(dirname))) {
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen("/stylerc") + 2;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dirname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			fprintf(stdout, "%s %s\n", d->d_name, file);
+			free(file);
+			continue;
+		} else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		}
+		strcat(file, "/stylerc");
+		if (stat(file, &st)) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			free(file);
+			continue;
+		}
+		fprintf(stdout, "%s %s%s\n", d->d_name, file,
+			(style && !strcmp(style, file)) ? " *" : "");
+		free(file);
+	}
+	closedir(dir);
+	free(dirname);
 }
 
 void
 list_styles_ECHINUS()
 {
+	char *style = get_style_ECHINUS();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_ECHINUS(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_ECHINUS(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_ECHINUS(wm->sdir, style);
+	}
 }
 
 /** @} */
@@ -3228,7 +4371,7 @@ set_style_UWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_UWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3269,7 +4412,7 @@ set_style_AWESOME()
 	char *stylefile;
 
 	if (!(stylefile = find_style_AWESOME())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3310,7 +4453,7 @@ set_style_MATWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_MATWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3351,7 +4494,7 @@ set_style_WAIMEA()
 	char *stylefile;
 
 	if (!(stylefile = find_style_WAIMEA())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3392,7 +4535,7 @@ set_style_WIND()
 	char *stylefile;
 
 	if (!(stylefile = find_style_WIND())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3433,7 +4576,7 @@ set_style_2BWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_2BWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3474,7 +4617,7 @@ set_style_WMX()
 	char *stylefile;
 
 	if (!(stylefile = find_style_WMX())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3515,7 +4658,7 @@ set_style_FLWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_FLWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3556,7 +4699,7 @@ set_style_MWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_MWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3597,7 +4740,7 @@ set_style_DTWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_DTWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3638,7 +4781,7 @@ set_style_SPECTRWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_SPECTRWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3679,7 +4822,7 @@ set_style_YEAHWM()
 	char *stylefile;
 
 	if (!(stylefile = find_style_YEAHWM())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3720,7 +4863,7 @@ set_style_NONE()
 	char *stylefile;
 
 	if (!(stylefile = find_style_NONE())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3761,7 +4904,7 @@ set_style_UNKNOWN()
 	char *stylefile;
 
 	if (!(stylefile = find_style_UNKNOWN())) {
-		fprintf(stderr, "ERROR: cannot find style '%s'\n", options.style);
+		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
@@ -3795,6 +4938,7 @@ WmOperations wm_ops[] = {
 	{ "twm",		&get_style_TWM,		&list_styles_TWM,	&set_style_TWM		},
 	{ "ctwm",		&get_style_CTWM,	&list_styles_CTWM,	&set_style_CTWM		},
 	{ "vtwm",		&get_style_VTWM,	&list_styles_VTWM,	&set_style_VTWM		},
+	{ "etwm",		&get_style_ETWM,	&list_styles_ETWM,	&set_style_ETWM		},
 	{ "echinus",		&get_style_ECHINUS,	&list_styles_ECHINUS,	&set_style_ECHINUS	},
 	{ "uwm",		&get_style_UWM,		&list_styles_UWM,	&set_style_UWM		},
 	{ "awesome",		&get_style_AWESOME,	&list_styles_AWESOME,	&set_style_AWESOME	},
@@ -3847,7 +4991,7 @@ current_style()
 			}
 			ops->get_style();
 			if (wm->style)
-				fprintf(stdout, "%s\n", wm->style);
+				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
 			else
 				EPRINTF("cannot get current style for screen %d\n", screen);
 		}
@@ -3862,7 +5006,7 @@ current_style()
 		}
 		ops->get_style();
 		if (wm->style)
-			fprintf(stdout, "%s\n", wm->style);
+			fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
 		else
 			EPRINTF("cannot get current style for screen %d\n", screen);
 	} else {
@@ -4053,6 +5197,8 @@ Options:\n\
         set or list user styles\n\
     -S, --screen SCREEN\n\
         only act on screen number SCREEN [default: all(-1)]\n\
+    -L, --link\n\
+        link style files where possible\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -4077,6 +5223,7 @@ main(int argc, char *argv[])
 			{"system",	no_argument,		NULL, 'y'},
 			{"user",	no_argument,		NULL, 'u'},
 			{"screen",	required_argument,	NULL, 'S'},
+			{"link",	no_argument,		NULL, 'L'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -4089,10 +5236,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:nD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "clsyuS:LnD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:nDvhVC?");
+		c = getopt(argc, argv, "clsyuS:LnDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -4128,6 +5275,9 @@ main(int argc, char *argv[])
 			break;
 		case 'S':	/* -S, --screen */
 			options.screen = atoi(optarg);
+			break;
+		case 'L':	/* -L, --link */
+			options.link = True;
 			break;
 		case 'n':	/* -n, --dry-run */
 			options.dryrun = True;
@@ -4219,8 +5369,12 @@ main(int argc, char *argv[])
 		list_styles();
 	else if (options.set)
 		set_style();
-	else
+	else {
 		usage(argc, argv);
+		exit(2);
+	}
+	if (options.output > 1)
+		show_wms();
 	exit(0);
 }
 
