@@ -100,6 +100,7 @@ typedef struct {
 	Bool system;
 	Bool user;
 	Bool link;
+	Bool theme;
 	Bool dryrun;
 	int screen;
 	char *style;
@@ -113,6 +114,7 @@ Options options = {
 	False,
 	True,
 	True,
+	False,
 	False,
 	False,
 	-1,
@@ -164,6 +166,7 @@ typedef struct {
 	char *env;			/* Window manager environment */
 	size_t nenv;			/* Number of characters in environment */
 	XrmDatabase db;			/* WM resource database */
+	char **xdg_dirs;		/* XDG data dirs */
 } WindowManager;
 
 typedef struct {
@@ -215,6 +218,7 @@ delete_wm()
 		free(wm->env);
 		if (wm->db)
 			XrmDestroyDatabase(wm->db);
+		free(wm->xdg_dirs);
 	}
 }
 
@@ -740,14 +744,86 @@ get_proc_comm(pid_t pid)
 	return comm;
 }
 
+/** @brief Get the wm's idea of the $XDG_DATA_HOME:$XDG_DATA_DIRS.
+  *
+  * This is used for window managers that place their theme files in the XDG
+  * themes directories, such as Openbox and Metacity, as well as for finding XDE
+  * theme files.
+  */
 void
-wm_get_command()
+get_xdg_dirs()
 {
+	char *home, *xhome, *xdata, *dirs, *pos, *end, **dir;
+	int len, n;
+
+	home = get_proc_environ("HOME") ? : ".";
+	xhome = get_proc_environ("XDG_DATA_HOME");
+	xdata = get_proc_environ("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
+
+	len = (xhome ? strlen(xhome) : strlen(home) + strlen("/.local/share")) +
+	    strlen(xdata) + 2;
+	dirs = calloc(len, sizeof(*dirs));
+	if (xhome)
+		strcpy(dirs, xhome);
+	else {
+		strcpy(dirs, home);
+		strcat(dirs, "/.local/share");
+	}
+	strcat(dirs, ":");
+	strcat(dirs, xdata);
+	end = dirs + strlen(dirs);
+	for (n = 0, pos = dirs; pos < end;
+	     n++, *strchrnul(pos, ':') = '\0', pos += strlen(pos) + 1) ;
+	if (wm->xdg_dirs) {
+		for (dir = wm->xdg_dirs; *dir; dir++)
+			free(*dir);
+		free(wm->xdg_dirs);
+	}
+	wm->xdg_dirs = calloc(n + 1, sizeof(*wm->xdg_dirs));
+	for (n = 0, pos = dirs; pos < end; n++, pos += strlen(pos) + 1)
+		wm->xdg_dirs[n] = strdup(pos);
+	free(dirs);
+	return;
 }
 
-void
-wm_get_environ()
+/** @brief Determine if XDE theme name exists for window manager.
+  * @return Bool - True when theme exists; False otherwise.
+  */
+Bool
+find_xde_theme(char *name)
 {
+	char **dir, *file;
+	int len, nlen;
+	struct stat st;
+
+	if (!wm->xdg_dirs)
+		get_xdg_dirs();
+	if (!wm->xdg_dirs)
+		return False;
+
+	nlen = strlen("/themes/") + strlen(name) + strlen("/xde/theme.ini");
+
+	for (dir = wm->xdg_dirs; *dir; dir++) {
+		len = strlen(*dir) + nlen + 1;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, *dir);
+		strcat(file, "/themes/");
+		strcat(file, name);
+		strcat(file, "/xde/theme.ini");
+		if (stat(file, &st)) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			free(file);
+			continue;
+		}
+		free(file);
+		return True;
+	}
+	return False;
 }
 
 /** @} */
@@ -1816,8 +1892,9 @@ list_dir_FLUXBOX(char *xdir, char *style)
 				free(file);
 				continue;
 			}
-			fprintf(stdout, "%s %s%s\n", d->d_name, file,
-				(style && !strcmp(style, file)) ? " *" : "");
+			if (!options.theme || find_xde_theme(d->d_name))
+				fprintf(stdout, "%s %s%s\n", d->d_name, file,
+					(style && !strcmp(style, file)) ? " *" : "");
 			free(file);
 		}
 		closedir(dir);
@@ -2046,8 +2123,9 @@ list_dir_BLACKBOX(char *xdir, char *style)
 				continue;
 			}
 			if (S_ISREG(st.st_mode))
-				fprintf(stdout, "%s %s%s\n", d->d_name, file,
-					(style && !strcmp(style, file)) ? " *" : "");
+				if (!options.theme || find_xde_theme(d->d_name))
+					fprintf(stdout, "%s %s%s\n", d->d_name, file,
+						(style && !strcmp(style, file)) ? " *" : "");
 			free(file);
 		}
 		closedir(dir);
@@ -2313,7 +2391,8 @@ list_dir_OPENBOX(char *xdir)
 				free(file);
 				continue;
 			}
-			fprintf(stdout, "%s %s\n", d->d_name, file);
+			if (!options.theme || find_xde_theme(d->d_name))
+				fprintf(stdout, "%s %s\n", d->d_name, file);
 			free(file);
 		}
 		closedir(dir);
@@ -2669,8 +2748,9 @@ list_dir_ICEWM(char *xdir, char *style)
 			strcpy(name, d->d_name);
 			strcat(name, "/");
 			strcat(name, e->d_name);
-			fprintf(stdout, "%s %s%s\n", name, file,
-				(style && !strcmp(style, file)) ? " *" : "");
+			if (!options.theme || find_xde_theme(name))
+				fprintf(stdout, "%s %s%s\n", name, file,
+					(style && !strcmp(style, file)) ? " *" : "");
 			*pos = '.';
 			free(name);
 			free(file);
@@ -2721,8 +2801,9 @@ char *
 find_style_JWM()
 {
 	char *path = NULL;
-	int len, i;
+	int len, i, j;
 	struct stat st;
+	char *subdirs[] = { "/styles/", "/themes/" };
 
 	get_rcfile_JWM();
 	if (options.style[0] == '/') {
@@ -2750,31 +2831,33 @@ find_style_JWM()
 		for (i = 0; i < CHECK_DIRS; i++) {
 			if (!wm->dirs[i] || !wm->dirs[i][0])
 				continue;
-			len = strlen(wm->dirs[i]) + strlen("/styles/") +
-			    strlen(options.style) + strlen("/style") + 1;
-			path = calloc(len, sizeof(*path));
-			strcpy(path, wm->dirs[i]);
-			strcat(path, "/styles/");
-			strcat(path, options.style);
-			if (stat(path, &st)) {
-				DPRINTF("%s: %s\n", path, strerror(errno));
-				free(path);
-				path = NULL;
-				continue;
-			}
-			if (S_ISDIR(st.st_mode)) {
-				strcat(path, "/style");
+			for (j = 0; j < 2; j++) {
+				len = strlen(wm->dirs[i]) + strlen(subdirs[j]) +
+				    strlen(options.style) + strlen("/style") + 1;
+				path = calloc(len, sizeof(*path));
+				strcpy(path, wm->dirs[i]);
+				strcat(path, subdirs[j]);
+				strcat(path, options.style);
 				if (stat(path, &st)) {
 					DPRINTF("%s: %s\n", path, strerror(errno));
 					free(path);
 					path = NULL;
 					continue;
 				}
-			} else if (!S_ISREG(st.st_mode)) {
-				DPRINTF("%s: not directory or file\n", path);
-				free(path);
-				path = NULL;
-				continue;
+				if (S_ISDIR(st.st_mode)) {
+					strcat(path, "/style");
+					if (stat(path, &st)) {
+						DPRINTF("%s: %s\n", path, strerror(errno));
+						free(path);
+						path = NULL;
+						continue;
+					}
+				} else if (!S_ISREG(st.st_mode)) {
+					DPRINTF("%s: not directory or file\n", path);
+					free(path);
+					path = NULL;
+					continue;
+				}
 			}
 			break;
 		}
@@ -2985,58 +3068,61 @@ list_dir_JWM(char *xdir, char *style)
 	char *dirname, *file;
 	struct dirent *d;
 	struct stat st;
-	int len;
+	int len, j;
+	char *subdirs[] = { "/styles", "/themes" };
 
 	if (!xdir || !*xdir)
 		return;
-	len = strlen(xdir) + strlen("/styles") + 1;
-	dirname = calloc(len, sizeof(*dirname));
-	strcpy(dirname, xdir);
-	strcat(dirname, "/styles");
-	if (!(dir = opendir(dirname))) {
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
+	for (j = 0; j < 2; j++) {
+		len = strlen(xdir) + strlen(subdirs[j]) + 1;
+		dirname = calloc(len, sizeof(*dirname));
+		strcpy(dirname, xdir);
+		strcat(dirname, subdirs[j]);
+		if (!(dir = opendir(dirname))) {
+			DPRINTF("%s: %s\n", dirname, strerror(errno));
+			free(dirname);
+			return;
+		}
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) + strlen("/style") + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (stat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (S_ISREG(st.st_mode))
+				goto got_it;
+			else if (!S_ISDIR(st.st_mode)) {
+				DPRINTF("%s: not file or directory\n", file);
+				free(file);
+				continue;
+			}
+			strcat(file, "/style");
+			if (stat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+		      got_it:
+			if (!options.theme || find_xde_theme(d->d_name))
+				fprintf(stdout, "%s %s%s\n", d->d_name, file,
+					(style && !strcmp(style, file)) ? " *" : "");
+			free(file);
+		}
+		closedir(dir);
 		free(dirname);
-		return;
 	}
-	while ((d = readdir(dir))) {
-		if (d->d_name[0] == '.')
-			continue;
-		len = strlen(dirname) + strlen(d->d_name) + strlen("/style") + 2;
-		file = calloc(len, sizeof(*file));
-		strcpy(file, dirname);
-		strcat(file, "/");
-		strcat(file, d->d_name);
-		if (stat(file, &st)) {
-			EPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (S_ISREG(st.st_mode)) {
-			fprintf(stdout, "%s %s\n", d->d_name, file);
-			free(file);
-			continue;
-		} else if (!S_ISDIR(st.st_mode)) {
-			DPRINTF("%s: not file or directory\n", file);
-			free(file);
-			continue;
-		}
-		strcat(file, "/style");
-		if (stat(file, &st)) {
-			EPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (!S_ISREG(st.st_mode)) {
-			DPRINTF("%s: not a file\n", file);
-			free(file);
-			continue;
-		}
-		fprintf(stdout, "%s %s%s\n", d->d_name, file,
-			(style && !strcmp(style, file)) ? " *" : "");
-		free(file);
-	}
-	closedir(dir);
-	free(dirname);
 }
 
 void
@@ -3797,11 +3883,9 @@ list_dir_XTWM(char *xdir, char *style)
 			free(file);
 			continue;
 		}
-		if (S_ISREG(st.st_mode)) {
-			fprintf(stdout, "%s %s\n", d->d_name, file);
-			free(file);
-			continue;
-		} else if (!S_ISDIR(st.st_mode)) {
+		if (S_ISREG(st.st_mode))
+			goto got_it;
+		else if (!S_ISDIR(st.st_mode)) {
 			DPRINTF("%s: not file or directory\n", file);
 			free(file);
 			continue;
@@ -3817,8 +3901,10 @@ list_dir_XTWM(char *xdir, char *style)
 			free(file);
 			continue;
 		}
-		fprintf(stdout, "%s %s%s\n", d->d_name, file,
-			(style && !strcmp(style, file)) ? " *" : "");
+	      got_it:
+		if (!options.theme || find_xde_theme(d->d_name))
+			fprintf(stdout, "%s %s%s\n", d->d_name, file,
+				(style && !strcmp(style, file)) ? " *" : "");
 		free(file);
 	}
 	closedir(dir);
@@ -4295,11 +4381,9 @@ list_dir_ECHINUS(char *xdir, char *style)
 			free(file);
 			continue;
 		}
-		if (S_ISREG(st.st_mode)) {
-			fprintf(stdout, "%s %s\n", d->d_name, file);
-			free(file);
-			continue;
-		} else if (!S_ISDIR(st.st_mode)) {
+		if (S_ISREG(st.st_mode))
+			goto got_it;
+		else if (!S_ISDIR(st.st_mode)) {
 			DPRINTF("%s: not file or directory\n", file);
 			free(file);
 			continue;
@@ -4315,8 +4399,10 @@ list_dir_ECHINUS(char *xdir, char *style)
 			free(file);
 			continue;
 		}
-		fprintf(stdout, "%s %s%s\n", d->d_name, file,
-			(style && !strcmp(style, file)) ? " *" : "");
+	      got_it:
+		if (!options.theme || find_xde_theme(d->d_name))
+			fprintf(stdout, "%s %s%s\n", d->d_name, file,
+				(style && !strcmp(style, file)) ? " *" : "");
 		free(file);
 	}
 	closedir(dir);
@@ -4986,14 +5072,18 @@ current_style()
 			scr = screens + screen;
 			root = scr->root;
 			if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->get_style) {
-				EPRINTF("cannot get current style for screen %d\n", screen);
+				EPRINTF("cannot get current style for screen %d\n",
+					screen);
 				continue;
 			}
 			ops->get_style();
-			if (wm->style)
-				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
-			else
-				EPRINTF("cannot get current style for screen %d\n", screen);
+			if (wm->style) {
+				if (!options.theme || find_xde_theme(wm->stylename))
+					fprintf(stdout, "%s %s\n", wm->stylename,
+						wm->style);
+			} else
+				EPRINTF("cannot get current style for screen %d\n",
+					screen);
 		}
 	} else if (0 <= options.screen && options.screen < nscr) {
 		screen = options.screen;
@@ -5005,9 +5095,10 @@ current_style()
 			return;
 		}
 		ops->get_style();
-		if (wm->style)
-			fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
-		else
+		if (wm->style) {
+			if (!options.theme || find_xde_theme(wm->stylename))
+				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
+		} else
 			EPRINTF("cannot get current style for screen %d\n", screen);
 	} else {
 		EPRINTF("invalid screen number %d\n", options.screen);
@@ -5199,6 +5290,8 @@ Options:\n\
         only act on screen number SCREEN [default: all(-1)]\n\
     -L, --link\n\
         link style files where possible\n\
+    -t, --theme\n\
+        only list styles that are also XDE themes\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -5224,6 +5317,7 @@ main(int argc, char *argv[])
 			{"user",	no_argument,		NULL, 'u'},
 			{"screen",	required_argument,	NULL, 'S'},
 			{"link",	no_argument,		NULL, 'L'},
+			{"theme",	no_argument,		NULL, 't'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -5236,10 +5330,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:LnD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "clsyuS:LtnD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:LnDvhVC?");
+		c = getopt(argc, argv, "clsyuS:LtnDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -5278,6 +5372,9 @@ main(int argc, char *argv[])
 			break;
 		case 'L':	/* -L, --link */
 			options.link = True;
+			break;
+		case 't':
+			options.theme = True;
 			break;
 		case 'n':	/* -n, --dry-run */
 			options.dryrun = True;
