@@ -201,10 +201,18 @@ extern XContext ScreenContext;
 
 extern Options options;
 
-void xde_init_display(void);
-Bool xde_detect_wm(void);
-void xde_show_wms(void);
-Bool xde_find_theme(char *name);
+extern void xde_init_display(void);
+extern Bool xde_detect_wm(void);
+extern void xde_show_wms(void);
+extern Bool xde_find_theme(char *name);
+extern char *xde_get_proc_environ(char *name);
+extern char *xde_get_rcfile_optarg(char *optname);
+extern void xde_get_simple_dirs(char *wmname);
+extern char *xde_find_style_simple(char *dname, char *fname);
+extern Bool xde_test_file(char *path);
+extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style);
+extern void xde_list_styles_simple(void);
+extern void xde_init_xrm(void);
 
 #endif				/* __XDE_H__ */
 

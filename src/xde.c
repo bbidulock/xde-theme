@@ -45,6 +45,7 @@
 /* Library functions for XDE. */
 
 #include "xde.h"
+#include <dlfcn.h>
 
 Display *dpy;
 int screen;
@@ -122,14 +123,16 @@ unref_wm()
 
 static Bool xrm_initialized = False;
 
-static void
-init_xrm()
+void
+__xde_init_xrm()
 {
 	if (!xrm_initialized) {
 		xrm_initialized = True;
 		XrmInitialize();
 	}
 }
+
+__asm__(".symver __xde_init_xrm,xde_init_xrm@@XDE_1.0");
 
 Atom _XA_BB_THEME;
 Atom _XA_BLACKBOX_PID;
@@ -189,7 +192,7 @@ intern_atoms()
 XContext ScreenContext;
 
 void
-xde_init_display()
+__xde_init_display()
 {
 	Window dw;
 	unsigned int du;
@@ -218,6 +221,8 @@ xde_init_display()
 	scr = screens + screen;
 	root = scr->root;
 }
+
+__asm__(".symver __xde_init_display,xde_init_display@@XDE_1.0");
 
 /** @name Property retrieval functions
   *
@@ -612,8 +617,8 @@ get_proc_link(pid_t pid, char *name)
 	return link;
 }
 
-static char *
-get_proc_environ(char *name)
+char *
+__xde_get_proc_environ(char *name)
 {
 	char *pos, *end;
 
@@ -631,6 +636,8 @@ get_proc_environ(char *name)
       nope:
 	return getenv(name);
 }
+
+__asm__(".symver __xde_get_proc_environ,xde_get_proc_environ@@XDE_1.0");
 
 char *
 get_proc_comm(pid_t pid)
@@ -668,9 +675,9 @@ get_xdg_dirs()
 	char *home, *xhome, *xdata, *dirs, *pos, *end, **dir;
 	int len, n;
 
-	home = get_proc_environ("HOME") ? : ".";
-	xhome = get_proc_environ("XDG_DATA_HOME");
-	xdata = get_proc_environ("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
+	home = xde_get_proc_environ("HOME") ? : ".";
+	xhome = xde_get_proc_environ("XDG_DATA_HOME");
+	xdata = xde_get_proc_environ("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
 
 	len = (xhome ? strlen(xhome) : strlen(home) + strlen("/.local/share")) +
 	    strlen(xdata) + 2;
@@ -702,7 +709,7 @@ get_xdg_dirs()
   * @return Bool - True when theme exists; False otherwise.
   */
 Bool
-xde_find_theme(char *name)
+__xde_find_theme(char *name)
 {
 	char **dir, *file;
 	int len, nlen;
@@ -737,6 +744,8 @@ xde_find_theme(char *name)
 	}
 	return False;
 }
+
+__asm__(".symver __xde_find_theme,xde_find_theme@@XDE_1.0");
 
 /** @} */
 
@@ -1373,7 +1382,7 @@ show_wm()
 }
 
 void
-xde_show_wms()
+__xde_show_wms()
 {
 	int s;
 
@@ -1387,8 +1396,10 @@ xde_show_wms()
 	}
 }
 
+__asm__(".symver __xde_show_wms,xde_show_wms@@XDE_1.0");
+
 Bool
-xde_detect_wm()
+__xde_detect_wm()
 {
 	Bool have_wm = False;
 
@@ -1428,6 +1439,8 @@ xde_detect_wm()
 	return have_wm;
 }
 
+__asm__(".symver __xde_detect_wm,xde_detect_wm@@XDE_1.0");
+
 /** @} */
 
 static char *
@@ -1456,18 +1469,20 @@ get_optarg(char *optname)
 	return NULL;
 }
 
-static char *
-get_rcfile_optarg(char *optname)
+char *
+__xde_get_rcfile_optarg(char *optname)
 {
 	if (options.wmname)
 		return options.rcfile;
 	return get_optarg(optname);
 }
 
-static void
-get_simple_dirs(char *wmname)
+__asm__(".symver __xde_get_rcfile_optarg,xde_get_rcfile_optarg@@XDE_1.0");
+
+void
+__xde_get_simple_dirs(char *wmname)
 {
-	char *home = get_proc_environ("HOME") ? : ".";
+	char *home = xde_get_proc_environ("HOME") ? : ".";
 
 	free(wm->pdir);
 	wm->pdir = strdup(wm->rcfile);
@@ -1488,11 +1503,13 @@ get_simple_dirs(char *wmname)
 	}
 }
 
+__asm__(".symver __xde_get_simple_dirs,xde_get_simple_dirs@@XDE_1.0");
+
 static void
 get_rcfile_simple(char *wmname, char *rcname, char *option)
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg(option);
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg(option);
 	int len;
 	struct stat st;
 
@@ -1533,11 +1550,11 @@ get_rcfile_simple(char *wmname, char *rcname, char *option)
 			free(file);
 		}
 	}
-	get_simple_dirs(wmname);
+	xde_get_simple_dirs(wmname);
 }
 
-static void
-list_dir_simple(char *xdir, char *dname, char *fname, char *style)
+void
+__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 {
 	DIR *dir;
 	char *dirname, *file;
@@ -1599,8 +1616,10 @@ list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 	free(dirname);
 }
 
-static void
-list_styles_simple()
+__asm__(".symver __xde_list_dir_simple,xde_list_dir_simple@@XDE_1.0");
+
+void
+__xde_list_styles_simple()
 {
 	char *style = wm->ops->get_style();
 
@@ -1616,8 +1635,10 @@ list_styles_simple()
 	}
 }
 
-static char *
-find_style_simple(char *dname, char *fname)
+__asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
+
+char *
+__xde_find_style_simple(char *dname, char *fname)
 {
 	char *path = NULL;
 	int len, i;
@@ -1684,6 +1705,8 @@ find_style_simple(char *dname, char *fname)
 	}
 	return path;
 }
+
+__asm__(".symver __xde_find_style_simple,xde_find_style_simple@@XDE_1.0");
 
 static char *
 get_style_simple(char *fname, char *(*from_file) (char *))
@@ -1823,8 +1846,8 @@ set_style_simple(char *rcname, void (*to_file) (char *, char *))
 	}
 }
 
-static Bool
-test_file(char *path)
+Bool
+__xde_test_file(char *path)
 {
 	struct stat st;
 
@@ -1848,6 +1871,9 @@ test_file(char *path)
 	return False;
 }
 
+__asm__(".symver __xde_test_file,xde_test_file@@XDE_1.0");
+
+#if 0
 /** @name FLUXBOX
   */
 /** @{ */
@@ -1871,8 +1897,8 @@ test_file(char *path)
 static void
 get_rcfile_FLUXBOX()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("-rc");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("-rc");
 	int len;
 
 	free(wm->rcfile);
@@ -1893,7 +1919,7 @@ get_rcfile_FLUXBOX()
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.fluxbox/init");
 	}
-	get_simple_dirs("fluxbox");
+	xde_get_simple_dirs("fluxbox");
 }
 
 /** @brief Find a fluxbox style file from a style name.
@@ -1905,7 +1931,7 @@ get_rcfile_FLUXBOX()
 static char *
 find_style_FLUXBOX()
 {
-	return find_style_simple("styles", "theme.cfg");
+	return xde_find_style_simple("styles", "theme.cfg");
 }
 
 /** @brief Get the current fluxbox style.
@@ -1923,11 +1949,11 @@ get_style_FLUXBOX()
 		return wm->style;
 
 	get_rcfile_FLUXBOX();
-	if (!test_file(wm->rcfile)) {
+	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		return NULL;
 	}
-	init_xrm();
+	xde_init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
 		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		return NULL;
@@ -1991,7 +2017,7 @@ set_style_FLUXBOX()
 		EPRINTF("%s", "cannot set fluxbox style without pid\n");
 		goto no_pid;
 	}
-	if (!test_file(wm->rcfile)) {
+	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		goto no_rcfile;
 	}
@@ -2001,7 +2027,7 @@ set_style_FLUXBOX()
 	}
 	if ((style = get_style_FLUXBOX()) && !strcmp(style, stylefile))
 		goto no_change;
-	init_xrm();
+	xde_init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
 		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		goto no_db;
@@ -2037,7 +2063,7 @@ set_style_FLUXBOX()
 static void
 list_dir_FLUXBOX(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "theme.cfg", style);
+	return xde_list_dir_simple(xdir, "styles", "theme.cfg", style);
 }
 
 /** @brief List fluxbox styles.
@@ -2045,7 +2071,7 @@ list_dir_FLUXBOX(char *xdir, char *style)
 static void
 list_styles_FLUXBOX()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_FLUXBOX = {
@@ -2060,6 +2086,7 @@ static WmOperations wm_ops_FLUXBOX = {
 };
 
 /** @} */
+#endif
 
 /** @name BLACKBOX
   */
@@ -2090,7 +2117,7 @@ get_rcfile_BLACKBOX()
 static char *
 find_style_BLACKBOX()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -2103,11 +2130,11 @@ get_style_BLACKBOX()
 		return wm->style;
 
 	get_rcfile_BLACKBOX();
-	if (!test_file(wm->rcfile)) {
+	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		return NULL;
 	}
-	init_xrm();
+	xde_init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
 		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		return NULL;
@@ -2163,7 +2190,7 @@ set_style_BLACKBOX()
 		EPRINTF("%s", "cannot set blackbox style without pid\n");
 		goto no_pid;
 	}
-	if (!test_file(wm->rcfile)) {
+	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		goto no_rcfile;
 	}
@@ -2173,7 +2200,7 @@ set_style_BLACKBOX()
 	}
 	if ((style = get_style_BLACKBOX()) && !strcmp(style, stylefile))
 		goto no_change;
-	init_xrm();
+	xde_init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
 		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
 		goto no_db;
@@ -2209,13 +2236,13 @@ set_style_BLACKBOX()
 static void
 list_dir_BLACKBOX(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_BLACKBOX()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_BLACKBOX = {
@@ -2249,9 +2276,9 @@ static WmOperations wm_ops_BLACKBOX = {
 static void
 get_rcfile_OPENBOX()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("--config-file");
-	char *cnfg = get_proc_environ("XDG_CONFIG_HOME");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("--config-file");
+	char *cnfg = xde_get_proc_environ("XDG_CONFIG_HOME");
 	int len;
 
 	free(wm->rcfile);
@@ -2348,7 +2375,7 @@ find_style_OPENBOX()
 	for (pos = dirs; pos < end; pos += strlen(pos) + 1) {
 		strcpy(path, pos);
 		strcat(path, file);
-		if (test_file(path))
+		if (xde_test_file(path))
 			goto got_it;
 	}
 	free(path);
@@ -2448,7 +2475,7 @@ set_style_OPENBOX()
 static void
 list_dir_OPENBOX(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "themes", "openbox-3/themerc", style);
+	return xde_list_dir_simple(xdir, "themes", "openbox-3/themerc", style);
 }
 
 static void
@@ -2491,9 +2518,9 @@ static WmOperations wm_ops_OPENBOX = {
 static void
 get_rcfile_ICEWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("--config");
-	char *cnfg = get_proc_environ("ICEWM_PRIVCFG");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("--config");
+	char *cnfg = xde_get_proc_environ("ICEWM_PRIVCFG");
 	int len;
 
 	free(wm->udir);
@@ -2577,7 +2604,7 @@ find_style_ICEWM()
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		snprintf(path, PATH_MAX, "%s/themes/%s", wm->dirs[i], file);
-		if (test_file(path))
+		if (xde_test_file(path))
 			break;
 	}
 	if (i < CHECK_DIRS) {
@@ -2820,7 +2847,7 @@ list_dir_ICEWM(char *xdir, char *style)
 static void
 list_styles_ICEWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_ICEWM = {
@@ -2857,8 +2884,8 @@ find_style_JWM()
 {
 	char *style;
 
-	if (!(style = find_style_simple("styles", "style")))
-		style = find_style_simple("themes", "style");
+	if (!(style = xde_find_style_simple("styles", "style")))
+		style = xde_find_style_simple("themes", "style");
 	return style;
 }
 
@@ -2923,15 +2950,14 @@ reload_style_JWM()
 	ev.xclient.type = ClientMessage;
 	ev.xclient.display = dpy;
 	ev.xclient.window = root;
-	ev.xclient.message_type = XInternAtom(dpy, "_JWM_RELOAD", False);
+	ev.xclient.message_type = XInternAtom(dpy, "_JWM_RESTART", False);
 	ev.xclient.format = 32;
 	ev.xclient.data.l[0] = 0;
 	ev.xclient.data.l[1] = 0;
 	ev.xclient.data.l[2] = 0;
 	ev.xclient.data.l[3] = 0;
 	ev.xclient.data.l[4] = 0;
-	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask,
-		   &ev);
+	XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
 	XSync(dpy, False);
 }
 
@@ -2981,14 +3007,14 @@ set_style_JWM()
 static void
 list_dir_JWM(char *xdir, char *style)
 {
-	list_dir_simple(xdir, "styles", "style", style);
-	list_dir_simple(xdir, "themes", "style", style);
+	xde_list_dir_simple(xdir, "styles", "style", style);
+	xde_list_dir_simple(xdir, "themes", "style", style);
 }
 
 static void
 list_styles_JWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_JWM = {
@@ -3011,8 +3037,8 @@ static WmOperations wm_ops_JWM = {
 static void
 get_rcfile_PEKWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("--config");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("--config");
 	int len;
 
 	free(wm->rcfile);
@@ -3033,13 +3059,13 @@ get_rcfile_PEKWM()
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.pekwm/config");
 	}
-	get_simple_dirs("pekwm");
+	xde_get_simple_dirs("pekwm");
 }
 
 static char *
 find_style_PEKWM()
 {
-	return find_style_simple("themes", "theme");
+	return xde_find_style_simple("themes", "theme");
 }
 
 /** @brief Get the pekwm style.
@@ -3215,13 +3241,13 @@ set_style_PEKWM()
 static void
 list_dir_PEKWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "themes", "theme", style);
+	return xde_list_dir_simple(xdir, "themes", "theme", style);
 }
 
 static void
 list_styles_PEKWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_PEKWM = {
@@ -3244,9 +3270,9 @@ static WmOperations wm_ops_PEKWM = {
 static void
 get_rcfile_FVWM()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("-f");
-	char *cnfg = get_proc_environ("FVWM_USERDIR");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("-f");
+	char *cnfg = xde_get_proc_environ("FVWM_USERDIR");
 	int len;
 
 	free(wm->udir);
@@ -3292,7 +3318,7 @@ get_rcfile_FVWM()
 static char *
 find_style_FVWM()
 {
-	return find_style_simple("styles", "style");
+	return xde_find_style_simple("styles", "style");
 }
 
 static char *
@@ -3356,8 +3382,8 @@ static WmOperations wm_ops_FVWM = {
 static void
 get_rcfile_WMAKER()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *cnfg = get_proc_environ("GNUSTEP_USER_ROOT");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *cnfg = xde_get_proc_environ("GNUSTEP_USER_ROOT");
 
 	free(wm->udir);
 	wm->udir = calloc(strlen(home) + strlen("/GNUstep") + 1, sizeof(*wm->udir));
@@ -3403,17 +3429,17 @@ find_style_WMAKER()
 		len = strlen(path);
 		pos = path + len;
 		snprintf(pos, PATH_MAX - len, "/Themes/%s.themed/style", options.style);
-		if (test_file(path)) {
+		if (xde_test_file(path)) {
 			res = strdup(path);
 			break;
 		}
 		snprintf(pos, PATH_MAX - len, "/Themes/%s.style", options.style);
-		if (test_file(path)) {
+		if (xde_test_file(path)) {
 			res = strdup(path);
 			break;
 		}
 		snprintf(pos, PATH_MAX - len, "/Styles/%s.style", options.style);
-		if (test_file(path)) {
+		if (xde_test_file(path)) {
 			res = strdup(path);
 			break;
 		}
@@ -3602,8 +3628,8 @@ static WmOperations wm_ops_METACITY = {
 static void
 get_rcfile_XTWM(char *xtwm)
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("-f");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("-f");
 	int len;
 
 	free(wm->rcfile);
@@ -3669,7 +3695,7 @@ get_rcfile_XTWM(char *xtwm)
 			strcat(wm->rcfile, names[1]);
 		}
 	}
-	get_simple_dirs(xtwm);
+	xde_get_simple_dirs(xtwm);
 }
 
 /** @} */
@@ -3687,7 +3713,7 @@ get_rcfile_TWM()
 static char *
 find_style_TWM()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -3737,13 +3763,13 @@ reload_style_TWM()
 static void
 list_dir_TWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_TWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_TWM = {
@@ -3772,7 +3798,7 @@ get_rcfile_CTWM()
 static char *
 find_style_CTWM()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -3803,13 +3829,13 @@ reload_style_CTWM()
 static void
 list_dir_CTWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_CTWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 WmOperations wm_ops_CTWM = {
@@ -3838,7 +3864,7 @@ get_rcfile_VTWM()
 static char *
 find_style_VTWM()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -3869,13 +3895,13 @@ reload_style_VTWM()
 static void
 list_dir_VTWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_VTWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_VTWM = {
@@ -3904,7 +3930,7 @@ get_rcfile_ETWM()
 static char *
 find_style_ETWM()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -3935,13 +3961,13 @@ reload_style_ETWM()
 static void
 list_dir_ETWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_ETWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_ETWM = {
@@ -3970,7 +3996,7 @@ get_rcfile_CWM()
 static char *
 find_style_CWM()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 /** @brief Get the cwm style.
@@ -4137,13 +4163,13 @@ set_style_CWM()
 static void
 list_dir_CWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_CWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_CWM = {
@@ -4166,8 +4192,8 @@ static WmOperations wm_ops_CWM = {
 static void
 get_rcfile_ECHINUS()
 {
-	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_rcfile_optarg("-f");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	char *file = xde_get_rcfile_optarg("-f");
 	int len;
 
 	free(wm->rcfile);
@@ -4188,7 +4214,7 @@ get_rcfile_ECHINUS()
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.echinus/echinusrc");
 	}
-	get_simple_dirs("echinus");
+	xde_get_simple_dirs("echinus");
 }
 
 /** @brief Find an echinus style from a style name.
@@ -4200,7 +4226,7 @@ get_rcfile_ECHINUS()
 static char *
 find_style_ECHINUS()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -4304,13 +4330,13 @@ set_style_ECHINUS()
 static void
 list_dir_ECHINUS(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_ECHINUS()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_ECHINUS = {
@@ -4333,16 +4359,13 @@ static WmOperations wm_ops_ECHINUS = {
 static void
 get_rcfile_UWM()
 {
+	return get_rcfile_simple("uwm", ".uwm/uwmrc", "-c");
 }
 
 static char *
 find_style_UWM()
 {
-	char *style;
-
-	if (!(style = find_style_simple("styles", "style")))
-		style = find_style_simple("themes", "style");
-	return style;
+	return xde_find_style_simple("styles", "style");
 }
 
 static char *
@@ -4415,18 +4438,33 @@ set_style_UWM()
 static void
 reload_style_UWM()
 {
+	XEvent ev;
+
+	OPRINTF("%s", "reloading µwm\n");
+	ev.xclient.type = ClientMessage;
+	ev.xclient.display = dpy;
+	ev.xclient.window = root;
+	ev.xclient.message_type = XInternAtom(dpy, "_UWM_RESTART", False);
+	ev.xclient.format = 32;
+	ev.xclient.data.l[0] = 0;
+	ev.xclient.data.l[1] = 0;
+	ev.xclient.data.l[2] = 0;
+	ev.xclient.data.l[3] = 0;
+	ev.xclient.data.l[4] = 0;
+	XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
+	XSync(dpy, False);
 }
 
 static void
 list_dir_UWM(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "style", style);
+	return xde_list_dir_simple(xdir, "styles", "style", style);
 }
 
 static void
 list_styles_UWM()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_UWM = {
@@ -4523,7 +4561,7 @@ get_rcfile_MATWM2()
 static char *
 find_style_MATWM2()
 {
-	return find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
 static char *
@@ -4555,13 +4593,13 @@ reload_style_MATWM2()
 static void
 list_dir_MATWM2(char *xdir, char *style)
 {
-	return list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 static void
 list_styles_MATWM2()
 {
-	return list_styles_simple();
+	return xde_list_styles_simple();
 }
 
 static WmOperations wm_ops_MATWM2 = {
@@ -5259,8 +5297,10 @@ static WmOperations wm_ops_UNKNOWN = {
 
 /** @} */
 
-static WmOperations *wm_ops[] = {
+WmOperations *wm_ops[] = {
+#if 0
 	&wm_ops_FLUXBOX,
+#endif
 	&wm_ops_BLACKBOX,
 	&wm_ops_OPENBOX,
 	&wm_ops_ICEWM,
@@ -5297,13 +5337,24 @@ static WmOperations *
 get_wm_ops()
 {
 	WmOperations **ops;
+	char dlfile[256];
+	void *handle;
 
-	if (!wm->name)
-		return NULL;
 	for (ops = wm_ops; *ops; ops++)
 		if (!strcmp((*ops)->name, wm->name))
 			break;
-	return (*ops);
+	if (*ops)
+		return *ops;
+
+	DPRINTF("wm name %s not found in operations list\n", wm->name);
+	snprintf(dlfile, sizeof(dlfile), "xde-%s.so", wm->name);
+	DPRINTF("attempting to dlopen %s\n", dlfile);
+	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
+		DPRINTF("dlopen of %s succeeded\n", dlfile);
+		return dlsym(handle, "xde_wm_ops");
+	} else
+		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
+
+	return NULL;
 }
 
-// vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

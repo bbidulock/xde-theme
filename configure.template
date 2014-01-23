@@ -93,6 +93,9 @@ eval "sharedir=\"$sharedir\""
 
 AC_SUBST([sharedir])
 
+xdemoddir='${libdir}/xde/modules'
+
+AC_SUBST([xdemoddir])
 
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
