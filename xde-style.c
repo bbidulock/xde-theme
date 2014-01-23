@@ -102,6 +102,7 @@ typedef struct {
 	Bool link;
 	Bool theme;
 	Bool dryrun;
+	Bool reload;
 	int screen;
 	char *style;
 	char *wmname;
@@ -119,6 +120,7 @@ Options options = {
 	False,
 	False,
 	False,
+	False,
 	-1,
 	NULL,
 	NULL,
@@ -133,7 +135,18 @@ Options options = {
 #define CHECK_WINS 6
 
 typedef struct {
+	char *name;
+	void (*get_rcfile)(void);
+	char *(*find_style)(void);
+	char *(*get_style) (void);
+	void (*set_style) (void);
+	void (*reload_style)(void);
+	void (*list_styles) (void);
+} WmOperations;
+
+typedef struct {
 	int refs;			/* references to this structure */
+	WmOperations *ops;		/* operations */
 	union {
 		struct {
 			Window netwm_check;	/* NetWM/EWMH check window */
@@ -188,7 +201,7 @@ WmScreen *screens;
 WmScreen *scr;
 unsigned int nscr;
 
-WindowManager *
+static WindowManager *
 ref_wm()
 {
 	if (!(wm = scr->wm)) {
@@ -199,7 +212,7 @@ ref_wm()
 	return wm;
 }
 
-void
+static void
 delete_wm()
 {
 	if ((wm = scr->wm)) {
@@ -225,7 +238,7 @@ delete_wm()
 	}
 }
 
-WindowManager *
+static WindowManager *
 unref_wm()
 {
 	if ((wm = scr->wm)) {
@@ -236,7 +249,7 @@ unref_wm()
 	return NULL;
 }
 
-Bool xrm_initialized = False;
+static Bool xrm_initialized = False;
 
 static void
 init_xrm()
@@ -263,7 +276,7 @@ typedef struct {
 	Atom *atom;
 } Atoms;
 
-Atoms atoms[] = {
+static Atoms atoms[] = {
 	/* *INDENT-OFF* */
 	{"_BB_THEME",			&_XA_BB_THEME			},
 	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID		},
@@ -501,7 +514,7 @@ check_recursive(Atom atom, Atom type)
 
 /** @brief Check for a EWMH/NetWM compliant window manager.
   */
-Window
+static Window
 check_netwm()
 {
 	int i = 0;
@@ -520,7 +533,7 @@ check_netwm()
 
 /** @brief Check for a GNOME1/WMH/WinWM compliant window manager.
   */
-Window
+static Window
 check_winwm()
 {
 	int i = 0;
@@ -539,7 +552,7 @@ check_winwm()
 
 /** @brief Check for a WindowMaker compliant window manager.
   */
-Window
+static Window
 check_maker()
 {
 	int i = 0;
@@ -558,7 +571,7 @@ check_maker()
 
 /** @brief Check for an OSF/Motif compliant window manager.
   */
-Window
+static Window
 check_motif()
 {
 	int i = 0;
@@ -580,7 +593,7 @@ check_motif()
 
 /** @brief Check for an ICCCM compliant window manager.
   */
-Window
+static Window
 check_icccm()
 {
 	char buf[32];
@@ -604,7 +617,7 @@ check_icccm()
   * This pretty much assumes that any ICCCM window manager will select for
   * SubstructureRedirectMask on the root window.
   */
-Window
+static Window
 check_redir()
 {
 	XWindowAttributes wa;
@@ -618,7 +631,7 @@ check_redir()
 	return wm->redir_check;
 }
 
-Bool
+static Bool
 find_wm_comp()
 {
 	Bool have_wm = False;
@@ -659,7 +672,7 @@ find_wm_comp()
   *
   * @{ */
 
-char *
+static char *
 get_proc_file(pid_t pid, char *name, size_t *size)
 {
 	char *file, *buf;
@@ -705,7 +718,7 @@ get_proc_file(pid_t pid, char *name, size_t *size)
 	return buf;
 }
 
-char *
+static char *
 get_proc_link(pid_t pid, char *name)
 {
 	char *link, *buf;
@@ -728,7 +741,7 @@ get_proc_link(pid_t pid, char *name)
 	return link;
 }
 
-char *
+static char *
 get_proc_environ(char *name)
 {
 	char *pos, *end;
@@ -778,7 +791,7 @@ get_proc_cwd(pid_t pid)
   * themes directories, such as Openbox and Metacity, as well as for finding XDE
   * theme files.
   */
-void
+static void
 get_xdg_dirs()
 {
 	char *home, *xhome, *xdata, *dirs, *pos, *end, **dir;
@@ -817,7 +830,7 @@ get_xdg_dirs()
 /** @brief Determine if XDE theme name exists for window manager.
   * @return Bool - True when theme exists; False otherwise.
   */
-Bool
+static Bool
 find_xde_theme(char *name)
 {
 	char **dir, *file;
@@ -867,7 +880,7 @@ find_xde_theme(char *name)
   * window.  Recent jwm, blackbox and icewm are properly setting _NET_WM_NAME
   * and WM_CLASS on the check window.
   */
-char *
+static char *
 check_name(Window check)
 {
 	char *name;
@@ -958,7 +971,7 @@ find_wm_name()
 	return wm->name;
 }
 
-char *
+static char *
 check_host(Window check)
 {
 	char *host;
@@ -979,7 +992,7 @@ check_host(Window check)
 	return wm->host;
 }
 
-char *
+static char *
 check_same_host()
 {
 	char buf[66] = { 0, };
@@ -1020,7 +1033,7 @@ check_same_host()
 	return wm->host;
 }
 
-char *
+static char *
 find_wm_host()
 {
 	int i;
@@ -1038,7 +1051,7 @@ find_wm_host()
 	return check_same_host();
 }
 
-pid_t
+static pid_t
 check_pid(Window check)
 {
 	long pid;
@@ -1063,7 +1076,7 @@ check_pid(Window check)
 
 }
 
-pid_t
+static pid_t
 find_wm_pid()
 {
 	int i;
@@ -1079,7 +1092,7 @@ find_wm_pid()
 	return wm->pid;
 }
 
-char **
+static char **
 check_comm(Window check)
 {
 	char **argv;
@@ -1098,7 +1111,7 @@ check_comm(Window check)
 	return NULL;
 }
 
-char **
+static char **
 find_wm_comm()
 {
 	int i;
@@ -1118,7 +1131,7 @@ find_wm_comm()
 	return wm->cargv;
 }
 
-char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
+static char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
 	"fvwm", "wmaker", "afterstep", "metacity", "twm", "ctwm", "vtwm",
 	"etwm", "echinus", "uwm", "awesome", "matwm", "waimea", "wind", "2bwm",
 	"wmx", "flwm", "mwm", "dtwm", "spectrwm", "yeahwm", "cwm", "dwm",
@@ -1133,7 +1146,7 @@ char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
   * known window manager command name that has a DISPLAY environment that is
   * the same as ours.
   */
-Bool
+static Bool
 find_wm_proc_any()
 {
 	DIR *dir;
@@ -1222,7 +1235,7 @@ find_wm_proc_any()
   * might not necessarily be running on this screen.
   *
   */
-Bool
+static Bool
 find_wm_proc_by_name()
 {
 	DIR *dir;
@@ -1276,7 +1289,7 @@ find_wm_proc_by_name()
   * We have a process id on the local host but no name.  Use the pid to complete
   * the name.
   */
-Bool
+static Bool
 find_wm_proc_by_pid()
 {
 	char *buf;
@@ -1294,7 +1307,7 @@ find_wm_proc_by_pid()
 
 /** @brief Check and fill out information for a window manager process.
   */
-Bool
+static Bool
 check_proc()
 {
 	char *buf;
@@ -1341,7 +1354,7 @@ check_proc()
 
 /** @brief Find the process associated with a window manager.
   */
-Bool
+static Bool
 find_wm_proc()
 {
 	Bool have_proc = False;
@@ -1376,9 +1389,11 @@ find_wm_proc()
 	return False;
 }
 
+static WmOperations *get_wm_ops(void);
+
 /** @brief Check for a window manager on the current screen.
   */
-Bool
+static Bool
 check_wm()
 {
 	OPRINTF("checking wm for screen %d\n", screen);
@@ -1392,6 +1407,8 @@ check_wm()
 	find_wm_comm();		/* Check for window manager command */
 	find_wm_proc();		/* Check for window manager proc */
 
+	if (wm->name)
+		wm->ops = get_wm_ops();
 	if (wm->name && wm->pid) {
 		WmScreen *s;
 		int i;
@@ -1420,7 +1437,7 @@ check_wm()
 	return False;
 }
 
-void
+static void
 show_wm()
 {
 	if (wm->netwm_check)
@@ -1484,7 +1501,7 @@ show_wm()
 		OPRINTF("%d %s: stylename %s\n", screen, wm->name, wm->stylename);
 }
 
-void
+static void
 show_wms()
 {
 	int s;
@@ -1499,7 +1516,7 @@ show_wms()
 	}
 }
 
-Bool
+static Bool
 detect_wm()
 {
 	Bool have_wm = False;
@@ -1514,6 +1531,7 @@ detect_wm()
 		unref_wm();
 		ref_wm();
 		wm->name = strdup(options.wmname);
+		wm->ops = get_wm_ops();
 		have_wm = True;
 		if (options.output > 1)
 			show_wm();
@@ -1541,7 +1559,7 @@ detect_wm()
 
 /** @} */
 
-char *
+static char *
 get_optarg(char *optname)
 {
 	int i, l;
@@ -1567,7 +1585,7 @@ get_optarg(char *optname)
 	return NULL;
 }
 
-char *
+static char *
 get_rcfile_optarg(char *optname)
 {
 	if (options.wmname)
@@ -1575,7 +1593,7 @@ get_rcfile_optarg(char *optname)
 	return get_optarg(optname);
 }
 
-void
+static void
 get_simple_dirs(char *wmname)
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -1599,7 +1617,7 @@ get_simple_dirs(char *wmname)
 	}
 }
 
-void
+static void
 get_rcfile_simple(char *wmname, char *option)
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -1649,7 +1667,7 @@ get_rcfile_simple(char *wmname, char *option)
 	get_simple_dirs(wmname);
 }
 
-void
+static void
 list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 {
 	DIR *dir;
@@ -1712,7 +1730,7 @@ list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 	free(dirname);
 }
 
-Bool
+static Bool
 test_file(char *path)
 {
 	struct stat st;
@@ -1757,7 +1775,7 @@ test_file(char *path)
   * directory.  When a directory, the actual style file is in a file called
   * theme.cfg.
   */
-void
+static void
 get_rcfile_FLUXBOX()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -1791,7 +1809,7 @@ get_rcfile_FLUXBOX()
   * /usr/share/fluxbox/styles or ~/.fluxbox/styles.  When a named directory,
   * the directory must contain a file named theme.cfg.
   */
-char *
+static char *
 find_style_FLUXBOX()
 {
 	char *path = NULL;
@@ -1863,7 +1881,7 @@ find_style_FLUXBOX()
   * The current fluxbox style is set in the session.styleFile resource in the rc
   * file.
   */
-char *
+static char *
 get_style_FLUXBOX()
 {
 	XrmValue value;
@@ -1902,7 +1920,7 @@ get_style_FLUXBOX()
   * fluxbox itself does when changing styles); send SIGHUP, a restart.
   *
   */
-void
+static void
 reload_style_FLUXBOX()
 {
 	if (wm->pid)
@@ -1930,7 +1948,7 @@ reload_style_FLUXBOX()
   * _BLACKBOX_PID root window property, even if it is just to replace it with
   * the same value again.
   */
-void
+static void
 set_style_FLUXBOX()
 {
 	char *stylefile, *line, *style;
@@ -1961,10 +1979,16 @@ set_style_FLUXBOX()
 	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
 	XrmPutLineResource(&wm->db, line);
 	free(line);
-	if (options.dryrun)
-		goto no_change;
-	XrmPutFileDatabase(wm->db, wm->rcfile);
-	reload_style_FLUXBOX();
+	if (options.dryrun) {
+		OPRINTF("would write database to %s as follows:\n", wm->rcfile);
+		XrmPutFileDatabase(wm->db, "/dev/stderr");
+		if (options.reload)
+			OPRINTF("%s", "would reload window manager\n");
+	} else {
+		XrmPutFileDatabase(wm->db, wm->rcfile);
+		if (options.reload)
+			reload_style_FLUXBOX();
+	}
       no_change:
 	if (wm->db) {
 		XrmDestroyDatabase(wm->db);
@@ -1978,7 +2002,7 @@ set_style_FLUXBOX()
 	return;
 }
 
-void
+static void
 list_dir_FLUXBOX(char *xdir, char *style)
 {
 	return list_dir_simple(xdir, "styles", "theme.cfg", style);
@@ -1986,7 +2010,7 @@ list_dir_FLUXBOX(char *xdir, char *style)
 
 /** @brief List fluxbox styles.
   */
-void
+static void
 list_styles_FLUXBOX()
 {
 	char *style = get_style_FLUXBOX();
@@ -2002,6 +2026,16 @@ list_styles_FLUXBOX()
 			list_dir_FLUXBOX(wm->sdir, style);
 	}
 }
+
+static WmOperations wm_ops_FLUXBOX = {
+	"fluxbox",
+	&get_rcfile_FLUXBOX,
+	&find_style_FLUXBOX,
+	&get_style_FLUXBOX,
+	&set_style_FLUXBOX,
+	&reload_style_FLUXBOX,
+	&list_styles_FLUXBOX
+};
 
 /** @} */
 
@@ -2020,7 +2054,7 @@ list_styles_FLUXBOX()
   * file, but are typically placed under ~/.blackbox.  System files are placed
   * under /usr/share/blackbox.
   */
-void
+static void
 get_rcfile_BLACKBOX()
 {
 	return get_rcfile_simple("blackbox", "-rc");
@@ -2031,7 +2065,7 @@ get_rcfile_BLACKBOX()
   * Blackbox style files are named files in /usr/share/blackbox/styles or
   * ~/.blackbox/styles.
   */
-char *
+static char *
 find_style_BLACKBOX()
 {
 	char *path = NULL;
@@ -2081,7 +2115,7 @@ find_style_BLACKBOX()
 	return path;
 }
 
-char *
+static char *
 get_style_BLACKBOX()
 {
 	XrmValue value;
@@ -2119,7 +2153,7 @@ get_style_BLACKBOX()
   * _NET_SUPPORTING_WM_CHECK window> will effect the reconfiguration that
   * results in rereading of the style file.
   */
-void
+static void
 reload_style_BLACKBOX()
 {
 	if (wm->pid)
@@ -2141,7 +2175,7 @@ reload_style_BLACKBOX()
   *
   * Unlike other window managers, it reloads the configuration rather than restarting.
   */
-void
+static void
 set_style_BLACKBOX()
 {
 	char *stylefile, *line, *style;
@@ -2171,10 +2205,16 @@ set_style_BLACKBOX()
 	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
 	XrmPutLineResource(&wm->db, line);
 	free(line);
-	if (options.dryrun)
-		goto no_change;
-	XrmPutFileDatabase(wm->db, wm->rcfile);
-	reload_style_BLACKBOX();
+	if (options.dryrun) {
+		OPRINTF("would write database to %s as follows:\n", wm->rcfile);
+		XrmPutFileDatabase(wm->db, "/dev/stderr");
+		if (options.reload)
+			OPRINTF("%s", "would reload window manager\n");
+	} else {
+		XrmPutFileDatabase(wm->db, wm->rcfile);
+		if (options.reload)
+			reload_style_BLACKBOX();
+	}
       no_change:
 	if (wm->db) {
 		XrmDestroyDatabase(wm->db);
@@ -2188,7 +2228,7 @@ set_style_BLACKBOX()
 	return;
 }
 
-void
+static void
 list_dir_BLACKBOX(char *xdir, char *style)
 {
 	DIR *dir;
@@ -2229,7 +2269,7 @@ list_dir_BLACKBOX(char *xdir, char *style)
 	free(dirname);
 }
 
-void
+static void
 list_styles_BLACKBOX()
 {
 	char *style = get_style_BLACKBOX();
@@ -2245,6 +2285,16 @@ list_styles_BLACKBOX()
 			list_dir_BLACKBOX(wm->sdir, style);
 	}
 }
+
+static WmOperations wm_ops_BLACKBOX = {
+	"blackbox",
+	&get_rcfile_BLACKBOX,
+	&find_style_BLACKBOX,
+	&get_style_BLACKBOX,
+	&set_style_BLACKBOX,
+	&reload_style_BLACKBOX,
+	&list_styles_BLACKBOX
+};
 
 /** @} */
 
@@ -2263,7 +2313,7 @@ list_styles_BLACKBOX()
   * configuration file, but are typically placed under ~/.config/openbox.
   * System files are placed under /usr/share/openbox.
   */
-void
+static void
 get_rcfile_OPENBOX()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -2328,7 +2378,7 @@ get_rcfile_OPENBOX()
   * Because openbox uses the XDG scheme, it does not distinguish between system
   * and user styles.
   */
-char *
+static char *
 find_style_OPENBOX()
 {
 	char *dirs, *path, *file;
@@ -2380,7 +2430,7 @@ find_style_OPENBOX()
 
 }
 
-char *
+static char *
 get_style_OPENBOX()
 {
 	get_rcfile_OPENBOX();
@@ -2401,7 +2451,7 @@ get_style_OPENBOX()
   * OB_CONTROL_EXIT           3   exit
   *
   */
-void
+static void
 reload_style_OPENBOX()
 {
 	XEvent ev;
@@ -2444,7 +2494,7 @@ reload_style_OPENBOX()
   * files are specified by the initial configuration file.  xde-session typically sets
   * OPENBOX_RCFILE to $XDG_CONFIG_HOME/openbox/xde-rc.xml.
   */
-void
+static void
 set_style_OPENBOX()
 {
 	char *stylefile;
@@ -2454,21 +2504,21 @@ set_style_OPENBOX()
 		return;
 	}
 
-	if (options.dryrun)
-		goto no_change;
-
-	reload_style_OPENBOX();
-      no_change:
+	if (options.dryrun) {
+	} else {
+		if (options.reload)
+			reload_style_OPENBOX();
+	}
 	return;
 }
 
-void
+static void
 list_dir_OPENBOX(char *xdir, char *style)
 {
 	return list_dir_simple(xdir, "themes", "openbox-3/themerc", style);
 }
 
-void
+static void
 list_styles_OPENBOX()
 {
 	char **dir, *style = get_style_OPENBOX();
@@ -2478,6 +2528,16 @@ list_styles_OPENBOX()
 	for (dir = wm->xdg_dirs; *dir; dir++)
 		list_dir_OPENBOX(*dir, style);
 }
+
+static WmOperations wm_ops_OPENBOX = {
+	"openbox",
+	&get_rcfile_OPENBOX,
+	&find_style_OPENBOX,
+	&get_style_OPENBOX,
+	&set_style_OPENBOX,
+	&reload_style_OPENBOX,
+	&list_styles_OPENBOX
+};
 
 /** @} */
 
@@ -2494,7 +2554,7 @@ list_styles_OPENBOX()
   * The default if RCFILE is not specified is ~/.icewm/preferences, unless the
   * ICEWM_PRIVCFG environment variable is specified, 
   */
-void
+static void
 get_rcfile_ICEWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -2554,7 +2614,7 @@ get_rcfile_ICEWM()
   * "Airforce/default.theme" in one of the theme directories.  The actual type
   * for "ElbergBlue/Wallpaper" is ElbergBlue/Wallpaper.theme.
   */
-char *
+static char *
 find_style_ICEWM()
 {
 	char *p, *file, *path = calloc(PATH_MAX, sizeof(*path));
@@ -2594,7 +2654,7 @@ find_style_ICEWM()
 	return NULL;
 }
 
-char *
+static char *
 get_style_ICEWM()
 {
 	get_rcfile_ICEWM();
@@ -2617,7 +2677,7 @@ get_style_ICEWM()
   * to the window manager process.  The other is to send an _ICEWM_ACTION client
   * message to the root window.
   */
-void
+static void
 reload_style_ICEWM()
 {
 	XEvent ev;
@@ -2672,7 +2732,7 @@ reload_style_ICEWM()
   * directory.  xde-session typically sets ICEWM_PRIVCFG to
   * $XDG_CONFIG_HOME/icewm.
   */
-void
+static void
 set_style_ICEWM()
 {
 	FILE *f;
@@ -2712,19 +2772,21 @@ set_style_ICEWM()
 	if (strncmp(buf, line, strlen(line)) == 0)
 		goto no_change;
 
-	if (options.dryrun)
-		goto no_change;
-	if (!(f = freopen(themerc, "w", f))) {
-		EPRINTF("%s: %s\n", themerc, strerror(errno));
-		goto no_change;
+	if (options.dryrun) {
+	} else {
+		if (!(f = freopen(themerc, "w", f))) {
+			EPRINTF("%s: %s\n", themerc, strerror(errno));
+			goto no_change;
+		}
+		fprintf(f, "Theme=\"%s\"\n", options.style);
+		for (n = 0, pos = buf, end = buf + st.st_size; pos < end && n < 10;
+		     n++, pos = pos + strlen(pos) + 1) {
+			*strchrnul(pos, '\n') = '\0';
+			fprintf(stderr, "#%s\n", pos);
+		}
+		if (options.reload)
+			reload_style_ICEWM();
 	}
-	fprintf(f, "Theme=\"%s\"\n", options.style);
-	for (n = 0, pos = buf, end = buf + st.st_size; pos < end && n < 10;
-	     n++, pos = pos + strlen(pos) + 1) {
-		*strchrnul(pos, '\n') = '\0';
-		fprintf(stderr, "#%s\n", pos);
-	}
-	reload_style_ICEWM();
       no_change:
 	free(line);
       no_buf:
@@ -2737,7 +2799,7 @@ set_style_ICEWM()
 	return;
 }
 
-void
+static void
 list_dir_ICEWM(char *xdir, char *style)
 {
 	DIR *dir, *sub;
@@ -2821,7 +2883,7 @@ list_dir_ICEWM(char *xdir, char *style)
 	free(dirname);
 }
 
-void
+static void
 list_styles_ICEWM()
 {
 	char *style = get_style_ICEWM();
@@ -2838,13 +2900,23 @@ list_styles_ICEWM()
 	}
 }
 
+static WmOperations wm_ops_ICEWM = {
+	"icewm",
+	&get_rcfile_ICEWM,
+	&find_style_ICEWM,
+	&get_style_ICEWM,
+	&set_style_ICEWM,
+	&reload_style_ICEWM,
+	&list_styles_ICEWM
+};
+
 /** @} */
 
 /** @name JWM
   */
 /** @{ */
 
-void
+static void
 get_rcfile_JWM()
 {
 	return get_rcfile_simple("jwm", "-rc");
@@ -2856,7 +2928,7 @@ get_rcfile_JWM()
   * ~/.jwm/styles.  When a named directory, the directory must contain a file
   * named style.
   */
-char *
+static char *
 find_style_JWM()
 {
 	char *path = NULL;
@@ -2918,8 +2990,8 @@ find_style_JWM()
 					path = NULL;
 					continue;
 				}
+				return path;
 			}
-			break;
 		}
 	}
 	return path;
@@ -2934,7 +3006,7 @@ find_style_JWM()
   *
   * The symbolic link approach is likely best.  Either acheives the same result.
   */
-char *
+static char *
 get_style_JWM()
 {
 	char *stylerc = NULL, *stylefile = NULL;
@@ -3029,11 +3101,12 @@ get_style_JWM()
   * ClientMessage to the root window, or by executing jwm -reload or jwm
   * -restart.
   */
-void
+static void
 reload_style_JWM()
 {
 	XEvent ev;
 
+	OPRINTF("%s", "reloading jwm\n");
 	ev.xclient.type = ClientMessage;
 	ev.xclient.display = dpy;
 	ev.xclient.window = root;
@@ -3070,7 +3143,7 @@ reload_style_JWM()
   * Note that older versions of jwm(1) do not provide tilde expansion in
   * configuration files.
   */
-void
+static void
 set_style_JWM()
 {
 	char *stylefile, *style, *stylerc;
@@ -3083,33 +3156,48 @@ set_style_JWM()
 	}
 	if ((style = get_style_JWM()) && !strcmp(style, stylefile))
 		goto no_change;
-	if (options.dryrun)
-		goto no_change;
 	len = strlen(wm->pdir) + strlen("/style") + 1;
 	stylerc = calloc(len, sizeof(*stylerc));
 	strcpy(stylerc, wm->pdir);
 	strcat(stylerc, "/style");
-	if (options.link) {
-		unlink(stylerc);
-		if (symlink(stylefile, stylerc)) {
-			EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
-			goto no_link;
+	if (options.dryrun) {
+		if (options.link) {
+			OPRINTF("would link %s -> %s\n", stylerc, stylefile);
+		} else {
+			OPRINTF("would write to %s the following:\n", stylerc);
+			fprintf(stderr, "<?xml version=\"1.0\"?>\n");
+			fprintf(stderr, "<JWM>\n");
+			fprintf(stderr, "   <Include>%s</Include>\n", stylefile);
+			fprintf(stderr, "</JWM>\n");
 		}
+		if (options.reload)
+			OPRINTF("%s", "would reload window manager\n");
 	} else {
-		FILE *f;
+		if (options.link) {
+			unlink(stylerc);
+			if (symlink(stylefile, stylerc)) {
+				EPRINTF("%s -> %s: %s\n", stylerc, stylefile,
+					strerror(errno));
+				goto no_link;
+			}
+		} else {
+			FILE *f;
 
-		unlink(stylerc);
-		if (!(f = fopen(stylerc, "w"))) {
-			EPRINTF("%s: %s\n", stylerc, strerror(errno));
-			goto no_file;
+			unlink(stylerc);
+			if (!(f = fopen(stylerc, "w"))) {
+				EPRINTF("%s: %s\n", stylerc, strerror(errno));
+				goto no_file;
+			}
+			OPRINTF("writing file %s\n", stylerc);
+			fprintf(f, "<?xml version=\"1.0\"?>\n");
+			fprintf(f, "<JWM>\n");
+			fprintf(f, "   <Include>%s</Include>\n", stylefile);
+			fprintf(f, "</JWM>\n");
+			fclose(f);
 		}
-		fprintf(f, "<?xml version=\"1.0\"?>\n");
-		fprintf(f, "<JWM>\n");
-		fprintf(f, "   <Include>%s</Include>\n", stylefile);
-		fprintf(f, "</JWM>\n");
-		fclose(f);
+		if (options.reload)
+			reload_style_JWM();
 	}
-	reload_style_JWM();
       no_file:
       no_link:
 	free(stylerc);
@@ -3119,7 +3207,7 @@ set_style_JWM()
 	return;
 }
 
-void
+static void
 list_dir_JWM(char *xdir, char *style)
 {
 	DIR *dir;
@@ -3183,7 +3271,7 @@ list_dir_JWM(char *xdir, char *style)
 	}
 }
 
-void
+static void
 list_styles_JWM()
 {
 	char *style = get_style_JWM();
@@ -3200,13 +3288,23 @@ list_styles_JWM()
 	}
 }
 
+static WmOperations wm_ops_JWM = {
+	"jwm",
+	&get_rcfile_JWM,
+	&find_style_JWM,
+	&get_style_JWM,
+	&set_style_JWM,
+	&reload_style_JWM,
+	&list_styles_JWM
+};
+
 /** @} */
 
 /** @name PEKWM
   */
 /** @{ */
 
-void
+static void
 get_rcfile_PEKWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -3255,7 +3353,7 @@ find_style_PEKWM()
 	return res;
 }
 
-char *
+static char *
 get_style_PEKWM()
 {
 	get_rcfile_PEKWM();
@@ -3270,7 +3368,7 @@ get_style_PEKWM()
   * WM_CLIENT_MACHINE(STRING) property, again on the root window.  The XDE::EWMH
   * module figures this out.
   */
-void
+static void
 reload_style_PEKWM()
 {
 	if (wm->pid)
@@ -3302,7 +3400,7 @@ reload_style_PEKWM()
   * specified in the initial configuration file.  xde-session typically sets
   * PEKWM_RCFILE to $XDG_CONFIG_HOME/pekwm/config.
   */
-void
+static void
 set_style_PEKWM()
 {
 	FILE *f;
@@ -3338,20 +3436,22 @@ set_style_PEKWM()
 	snprintf(line, len, "Theme = \"%s\"", stylefile);
 	if (strstr(buf, line))
 		goto no_change;
-	if (options.dryrun)
-		goto no_change;
-	if (!(f = freopen(wm->rcfile, "w", f))) {
-		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
-		goto no_change;
+	if (options.dryrun) {
+	} else {
+		if (!(f = freopen(wm->rcfile, "w", f))) {
+			EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			goto no_change;
+		}
+		for (pos = buf, end = buf + st.st_size; pos < end; pos = pos + strlen(pos) + 1) {
+			*strchrnul(pos, '\n') = '\0';
+			if ((p = strstr(pos, "Theme = ")) && (!(q = strchr(pos, '#')) || p < q))
+				fprintf(f, "    %s\n", line);
+			else
+				fprintf(f, "%s\n", pos);
+		}
+		if (options.reload)
+			reload_style_PEKWM();
 	}
-	for (pos = buf, end = buf + st.st_size; pos < end; pos = pos + strlen(pos) + 1) {
-		*strchrnul(pos, '\n') = '\0';
-		if ((p = strstr(pos, "Theme = ")) && (!(q = strchr(pos, '#')) || p < q))
-			fprintf(f, "    %s\n", line);
-		else
-			fprintf(f, "%s\n", pos);
-	}
-	reload_style_PEKWM();
       no_change:
 	free(line);
       no_buf:
@@ -3364,10 +3464,20 @@ set_style_PEKWM()
 	return;
 }
 
-void
+static void
 list_styles_PEKWM()
 {
 }
+
+static WmOperations wm_ops_PEKWM = {
+	"pekwm",
+	&get_rcfile_PEKWM,
+	&find_style_PEKWM,
+	&get_style_PEKWM,
+	&set_style_PEKWM,
+	&reload_style_PEKWM,
+	&list_styles_PEKWM
+};
 
 /** @} */
 
@@ -3375,7 +3485,7 @@ list_styles_PEKWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_FVWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -3423,26 +3533,26 @@ get_rcfile_FVWM()
 	}
 }
 
-char *
+static char *
 find_style_FVWM()
 {
 	get_rcfile_FVWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_FVWM()
 {
 	get_rcfile_FVWM();
 	return NULL;
 }
 
-void
+static void
 reload_style_FVWM()
 {
 }
 
-void
+static void
 set_style_FVWM()
 {
 	char *stylefile;
@@ -3451,13 +3561,24 @@ set_style_FVWM()
 		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
-	reload_style_FVWM();
+	if (options.reload)
+		reload_style_FVWM();
 }
 
-void
+static void
 list_styles_FVWM()
 {
 }
+
+static WmOperations wm_ops_FVWM = {
+	"fvwm",
+	&get_rcfile_FVWM,
+	&find_style_FVWM,
+	&get_style_FVWM,
+	&set_style_FVWM,
+	&reload_style_FVWM,
+	&list_styles_FVWM
+};
 
 /** @} */
 
@@ -3471,7 +3592,7 @@ list_styles_FVWM()
   * specified, it defaults to ~/GNUstep/Defaults/WindowMaker.  The locations of
   * all wmaker configuration files are under the same directory.
   */
-void
+static void
 get_rcfile_WMAKER()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -3505,7 +3626,7 @@ get_rcfile_WMAKER()
 	strcat(wm->rcfile, "/Defaults/WindowMaker");
 }
 
-char *
+static char *
 find_style_WMAKER()
 {
 	char *pos, *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
@@ -3540,14 +3661,14 @@ find_style_WMAKER()
 	return res;
 }
 
-char *
+static char *
 get_style_WMAKER()
 {
 	get_rcfile_WMAKER();
 	return NULL;
 }
 
-void
+static void
 set_style_WMAKER()
 {
 	char *stylefile;
@@ -3558,10 +3679,25 @@ set_style_WMAKER()
 	}
 }
 
-void
+static void
+reload_style_WMAKER()
+{
+}
+
+static void
 list_styles_WMAKER()
 {
 }
+
+static WmOperations wm_ops_WMAKER = {
+	"wmaker",
+	&get_rcfile_WMAKER,
+	&find_style_WMAKER,
+	&get_style_WMAKER,
+	&set_style_WMAKER,
+	&reload_style_WMAKER,
+	&list_styles_WMAKER
+};
 
 /** @} */
 
@@ -3569,26 +3705,26 @@ list_styles_WMAKER()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_AFTERSTEP()
 {
 }
 
-char *
+static char *
 find_style_AFTERSTEP()
 {
 	get_rcfile_AFTERSTEP();
 	return NULL;
 }
 
-char *
+static char *
 get_style_AFTERSTEP()
 {
 	get_rcfile_AFTERSTEP();
 	return NULL;
 }
 
-void
+static void
 set_style_AFTERSTEP()
 {
 	char *stylefile;
@@ -3599,10 +3735,25 @@ set_style_AFTERSTEP()
 	}
 }
 
-void
+static void
+reload_style_AFTERSTEP()
+{
+}
+
+static void
 list_styles_AFTERSTEP()
 {
 }
+
+static WmOperations wm_ops_AFTERSTEP = {
+	"afterstep",
+	&get_rcfile_AFTERSTEP,
+	&find_style_AFTERSTEP,
+	&get_style_AFTERSTEP,
+	&set_style_AFTERSTEP,
+	&reload_style_AFTERSTEP,
+	&list_styles_AFTERSTEP
+};
 
 /** @} */
 
@@ -3610,31 +3761,26 @@ list_styles_AFTERSTEP()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_METACITY()
 {
 }
 
-char *
+static char *
 find_style_METACITY()
 {
 	get_rcfile_METACITY();
 	return NULL;
 }
 
-char *
+static char *
 get_style_METACITY()
 {
 	get_rcfile_METACITY();
 	return NULL;
 }
 
-void
-list_styles_METACITY()
-{
-}
-
-void
+static void
 set_style_METACITY()
 {
 	char *stylefile;
@@ -3645,6 +3791,26 @@ set_style_METACITY()
 	}
 }
 
+static void
+reload_style_METACITY()
+{
+}
+
+static void
+list_styles_METACITY()
+{
+}
+
+static WmOperations wm_ops_METACITY = {
+	"metacity",
+	&get_rcfile_METACITY,
+	&find_style_METACITY,
+	&get_style_METACITY,
+	&set_style_METACITY,
+	&reload_style_METACITY,
+	&list_styles_METACITY
+};
+
 /** @} */
 
 /* @name XTWM
@@ -3654,7 +3820,7 @@ set_style_METACITY()
  */
 /** @{ */
 
-void
+static void
 get_rcfile_XTWM(char *xtwm)
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -3717,7 +3883,7 @@ get_rcfile_XTWM(char *xtwm)
 	get_simple_dirs(xtwm);
 }
 
-char *
+static char *
 find_style_XTWM(char *xtwm)
 {
 	char *path = NULL;
@@ -3798,7 +3964,7 @@ find_style_XTWM(char *xtwm)
   * The style is a symbolic link in the private configuration directory named
   * stylerc.
   */
-char *
+static char *
 get_style_XTWM(char *xtwm)
 {
 	char *stylerc = NULL, *stylefile = NULL;
@@ -3873,7 +4039,7 @@ get_style_XTWM(char *xtwm)
   * pressed and released.  The default key combination for restart is CM-r; for
   * quit, CM-Delete.
   */
-void
+static void
 reload_style_XTWM(char *xtwm)
 {
 	if (!strcmp(xtwm, "ctwm") || !strcmp(xtwm, "etwm"))
@@ -3911,7 +4077,7 @@ reload_style_XTWM(char *xtwm)
   * private directory called stylerc that links to the style file in the style
   * directory.
   */
-void
+static void
 set_style_XTWM(char *xtwm)
 {
 	char *stylefile, *style, *stylerc;
@@ -3932,20 +4098,22 @@ set_style_XTWM(char *xtwm)
 	}
 	if ((style = get_style_XTWM(xtwm)) && !strcmp(style, stylefile))
 		goto no_change;
-	if (options.dryrun)
-		goto no_change;
-	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
-	stylerc = calloc(len, sizeof(*stylerc));
-	strcpy(stylerc, wm->pdir);
-	strcat(stylerc, "/stylerc");
-	unlink(stylerc);
-	if (symlink(stylefile, stylerc)) {
-		EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
-		goto no_link;
+	if (options.dryrun) {
+	} else {
+		len = strlen(wm->pdir) + strlen("/stylerc") + 1;
+		stylerc = calloc(len, sizeof(*stylerc));
+		strcpy(stylerc, wm->pdir);
+		strcat(stylerc, "/stylerc");
+		unlink(stylerc);
+		if (symlink(stylefile, stylerc)) {
+			EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+			goto no_link;
+		}
+		if (options.reload)
+			reload_style_XTWM(xtwm);
+	      no_link:
+		free(stylerc);
 	}
-	reload_style_XTWM(xtwm);
-      no_link:
-	free(stylerc);
       no_change:
 	free(stylefile);
       no_stylefile:
@@ -3954,13 +4122,13 @@ set_style_XTWM(char *xtwm)
 	return;
 }
 
-void
+static void
 list_dir_XTWM(char *xdir, char *style)
 {
 	return list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
-void
+static void
 list_styles_XTWM(char *xtwm)
 {
 	char *style = get_style_XTWM(xtwm);
@@ -3983,35 +4151,51 @@ list_styles_XTWM(char *xtwm)
  */
 /** @{ */
 
-void
+static void
 get_rcfile_TWM()
 {
 	return get_rcfile_XTWM("twm");
 }
 
-char *
+static char *
 find_style_TWM()
 {
 	return find_style_XTWM("twm");
 }
 
-char *
+static char *
 get_style_TWM()
 {
 	return get_style_XTWM("twm");
 }
 
-void
+static void
 set_style_TWM()
 {
 	return set_style_XTWM("twm");
 }
 
-void
+static void
+reload_style_TWM()
+{
+	return reload_style_XTWM("twm");
+}
+
+static void
 list_styles_TWM()
 {
 	return list_styles_XTWM("twm");
 }
+
+static WmOperations wm_ops_TWM = {
+	"twm",
+	&get_rcfile_TWM,
+	&find_style_TWM,
+	&get_style_TWM,
+	&set_style_TWM,
+	&reload_style_TWM,
+	&list_styles_TWM
+};
 
 /** @} */
 
@@ -4019,35 +4203,51 @@ list_styles_TWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_CTWM()
 {
 	return get_rcfile_XTWM("ctwm");
 }
 
-char *
+static char *
 find_style_CTWM()
 {
 	return find_style_XTWM("ctwm");
 }
 
-char *
+static char *
 get_style_CTWM()
 {
 	return get_style_XTWM("ctwm");
 }
 
-void
+static void
 set_style_CTWM()
 {
 	return set_style_XTWM("ctwm");
 }
 
-void
+static void
+reload_style_CTWM()
+{
+	return reload_style_XTWM("ctwm");
+}
+
+static void
 list_styles_CTWM()
 {
 	return list_styles_XTWM("ctwm");
 }
+
+WmOperations wm_ops_CTWM = {
+	"ctwm",
+	&get_rcfile_CTWM,
+	&find_style_CTWM,
+	&get_style_CTWM,
+	&set_style_CTWM,
+	&reload_style_CTWM,
+	&list_styles_CTWM
+};
 
 /** @} */
 
@@ -4055,35 +4255,51 @@ list_styles_CTWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_VTWM()
 {
 	return get_rcfile_XTWM("vtwm");
 }
 
-char *
+static char *
 find_style_VTWM()
 {
 	return find_style_XTWM("vtwm");
 }
 
-char *
+static char *
 get_style_VTWM()
 {
 	return get_style_XTWM("vtwm");
 }
 
-void
+static void
 set_style_VTWM()
 {
 	return set_style_XTWM("vtwm");
 }
 
-void
+static void
+reload_style_VTWM()
+{
+	return reload_style_XTWM("vtwm");
+}
+
+static void
 list_styles_VTWM()
 {
 	return list_styles_XTWM("vtwm");
 }
+
+static WmOperations wm_ops_VTWM = {
+	"vtwm",
+	&get_rcfile_VTWM,
+	&find_style_VTWM,
+	&get_style_VTWM,
+	&set_style_VTWM,
+	&reload_style_VTWM,
+	&list_styles_VTWM
+};
 
 /** @} */
 
@@ -4091,35 +4307,51 @@ list_styles_VTWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_ETWM()
 {
 	return get_rcfile_XTWM("etwm");
 }
 
-char *
+static char *
 find_style_ETWM()
 {
 	return find_style_XTWM("etwm");
 }
 
-char *
+static char *
 get_style_ETWM()
 {
 	return get_style_XTWM("etwm");
 }
 
-void
+static void
 set_style_ETWM()
 {
 	return set_style_XTWM("etwm");
 }
 
-void
+static void
+reload_style_ETWM()
+{
+	return reload_style_XTWM("etwm");
+}
+
+static void
 list_styles_ETWM()
 {
 	return list_styles_XTWM("etwm");
 }
+
+static WmOperations wm_ops_ETWM = {
+	"etwm",
+	&get_rcfile_ETWM,
+	&find_style_ETWM,
+	&get_style_ETWM,
+	&set_style_ETWM,
+	&reload_style_ETWM,
+	&list_styles_ETWM
+};
 
 /** @} */
 
@@ -4127,13 +4359,13 @@ list_styles_ETWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_CWM()
 {
 	return get_rcfile_simple("cwm", "-c");
 }
 
-char *
+static char *
 find_style_CWM()
 {
 	char *path = NULL;
@@ -4205,7 +4437,7 @@ find_style_CWM()
   * file to the style file, editting the style elements into the rcfile, and
   * restarting the window manager.
   */
-char *
+static char *
 get_style_CWM()
 {
 	char *stylefile = NULL;
@@ -4267,7 +4499,7 @@ get_style_CWM()
   *
   * Note that we can try this trick with TWM too ...
   */
-void
+static void
 reload_style_CWM()
 {
 	XEvent ev;
@@ -4300,7 +4532,7 @@ reload_style_CWM()
   * file to the style file, editting the style elements into the rcfile, and
   * restarting the window manager.
   */
-void
+static void
 set_style_CWM()
 {
 	FILE *f;
@@ -4319,8 +4551,6 @@ set_style_CWM()
 		goto no_stylefile;
 	}
 	if ((style = get_style_CWM()) && !strcmp(style, stylefile))
-		goto no_change;
-	if (options.dryrun)
 		goto no_change;
 	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
 	stylerc = calloc(len, sizeof(*stylerc));
@@ -4382,15 +4612,19 @@ set_style_CWM()
 		bytes += strlen(pos) + 1;
 	}
 	fclose(f);
-	if (!(f = fopen(wm->rcfile, "w"))) {
-		EPRINTF("%s :%s\n", wm->rcfile, strerror(errno));
-		goto no_stylerc;
+	if (options.dryrun) {
+	} else {
+		if (!(f = fopen(wm->rcfile, "w"))) {
+			EPRINTF("%s :%s\n", wm->rcfile, strerror(errno));
+			goto no_stylerc;
+		}
+		/* write entire buffer back out */
+		for (pos = buf, end = buf + bytes; pos < end; pos += strlen(pos) + 1)
+			fprintf(f, "%s", pos);
+		fclose(f);
+		if (options.reload)
+			reload_style_CWM();
 	}
-	/* write entire buffer back out */
-	for (pos = buf, end = buf + bytes; pos < end; pos += strlen(pos) + 1)
-		fprintf(f, "%s", pos);
-	fclose(f);
-	reload_style_CWM();
       no_stylerc:
 	free(buf);
       no_rcfile:
@@ -4403,13 +4637,13 @@ set_style_CWM()
 	return;
 }
 
-void
+static void
 list_dir_CWM(char *xdir, char *style)
 {
 	return list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
-void
+static void
 list_styles_CWM()
 {
 	char *style = get_style_CWM();
@@ -4426,6 +4660,15 @@ list_styles_CWM()
 	}
 }
 
+static WmOperations wm_ops_CWM = {
+	"cwm",
+	&get_rcfile_CWM,
+	&find_style_CWM,
+	&get_style_CWM,
+	&set_style_CWM,
+	&reload_style_CWM,
+	&list_styles_CWM
+};
 
 /** @} */
 
@@ -4433,7 +4676,7 @@ list_styles_CWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_ECHINUS()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
@@ -4467,7 +4710,7 @@ get_rcfile_ECHINUS()
   * /usr/share/echinus/styles or ~/.echinus/styles.  When a named directory, the
   * directory must contain a file named stylerc.
   */
-char *
+static char *
 find_style_ECHINUS()
 {
 	char *path = NULL;
@@ -4541,7 +4784,7 @@ find_style_ECHINUS()
   *
   * The symbolic link approach is likely best.  Either acheives the same result.
   */
-char *
+static char *
 get_style_ECHINUS()
 {
 	char *stylerc = NULL, *stylefile = NULL;
@@ -4634,7 +4877,7 @@ get_style_ECHINUS()
 
 /** @brief Reload an echinus style.
   */
-void
+static void
 reload_style_ECHINUS()
 {
 	if (wm->pid)
@@ -4653,7 +4896,7 @@ reload_style_ECHINUS()
   *
   * Sending a SIGHUP will get echinus to restart.
   */
-void
+static void
 set_style_ECHINUS()
 {
 	char *stylefile, *style, *stylerc;
@@ -4670,30 +4913,32 @@ set_style_ECHINUS()
 	}
 	if ((style = get_style_ECHINUS()) && !strcmp(style, stylefile))
 		goto no_change;
-	if (options.dryrun)
-		goto no_change;
 	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
 	stylerc = calloc(len, sizeof(*stylerc));
 	strcpy(stylerc, wm->pdir);
 	strcat(stylerc, "/style");
-	if (options.link) {
-		unlink(stylerc);
-		if (symlink(stylefile, stylerc)) {
-			EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
-			goto no_link;
-		}
+	if (options.dryrun) {
 	} else {
-		FILE *f;
+		if (options.link) {
+			unlink(stylerc);
+			if (symlink(stylefile, stylerc)) {
+				EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+				goto no_link;
+			}
+		} else {
+			FILE *f;
 
-		unlink(stylerc);
-		if (!(f = fopen(stylerc, "w"))) {
-			EPRINTF("%s: %s\n", stylerc, strerror(errno));
-			goto no_file;
+			unlink(stylerc);
+			if (!(f = fopen(stylerc, "w"))) {
+				EPRINTF("%s: %s\n", stylerc, strerror(errno));
+				goto no_file;
+			}
+			fprintf(f, "#include \"%s\"\n", stylefile);
+			fclose(f);
 		}
-		fprintf(f, "#include \"%s\"\n", stylefile);
-		fclose(f);
+		if (options.reload)
+			reload_style_ECHINUS();
 	}
-	reload_style_ECHINUS();
       no_file:
       no_link:
 	free(stylerc);
@@ -4704,13 +4949,13 @@ set_style_ECHINUS()
 	return;
 }
 
-void
+static void
 list_dir_ECHINUS(char *xdir, char *style)
 {
 	return list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
-void
+static void
 list_styles_ECHINUS()
 {
 	char *style = get_style_ECHINUS();
@@ -4727,32 +4972,42 @@ list_styles_ECHINUS()
 	}
 }
 
+static WmOperations wm_ops_ECHINUS = {
+	"echinus",
+	&get_rcfile_ECHINUS,
+	&find_style_ECHINUS,
+	&get_style_ECHINUS,
+	&set_style_ECHINUS,
+	&reload_style_ECHINUS,
+	&list_styles_ECHINUS
+};
+
 /** @} */
 
 /** @name UWM
   */
 /** @{ */
 
-void
+static void
 get_rcfile_UWM()
 {
 }
 
-char *
+static char *
 find_style_UWM()
 {
 	get_rcfile_UWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_UWM()
 {
 	get_rcfile_UWM();
 	return NULL;
 }
 
-void
+static void
 set_style_UWM()
 {
 	char *stylefile;
@@ -4763,10 +5018,25 @@ set_style_UWM()
 	}
 }
 
-void
+static void
+reload_style_UWM()
+{
+}
+
+static void
 list_styles_UWM()
 {
 }
+
+static WmOperations wm_ops_UWM = {
+	"uwm",
+	&get_rcfile_UWM,
+	&find_style_UWM,
+	&get_style_UWM,
+	&set_style_UWM,
+	&reload_style_UWM,
+	&list_styles_UWM
+};
 
 /** @} */
 
@@ -4774,26 +5044,26 @@ list_styles_UWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_AWESOME()
 {
 }
 
-char *
+static char *
 find_style_AWESOME()
 {
 	get_rcfile_AWESOME();
 	return NULL;
 }
 
-char *
+static char *
 get_style_AWESOME()
 {
 	get_rcfile_AWESOME();
 	return NULL;
 }
 
-void
+static void
 set_style_AWESOME()
 {
 	char *stylefile;
@@ -4804,10 +5074,25 @@ set_style_AWESOME()
 	}
 }
 
-void
+static void
+reload_style_AWESOME()
+{
+}
+
+static void
 list_styles_AWESOME()
 {
 }
+
+static WmOperations wm_ops_AWESOME = {
+	"awesome",
+	&get_rcfile_AWESOME,
+	&find_style_AWESOME,
+	&get_style_AWESOME,
+	&set_style_AWESOME,
+	&reload_style_AWESOME,
+	&list_styles_AWESOME
+};
 
 /** @} */
 
@@ -4815,26 +5100,26 @@ list_styles_AWESOME()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_MATWM()
 {
 }
 
-char *
+static char *
 find_style_MATWM()
 {
 	get_rcfile_MATWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_MATWM()
 {
 	get_rcfile_MATWM();
 	return NULL;
 }
 
-void
+static void
 set_style_MATWM()
 {
 	char *stylefile;
@@ -4845,10 +5130,25 @@ set_style_MATWM()
 	}
 }
 
-void
+static void
+reload_style_MATWM()
+{
+}
+
+static void
 list_styles_MATWM()
 {
 }
+
+static WmOperations wm_ops_MATWM = {
+	"matwm",
+	&get_rcfile_MATWM,
+	&find_style_MATWM,
+	&get_style_MATWM,
+	&set_style_MATWM,
+	&reload_style_MATWM,
+	&list_styles_MATWM
+};
 
 /** @} */
 
@@ -4856,26 +5156,26 @@ list_styles_MATWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_WAIMEA()
 {
 }
 
-char *
+static char *
 find_style_WAIMEA()
 {
 	get_rcfile_WAIMEA();
 	return NULL;
 }
 
-char *
+static char *
 get_style_WAIMEA()
 {
 	get_rcfile_WAIMEA();
 	return NULL;
 }
 
-void
+static void
 set_style_WAIMEA()
 {
 	char *stylefile;
@@ -4886,10 +5186,25 @@ set_style_WAIMEA()
 	}
 }
 
-void
+static void
+reload_style_WAIMEA()
+{
+}
+
+static void
 list_styles_WAIMEA()
 {
 }
+
+static WmOperations wm_ops_WAIMEA = {
+	"waimea",
+	&get_rcfile_WAIMEA,
+	&find_style_WAIMEA,
+	&get_style_WAIMEA,
+	&set_style_WAIMEA,
+	&reload_style_WAIMEA,
+	&list_styles_WAIMEA
+};
 
 /** @} */
 
@@ -4897,26 +5212,26 @@ list_styles_WAIMEA()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_WIND()
 {
 }
 
-char *
+static char *
 find_style_WIND()
 {
 	get_rcfile_WIND();
 	return NULL;
 }
 
-char *
+static char *
 get_style_WIND()
 {
 	get_rcfile_WIND();
 	return NULL;
 }
 
-void
+static void
 set_style_WIND()
 {
 	char *stylefile;
@@ -4927,10 +5242,25 @@ set_style_WIND()
 	}
 }
 
-void
+static void
+reload_style_WIND()
+{
+}
+
+static void
 list_styles_WIND()
 {
 }
+
+static WmOperations wm_ops_WIND = {
+	"wind",
+	&get_rcfile_WIND,
+	&find_style_WIND,
+	&get_style_WIND,
+	&set_style_WIND,
+	&reload_style_WIND,
+	&list_styles_WIND
+};
 
 /** @} */
 
@@ -4938,26 +5268,26 @@ list_styles_WIND()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_2BWM()
 {
 }
 
-char *
+static char *
 find_style_2BWM()
 {
 	get_rcfile_2BWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_2BWM()
 {
 	get_rcfile_2BWM();
 	return NULL;
 }
 
-void
+static void
 set_style_2BWM()
 {
 	char *stylefile;
@@ -4968,10 +5298,25 @@ set_style_2BWM()
 	}
 }
 
-void
+static void
+reload_style_2BWM()
+{
+}
+
+static void
 list_styles_2BWM()
 {
 }
+
+static WmOperations wm_ops_2BWM = {
+	"2bwm",
+	&get_rcfile_2BWM,
+	&find_style_2BWM,
+	&get_style_2BWM,
+	&set_style_2BWM,
+	&reload_style_2BWM,
+	&list_styles_2BWM
+};
 
 /** @} */
 
@@ -4979,26 +5324,26 @@ list_styles_2BWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_WMX()
 {
 }
 
-char *
+static char *
 find_style_WMX()
 {
 	get_rcfile_WMX();
 	return NULL;
 }
 
-char *
+static char *
 get_style_WMX()
 {
 	get_rcfile_WMX();
 	return NULL;
 }
 
-void
+static void
 set_style_WMX()
 {
 	char *stylefile;
@@ -5009,10 +5354,25 @@ set_style_WMX()
 	}
 }
 
-void
+static void
+reload_style_WMX()
+{
+}
+
+static void
 list_styles_WMX()
 {
 }
+
+static WmOperations wm_ops_WMX = {
+	"wmx",
+	&get_rcfile_WMX,
+	&find_style_WMX,
+	&get_style_WMX,
+	&set_style_WMX,
+	&reload_style_WMX,
+	&list_styles_WMX
+};
 
 /** @} */
 
@@ -5020,26 +5380,26 @@ list_styles_WMX()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_FLWM()
 {
 }
 
-char *
+static char *
 find_style_FLWM()
 {
 	get_rcfile_FLWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_FLWM()
 {
 	get_rcfile_FLWM();
 	return NULL;
 }
 
-void
+static void
 set_style_FLWM()
 {
 	char *stylefile;
@@ -5050,10 +5410,25 @@ set_style_FLWM()
 	}
 }
 
-void
+static void
+reload_style_FLWM()
+{
+}
+
+static void
 list_styles_FLWM()
 {
 }
+
+static WmOperations wm_ops_FLWM = {
+	"flwm",
+	&get_rcfile_FLWM,
+	&find_style_FLWM,
+	&get_style_FLWM,
+	&set_style_FLWM,
+	&reload_style_FLWM,
+	&list_styles_FLWM
+};
 
 /** @} */
 
@@ -5061,26 +5436,26 @@ list_styles_FLWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_MWM()
 {
 }
 
-char *
+static char *
 find_style_MWM()
 {
 	get_rcfile_MWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_MWM()
 {
 	get_rcfile_MWM();
 	return NULL;
 }
 
-void
+static void
 set_style_MWM()
 {
 	char *stylefile;
@@ -5091,10 +5466,25 @@ set_style_MWM()
 	}
 }
 
-void
+static void
+reload_style_MWM()
+{
+}
+
+static void
 list_styles_MWM()
 {
 }
+
+static WmOperations wm_ops_MWM = {
+	"mwm",
+	&get_rcfile_MWM,
+	&find_style_MWM,
+	&get_style_MWM,
+	&set_style_MWM,
+	&reload_style_MWM,
+	&list_styles_MWM
+};
 
 /** @} */
 
@@ -5102,26 +5492,26 @@ list_styles_MWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_DTWM()
 {
 }
 
-char *
+static char *
 find_style_DTWM()
 {
 	get_rcfile_DTWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_DTWM()
 {
 	get_rcfile_DTWM();
 	return NULL;
 }
 
-void
+static void
 set_style_DTWM()
 {
 	char *stylefile;
@@ -5132,10 +5522,25 @@ set_style_DTWM()
 	}
 }
 
-void
+static void
+reload_style_DTWM()
+{
+}
+
+static void
 list_styles_DTWM()
 {
 }
+
+static WmOperations wm_ops_DTWM = {
+	"dtwm",
+	&get_rcfile_DTWM,
+	&find_style_DTWM,
+	&get_style_DTWM,
+	&set_style_DTWM,
+	&reload_style_DTWM,
+	&list_styles_DTWM
+};
 
 /** @} */
 
@@ -5143,26 +5548,26 @@ list_styles_DTWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_SPECTRWM()
 {
 }
 
-char *
+static char *
 find_style_SPECTRWM()
 {
 	get_rcfile_SPECTRWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_SPECTRWM()
 {
 	get_rcfile_SPECTRWM();
 	return NULL;
 }
 
-void
+static void
 set_style_SPECTRWM()
 {
 	char *stylefile;
@@ -5173,10 +5578,25 @@ set_style_SPECTRWM()
 	}
 }
 
-void
+static void
+reload_style_SPECTRWM()
+{
+}
+
+static void
 list_styles_SPECTRWM()
 {
 }
+
+static WmOperations wm_ops_SPECTRWM = {
+	"spectrwm",
+	&get_rcfile_SPECTRWM,
+	&find_style_SPECTRWM,
+	&get_style_SPECTRWM,
+	&set_style_SPECTRWM,
+	&reload_style_SPECTRWM,
+	&list_styles_SPECTRWM
+};
 
 /** @} */
 
@@ -5184,26 +5604,26 @@ list_styles_SPECTRWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_YEAHWM()
 {
 }
 
-char *
+static char *
 find_style_YEAHWM()
 {
 	get_rcfile_YEAHWM();
 	return NULL;
 }
 
-char *
+static char *
 get_style_YEAHWM()
 {
 	get_rcfile_YEAHWM();
 	return NULL;
 }
 
-void
+static void
 set_style_YEAHWM()
 {
 	char *stylefile;
@@ -5214,10 +5634,25 @@ set_style_YEAHWM()
 	}
 }
 
-void
+static void
+reload_style_YEAHWM()
+{
+}
+
+static void
 list_styles_YEAHWM()
 {
 }
+
+static WmOperations wm_ops_YEAHWM = {
+	"yeahwm",
+	&get_rcfile_YEAHWM,
+	&find_style_YEAHWM,
+	&get_style_YEAHWM,
+	&set_style_YEAHWM,
+	&reload_style_YEAHWM,
+	&list_styles_YEAHWM
+};
 
 /** @} */
 
@@ -5225,26 +5660,26 @@ list_styles_YEAHWM()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_NONE()
 {
 }
 
-char *
+static char *
 find_style_NONE()
 {
 	get_rcfile_NONE();
 	return NULL;
 }
 
-char *
+static char *
 get_style_NONE()
 {
 	get_rcfile_NONE();
 	return NULL;
 }
 
-void
+static void
 set_style_NONE()
 {
 	char *stylefile;
@@ -5255,10 +5690,25 @@ set_style_NONE()
 	}
 }
 
-void
+static void
+reload_style_NONE()
+{
+}
+
+static void
 list_styles_NONE()
 {
 }
+
+static WmOperations wm_ops_NONE = {
+	"none",
+	&get_rcfile_NONE,
+	&find_style_NONE,
+	&get_style_NONE,
+	&set_style_NONE,
+	&reload_style_NONE,
+	&list_styles_NONE
+};
 
 /** @} */
 
@@ -5266,26 +5716,26 @@ list_styles_NONE()
   */
 /** @{ */
 
-void
+static void
 get_rcfile_UNKNOWN()
 {
 }
 
-char *
+static char *
 find_style_UNKNOWN()
 {
 	get_rcfile_UNKNOWN();
 	return NULL;
 }
 
-char *
+static char *
 get_style_UNKNOWN()
 {
 	get_rcfile_UNKNOWN();
 	return NULL;
 }
 
-void
+static void
 set_style_UNKNOWN()
 {
 	char *stylefile;
@@ -5296,71 +5746,78 @@ set_style_UNKNOWN()
 	}
 }
 
-void
+static void
+reload_style_UNKNOWN()
+{
+}
+
+static void
 list_styles_UNKNOWN()
 {
 }
 
-/** @} */
-
-typedef struct {
-	char *name;
-	char *(*get_style) (void);
-	void (*list_styles) (void);
-	void (*set_style) (void);
-} WmOperations;
-
-WmOperations wm_ops[] = {
-	/* *INDENT-OFF* */
-	{ "fluxbox",		&get_style_FLUXBOX,	&list_styles_FLUXBOX,	&set_style_FLUXBOX	},
-	{ "blackbox",		&get_style_BLACKBOX,	&list_styles_BLACKBOX,	&set_style_BLACKBOX	},
-	{ "openbox",		&get_style_OPENBOX,	&list_styles_OPENBOX,	&set_style_OPENBOX	},
-	{ "icewm",		&get_style_ICEWM,	&list_styles_ICEWM,	&set_style_ICEWM	},
-	{ "jwm",		&get_style_JWM,		&list_styles_JWM,	&set_style_JWM		},
-	{ "pekwm",		&get_style_PEKWM,	&list_styles_PEKWM,	&set_style_PEKWM	},
-	{ "fvwm",		&get_style_FVWM,	&list_styles_FVWM,	&set_style_FVWM		},
-	{ "wmaker",		&get_style_WMAKER,	&list_styles_WMAKER,	&set_style_WMAKER	},
-	{ "afterstep",		&get_style_AFTERSTEP,	&list_styles_AFTERSTEP,	&set_style_AFTERSTEP	},
-	{ "metacity",		&get_style_METACITY,	&list_styles_METACITY,	&set_style_METACITY	},
-	{ "twm",		&get_style_TWM,		&list_styles_TWM,	&set_style_TWM		},
-	{ "ctwm",		&get_style_CTWM,	&list_styles_CTWM,	&set_style_CTWM		},
-	{ "vtwm",		&get_style_VTWM,	&list_styles_VTWM,	&set_style_VTWM		},
-	{ "etwm",		&get_style_ETWM,	&list_styles_ETWM,	&set_style_ETWM		},
-	{ "echinus",		&get_style_ECHINUS,	&list_styles_ECHINUS,	&set_style_ECHINUS	},
-	{ "uwm",		&get_style_UWM,		&list_styles_UWM,	&set_style_UWM		},
-	{ "awesome",		&get_style_AWESOME,	&list_styles_AWESOME,	&set_style_AWESOME	},
-	{ "matwm",		&get_style_MATWM,	&list_styles_MATWM,	&set_style_MATWM	},
-	{ "waimea",		&get_style_WAIMEA,	&list_styles_WAIMEA,	&set_style_WAIMEA	},
-	{ "wind",		&get_style_WIND,	&list_styles_WIND,	&set_style_WIND		},
-	{ "2bwm",		&get_style_2BWM,	&list_styles_2BWM,	&set_style_2BWM		},
-	{ "wmx",		&get_style_WMX,		&list_styles_WMX,	&set_style_WMX		},
-	{ "flwm",		&get_style_FLWM,	&list_styles_FLWM,	&set_style_FLWM		},
-	{ "mwm",		&get_style_MWM,		&list_styles_MWM,	&set_style_MWM		},
-	{ "dtwm",		&get_style_DTWM,	&list_styles_DTWM,	&set_style_DTWM		},
-	{ "spectrwm",		&get_style_SPECTRWM,	&list_styles_SPECTRWM,	&set_style_SPECTRWM	},
-	{ "yeahwm",		&get_style_YEAHWM,	&list_styles_YEAHWM,	&set_style_YEAHWM	},
-	{ "none",		&get_style_NONE,	&list_styles_NONE,	&set_style_NONE		},
-	{ "unknown",		&get_style_UNKNOWN,	&list_styles_UNKNOWN,	&set_style_UNKNOWN	},
-	{ NULL,			NULL,			NULL,			NULL			}
-	/* *INDENT-ON* */
+static WmOperations wm_ops_UNKNOWN = {
+	"unknown",
+	&get_rcfile_UNKNOWN,
+	&find_style_UNKNOWN,
+	&get_style_UNKNOWN,
+	&set_style_UNKNOWN,
+	&reload_style_UNKNOWN,
+	&list_styles_UNKNOWN
 };
 
-WmOperations *
+/** @} */
+
+static WmOperations *wm_ops[] = {
+	&wm_ops_FLUXBOX,
+	&wm_ops_BLACKBOX,
+	&wm_ops_OPENBOX,
+	&wm_ops_ICEWM,
+	&wm_ops_JWM,
+	&wm_ops_PEKWM,
+	&wm_ops_FVWM,
+	&wm_ops_WMAKER,
+	&wm_ops_AFTERSTEP,
+	&wm_ops_METACITY,
+	&wm_ops_TWM,
+	&wm_ops_CTWM,
+	&wm_ops_VTWM,
+	&wm_ops_ETWM,
+	&wm_ops_CWM,
+	&wm_ops_ECHINUS,
+	&wm_ops_UWM,
+	&wm_ops_AWESOME,
+	&wm_ops_MATWM,
+	&wm_ops_WAIMEA,
+	&wm_ops_WIND,
+	&wm_ops_2BWM,
+	&wm_ops_WMX,
+	&wm_ops_FLWM,
+	&wm_ops_MWM,
+	&wm_ops_DTWM,
+	&wm_ops_SPECTRWM,
+	&wm_ops_YEAHWM,
+	&wm_ops_NONE,
+	&wm_ops_UNKNOWN,
+	NULL
+};
+
+static WmOperations *
 get_wm_ops()
 {
-	WmOperations *ops;
+	WmOperations **ops;
 
 	if (!wm->name)
 		return NULL;
-	for (ops = wm_ops; ops->name; ops++)
-		if (!strcmp(ops->name, wm->name))
+	for (ops = wm_ops; *ops; ops++)
+		if (!strcmp((*ops)->name, wm->name))
 			break;
-	return ops->name ? ops : NULL;
+	return (*ops);
 }
 
 /** @brief Get the current style of the window manager.
   */
-void
+static void
 current_style()
 {
 	WmOperations *ops;
@@ -5372,7 +5829,7 @@ current_style()
 			OPRINTF("getting current style for screen %d\n", screen);
 			scr = screens + screen;
 			root = scr->root;
-			if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->get_style) {
+			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->get_style) {
 				EPRINTF("cannot get current style for screen %d\n",
 					screen);
 				continue;
@@ -5391,7 +5848,7 @@ current_style()
 		OPRINTF("getting current style for screen %d\n", screen);
 		scr = screens + screen;
 		root = scr->root;
-		if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->get_style) {
+		if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->get_style) {
 			EPRINTF("cannot get current style for screen %d\n", screen);
 			return;
 		}
@@ -5409,7 +5866,7 @@ current_style()
 
 /** @brief List the style of the window manager.
   */
-void
+static void
 list_styles()
 {
 	WmOperations *ops;
@@ -5420,7 +5877,7 @@ list_styles()
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
-			if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->list_styles)
+			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->list_styles)
 				continue;
 			ops->list_styles();
 		}
@@ -5428,7 +5885,7 @@ list_styles()
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
-		if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->list_styles) {
+		if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->list_styles) {
 			EPRINTF("cannot list styles for screen %d\n", screen);
 			return;
 		}
@@ -5441,7 +5898,7 @@ list_styles()
 
 /** @brief Set the style of the window manager.
   */
-void
+static void
 set_style()
 {
 	WmOperations *ops;
@@ -5452,7 +5909,7 @@ set_style()
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
-			if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->set_style)
+			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->set_style)
 				continue;
 			ops->set_style();
 		}
@@ -5460,7 +5917,7 @@ set_style()
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
-		if (!(wm = scr->wm) || !(ops = get_wm_ops()) || !ops->set_style) {
+		if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->set_style) {
 			EPRINTF("cannot set style for screen %d\n", screen);
 			return;
 		}
@@ -5597,6 +6054,8 @@ Options:\n\
         don't detect window manager, use WMNAME\n\
     -f, --rcfile FILE\n\
         assume window manager uses rc file FILE, needs -w\n\
+    -r, --reload\n\
+        when setting the style, ask wm to reload\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -5625,6 +6084,7 @@ main(int argc, char *argv[])
 			{"theme",	no_argument,		NULL, 't'},
 			{"wmname",	required_argument,	NULL, 'w'},
 			{"rcfile",	required_argument,	NULL, 'f'},
+			{"reload",	no_argument,		NULL, 'r'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -5637,10 +6097,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:rnD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:Ltw:f:nDvhVC?");
+		c = getopt(argc, argv, "clsyuS:Ltw:f:rnDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -5694,6 +6154,9 @@ main(int argc, char *argv[])
 				options.rcfile = strdup(optarg);
 			else
 				goto bad_option;
+			break;
+		case 'r':	/* -r, --reload */
+			options.reload = True;
 			break;
 		case 'n':	/* -n, --dry-run */
 			options.dryrun = True;
