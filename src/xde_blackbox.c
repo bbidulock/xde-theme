@@ -42,77 +42,44 @@
 
  *****************************************************************************/
 
-/* fluxbox(1) plugin */
+/* blackbox(1) plugin */
 
 #include "xde.h"
 
-/** @name FLUXBOX
+/** @name BLACKBOX
   */
 /** @{ */
 
-/** @brief find the fluxbox init file and default directory.
+/** @brief Find the blackbox rc file and default directory.
   *
-  * Fluxbox takes a command such as:
+  * Blackbox takes a command such as:
   *
-  *   fluxbox [-rc RCFILE]
+  *   blackbox [-rc RCFILE]
   *
-  * When the RCFILE is not specified, ~/.fluxbox/init is used.  The locations of
-  * other fluxbox configuration files are specified by the intitial
-  * configuration file, but are typically placed under ~/.fluxbox.  System files
-  * are placed under /usr/share/fluxbox.
-  *
-  * System styles are either in /usr/share/fluxbox/styles or in
-  * ~/.fluxbox/styles.  Styles under these directories can either be a file or a
-  * directory.  When a directory, the actual style file is in a file called
-  * theme.cfg.
+  * When the RCFILE is not specified, ~/.blackboxrc is used.  The locations of
+  * other fluxbox configuration files are specified by the initial configuration
+  * file, but are typically placed under ~/.blackbox.  System files are placed
+  * under /usr/share/blackbox.
   */
 static void
-get_rcfile_FLUXBOX()
+get_rcfile_BLACKBOX()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	char *file = xde_get_rcfile_optarg("-rc");
-	int len;
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			len = strlen(home) + strlen(file) + 2;
-			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-		free(file);
-	} else {
-		len = strlen(home) + strlen("/.fluxbox/init") + 1;
-		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.fluxbox/init");
-	}
-	xde_get_simple_dirs("fluxbox");
+	return xde_get_rcfile_simple("blackbox", ".blackboxrc", "-rc");
 }
 
-/** @brief Find a fluxbox style file from a style name.
+/** @brief Find a blackbox style file from a style name.
   *
-  * Fluxbox style files are named files or directories in
-  * /usr/share/fluxbox/styles or ~/.fluxbox/styles.  When a named directory,
-  * the directory must contain a file named theme.cfg.
+  * Blackbox style files are named files in /usr/share/blackbox/styles or
+  * ~/.blackbox/styles.
   */
 static char *
-find_style_FLUXBOX()
+find_style_BLACKBOX()
 {
-	return xde_find_style_simple("styles", "theme.cfg");
+	return xde_find_style_simple("styles", "stylerc");
 }
 
-/** @brief Get the current fluxbox style.
-  *
-  * The current fluxbox style is set in the session.styleFile resource in the rc
-  * file.
-  */
 static char *
-get_style_FLUXBOX()
+get_style_BLACKBOX()
 {
 	XrmValue value;
 	char *type, *pos;
@@ -120,7 +87,7 @@ get_style_FLUXBOX()
 	if (wm->style)
 		return wm->style;
 
-	get_rcfile_FLUXBOX();
+	get_rcfile_BLACKBOX();
 	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		return NULL;
@@ -143,61 +110,53 @@ get_style_FLUXBOX()
 	return wm->style;
 }
 
-/** @brief Reload a fluxbox style.
+/** @brief Reload a blackbox style.
   *
-  * Sending SIGUSR2 to the fluxbox PID provided in the _BLACKBOX_PID property on
-  * the root window will result in a reconfigure of fluxbox (which is what
-  * fluxbox itself does when changing styles); send SIGHUP, a restart.
-  *
+  * Sending SIGUSR1 to the blackbox PID provided in _NET_WM_PID property on the
+  * _NET_SUPPORTING_WM_CHECK window> will effect the reconfiguration that
+  * results in rereading of the style file.
   */
 static void
-reload_style_FLUXBOX()
+reload_style_BLACKBOX()
 {
 	if (wm->pid)
-		kill(wm->pid, SIGUSR2);
+		kill(wm->pid, SIGUSR1);
 	else
-		EPRINTF("%s", "cannot reload fluxbox without a pid\n");
-
+		EPRINTF("%s", "cannot reload blackbox without a pid\n");
 }
 
-/** @brief Set the fluxbox style.
+
+/** @brief Set the blackbox style.
   *
-  * When fluxbox changes the style, it writes the path to the new style in the
-  * session.StyleFile resource in the rc file (default ~/.fluxbox/init) and then
-  * reloads the configuration.  The session.styleFile entry looks like:
+  * When blackbox changes the style, it writes the path to the new style in the
+  * session.styleFile resource in the ~/.blackboxrc file and then reloads the
+  * configuration.
   *
-  *   session.styleFile: /usr/share/fluxbox/styles/Airforce
+  * The session.styleFile entry looks like:
   *
-  * Unlike other window managers, it reloads the configuration rather than
-  * restarting.  However, fluxbox has the problem that simply reloading the
-  * configuration does not result in a change to the menu styles (in particular
-  * the font color), so a restart is likely required.
+  *   session.styleFile:	/usr/share/blackbox/styles/Airforce
   *
-  * Note that when fluxbox restarts, it dow not change the
-  * _NET_SUPPORTING_WM_CHECK root window property but it does change the
-  * _BLACKBOX_PID root window property, even if it is just to replace it with
-  * the same value again.
+  * Unlike other window managers, it reloads the configuration rather than restarting.
   */
 static void
-set_style_FLUXBOX()
+set_style_BLACKBOX()
 {
 	char *stylefile, *line, *style;
 	int len;
 
-	get_rcfile_FLUXBOX();
 	if (!wm->pid) {
-		EPRINTF("%s", "cannot set fluxbox style without pid\n");
+		EPRINTF("%s", "cannot set blackbox style without pid\n");
 		goto no_pid;
 	}
 	if (!xde_test_file(wm->rcfile)) {
 		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
 		goto no_rcfile;
 	}
-	if (!(stylefile = find_style_FLUXBOX())) {
+	if (!(stylefile = find_style_BLACKBOX())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
 		goto no_stylefile;
 	}
-	if ((style = get_style_FLUXBOX()) && !strcmp(style, stylefile))
+	if ((style = get_style_BLACKBOX()) && !strcmp(style, stylefile))
 		goto no_change;
 	xde_init_xrm();
 	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
@@ -217,7 +176,7 @@ set_style_FLUXBOX()
 	} else {
 		XrmPutFileDatabase(wm->db, wm->rcfile);
 		if (options.reload)
-			reload_style_FLUXBOX();
+			reload_style_BLACKBOX();
 	}
       no_change:
 	if (wm->db) {
@@ -233,28 +192,26 @@ set_style_FLUXBOX()
 }
 
 static void
-list_dir_FLUXBOX(char *xdir, char *style)
+list_dir_BLACKBOX(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "theme.cfg", style);
+	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
-/** @brief List fluxbox styles.
-  */
 static void
-list_styles_FLUXBOX()
+list_styles_BLACKBOX()
 {
 	return xde_list_styles_simple();
 }
 
 WmOperations xde_wm_ops = {
-	"fluxbox",
-	&get_rcfile_FLUXBOX,
-	&find_style_FLUXBOX,
-	&get_style_FLUXBOX,
-	&set_style_FLUXBOX,
-	&reload_style_FLUXBOX,
-	&list_dir_FLUXBOX,
-	&list_styles_FLUXBOX
+	"blackbox",
+	&get_rcfile_BLACKBOX,
+	&find_style_BLACKBOX,
+	&get_style_BLACKBOX,
+	&set_style_BLACKBOX,
+	&reload_style_BLACKBOX,
+	&list_dir_BLACKBOX,
+	&list_styles_BLACKBOX
 };
 
 /** @} */
