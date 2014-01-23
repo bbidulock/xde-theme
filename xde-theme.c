@@ -46,6 +46,10 @@
 #define _XOPEN_SOURCE 600
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "autoconf.h"
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -38,3 +38,10 @@ xde-style
 cscope.*
 core
 .nfs*
+.libs/
+*.log
+configure.scan
+libtool
+*.la
+*.lo
+m4/
