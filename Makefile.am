@@ -1,24 +1,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src
-
-man1_MANS = \
-	    xde-theme.man
-
-xde-theme.man: xde-theme.pod
-	pod2man --center="User Commands" \
-		--date="$(DATE)" \
-		--errors="none" \
-		--fixed="CW" \
-		--fixedbold="CB" \
-		--fixeditalic="CI" \
-		--fixedbolditalic="CX" \
-		--name="XDE-THEME" \
-		--nourls \
-		--release="$(PACKAGE) $(VERSION)" \
-		--section="1" \
-		$< >$@
+SUBDIRS = src man
 
 EXTRA_DIST = LICENSE README TODO ChangeLog xde-theme.pod
 

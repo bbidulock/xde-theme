@@ -3,7 +3,7 @@ AC_PREREQ(2.69)
 AC_INIT([xde-styles],[1.1.23],[http://github.com/bbidulock/xde-styles],[xde-styles])
 AC_REVISION([1.1.23])
 
-AC_CONFIG_SRCDIR([xde-theme.c])
+AC_CONFIG_SRCDIR([src/xde.c])
 AC_CONFIG_HEADERS([autoconf.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
@@ -96,6 +96,7 @@ AC_SUBST([sharedir])
 
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
+		 man/Makefile
 		 openbox/Makefile
 		 gtk/Makefile
 		 fvwm/start
