@@ -103,6 +103,7 @@ typedef struct {
 	char *(*get_style) (void);
 	void (*set_style) (void);
 	void (*reload_style)(void);
+	void (*list_dir)(char *, char *);
 	void (*list_styles) (void);
 } WmOperations;
 

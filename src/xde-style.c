@@ -236,7 +236,8 @@ usage(int argc, char *argv[])
 		return;
 	(void) fprintf(stderr, "\
 Usage:\n\
-    %1$s [{-l|--list}] [options]\n\
+    %1$s [{-c|--current}] [options]\n\
+    %1$s {-l|--list} [options] [STYLE]\n\
     %1$s {-s|--set} [options] STYLE\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\

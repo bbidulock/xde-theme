@@ -4,7 +4,7 @@ xde-theme -- set backgrounds and monitor for desktop changes
 
 =head1 SYNOPSIS
 
-xde-theme -- [OPTIONS] [FILE [FILE ...]]
+ xde-theme [OPTIONS] [FILE [FILE ...]]
 
 =head1 DESCRIPTION
 

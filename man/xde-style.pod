@@ -1,0 +1,204 @@
+=head1 NAME
+
+xde-style - query or set styles for lightweight window managers
+
+=head1 SYNOPSIS
+
+ xde-style [{-c|--current}] [options]
+ xde-style {-l|--list} [options] [STYLE]
+ xde-style {-s|--set}  [options]  STYLE
+ xde-style [options] {-h|--help}
+ xde-style {-V|--version}
+ xde-style {-C|--copying}
+
+=head1 DESCRIPTION
+
+B<xde-style> is a C-language application that can be used to query or
+set the style of a running or off-line (supported) lightweight window
+manager.
+
+=head1 ARGUMENTS
+
+=head1 OPTIONS
+
+=head2 COMMAND OPTIONS
+
+=head2 GENERAL OPTIONS
+
+=head1 BEHAVIOUR
+
+=head1 THEME SUPPORT
+
+=head1 WINDOW MANAGERS
+
+B<xde-style> supports various window managers throught the use of
+plugins.  Plugins are provided for the following lightweight window
+managers:
+
+=over
+
+=item L<fluxbox(1)>
+
+L<fluxbox(1)> provides its own style system.  B<xde-style> provides a
+style-setting mechanism for L<fluxbox(1)> that can be used from scripts
+outside of the L<fluxbox(1)> root menu system.
+
+=item L<blackbox(1)>
+
+L<blackbox(1)> provides its own style system.  B<xde-styles> provides a
+style-setting mechanism for L<blackbox(1)> that can be used from scripts
+outside of the L<blackbox> root menu system.
+
+=item L<openbox(1)>
+
+L<openbox(1)> provides its own style system.  B<xde-styles> provides a
+style-setting mechanism for L<openbox(1)> that can be used from scripts
+outside of the L<openbox> root menu without need for L<obconf(1)>.
+
+=item L<icewm(1)>
+
+L<icewm(1)> provides its own style system.  B<xde-styles> provides a
+style-setting mechanism for L<icewm(1)> that can be used from scripts
+outside of the L<icewm(1)> root menu.
+
+=item L<jwm(1)>
+
+L<jwm(1)> does not provide a style system. B<xde-styles> provides a
+style system using the C<E<lt>IncludeE<gt>> mechanism of the L<jwm(1)>
+configuration file and provides a style-setting mechanism that can be
+used from outside of the L<jwm(1)> root menu.  The F<xde-styles> package
+also provides some shell scripts that can be used from within the
+L<jwm(1)> root menu.
+
+=item L<pekwm(1)>
+
+L<pekwm(1)> provides its own style system using scripts; however, these
+scripts can only be invoked from within L<pekwm(1)>.  B<xde-styles>
+provides a style-setting mechanism for L<pekwm(1)> that can be used from
+scripts outside of the L<pekwm(1)> root menu.
+
+=item L<fvwm(1)>
+
+L<fvwm(1)> has an add-on style system called L<fvwm-themes(1)> which is,
+however, pretty clunky.  B<xde-styles> provides a style system using the
+powerful configuration file system of L<fvwm(1)> and provides a
+style-setting mechanism that can be used from outside of the L<fvwm(1)>
+root menu.  The F<xde-styles> package also provides some configuration
+scripts that can be used from within the L<fvwm(1)> root menu.
+
+=item L<wmaker(1)>
+
+L<wmaker(1)> provides its own style system, as well as two programs:
+L<getstyle(1)> and L<setstyle(1)> that can be used to query and set
+styles.  Nevertheless, B<xde-styles> provides a style-setting mechanism
+for L<wmaker(1)> that can be used from scripts outside of the
+L<wmaker(1)> environment.
+
+=item L<afterstep(1)>
+
+L<afterstep(1)> provides its own style system.  B<xde-styles> provides a
+style-setting mechanism for L<afterstep(1)> that can be used from
+scripts outside of the L<afterstep(1)> root menu.
+
+=item L<metacity(1)>
+
+L<metacity(1)> provides its own style system based on GTK themes.
+B<xde-styles> provides a style-setting mechanism for L<metacity(1)> that
+can be used without the need for an entire GNOME desktop.
+
+=item L<twm(1)>
+
+L<twm(1)> does not provide a style system.  B<xde-styles> provides a
+style system using an L<m4(1)> configuration system and provides a
+style-setting mechanism that can be used form outside of the L<twm(1)>
+root menu.  The F<xde-styles> package also provides some shell scripts
+and L<m4(1)> configuration files that can be used from within the
+L<twm(1)> root menu.
+
+=item L<ctwm(1)>
+
+L<ctwm(1)> does not provide a style system.  B<xde-styles> provides a
+style system using an L<m4(1)> configuration system and provides a
+style-setting mechanism that can be used from outside of the L<ctwm(1)>
+root menu.  The F<xde-styles> package also provides some shell scripts
+and L<m4(1)> configuration files that can be used from within the
+L<ctwm(1)> root menu.
+
+=item L<vtwm(1)>
+
+L<vtwm(1)> does not provide a style system.  B<xde-styles> provides a
+style system using an L<m4(1)> configuration system and provides a
+style-setting mechanism that can be used from outside of the L<vtwm(1)>
+root menu.  The F<xde-styles> package also provides some shell scripts
+and L<m4(1)> configuration files that can be used from within the
+L<vtwm(1)> root menu.
+
+=item L<etwm(1)>
+
+L<etwm(1)> does not provide a style system.  B<xde-styles> provides a
+style system using an L<m4(1)> configuration system and provides a
+style-setting mechanism that can be used from outside of the L<etwm(1)>
+root menu.  The F<xde-styles> package also provides some shell scripts
+and L<m4(1)> configuration files that can be used from within the
+L<etwm(1)> root menu.
+
+=item L<cwm(1)>
+
+L<cwm(1)> does not provide a style system.  B<xde-styles> provides a
+style system by directly editting the L<cwmrc(5)> configuration file.
+
+=item L<echinus(1)>
+
+L<echinus(1)> does not provide a style system.  B<xde-styles> provides a
+style system based on the C<#include> directive observed by X Resource
+Manager files.
+
+=item L<uwm(1)>
+
+L<uwm(1)> (µwm) does not provide a style system.  B<xde-styles> provides
+a style system based on the C<include> mechanism of the
+L<uwm(1)> configuration file and provides a style-setting mechanism that
+can be used from outside of the L<uwm(1)> root menu.  The F<xde-styles>
+package also provides some shell scripts that can be used from within
+the L<uwm(1)> root menu.
+
+=item L<awesome(1)>
+
+L<awesome(1)> provides a style system.  B<xde-styles> provides a
+style-setting mechanism for L<awesome(1)> that can be used from scripts
+outside of the L<awesome> root menu system.
+
+=item L<matwm2(1)>
+
+L<matwm2(1)> does not provide a style system.  B<xde-styles> provides a
+style system by directly editting the F<.matwmrc> configuration file.
+
+=item L<waimea(1)>
+
+=item L<wind(1)>
+
+=item L<2bwm(1)>
+
+=item L<wmx(1)>
+
+=item L<flwm(1)>
+
+=item L<mwm(1)>
+
+=item L<dtwm(1)>
+
+=item L<spectrwm(1)>
+
+=item L<yeahwm(1)>
+
+=back
+
+=head1 HISTORY
+
+=head1 AUTHOR
+
+=head1 SEE ALSO
+
+=cut
+
+# vim: sw=4 tw=72

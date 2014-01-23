@@ -1,6 +1,11 @@
 
 nodist_man1_MANS = \
-	    xde-theme.man
+	    xde-theme.man \
+	    xde-style.man
+
+xde-theme.man: xde-theme.pod
+
+xde-style.man: xde-theme.pod
 
 SUFFIXES = .man .pod
 
