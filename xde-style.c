@@ -104,6 +104,8 @@ typedef struct {
 	Bool dryrun;
 	int screen;
 	char *style;
+	char *wmname;
+	char *rcfile;
 } Options;
 
 Options options = {
@@ -118,13 +120,14 @@ Options options = {
 	False,
 	False,
 	-1,
+	NULL,
+	NULL,
 	NULL
 };
 
 #define OPRINTF(format, ...) do { if (options.output > 1) fprintf(stderr, "I: " format, __VA_ARGS__); } while (0)
 #define DPRINTF(format, ...) do { if (options.debug) fprintf(stderr, "D: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); } while (0)
 #define EPRINTF(format, ...) do { fprintf(stderr, "E: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); } while (0)
-
 
 #define CHECK_DIRS 3
 #define CHECK_WINS 6
@@ -325,7 +328,7 @@ init_display()
 			     &scr->width, &scr->height, &du, &du);
 		XSaveContext(dpy, scr->root, ScreenContext, (XPointer) scr);
 		OPRINTF("screen %d root 0x%lx %dx%d+%d+%d\n", scr->screen,
-				scr->root, scr->width, scr->height, scr->x, scr->y);
+			scr->root, scr->width, scr->height, scr->x, scr->y);
 	}
 	screen = DefaultScreen(dpy);
 	scr = screens + screen;
@@ -659,26 +662,16 @@ find_wm_comp()
 char *
 get_proc_file(pid_t pid, char *name, size_t *size)
 {
-#if 0
-	struct stat st;
-#endif
 	char *file, *buf;
 	FILE *f;
 	size_t fsize, read, total;
 
-	OPRINTF("getting process file %s\n", name);
-	file = calloc(256, sizeof(*file));
-	snprintf(file, 256, "/proc/%d/%s", pid, name);
-
-#if 0
-	/* CANNOT STAT A /PROC FILE!!! */
-	if (stat(file, &st)) {
-		EPRINTF("could not stat %s\n", file);
-		free(file);
-		*size = 0;
+	if (!pid)
 		return NULL;
-	}
-#endif
+	OPRINTF("getting process file %s\n", name);
+	file = calloc(64, sizeof(*file));
+	snprintf(file, 64, "/proc/%d/%s", pid, name);
+
 	if (!(f = fopen(file, "rb"))) {
 		EPRINTF("%s\n", strerror(errno));
 		free(file);
@@ -686,7 +679,7 @@ get_proc_file(pid_t pid, char *name, size_t *size)
 		return NULL;
 	}
 	for (fsize = 0; fgetc(f) != EOF; fsize++) ;
-	OPRINTF("file %s size is %d bytes\n", file, (int)fsize);
+	OPRINTF("file %s size is %d bytes\n", file, (int) fsize);
 	buf = calloc(fsize + 256, sizeof(*buf));
 	if (!(f = freopen(file, "rb", f))) {
 		EPRINTF("%s\n", strerror(errno));
@@ -701,7 +694,7 @@ get_proc_file(pid_t pid, char *name, size_t *size)
 		if (!(read = fread(buf + total, 1, fsize - total, f)))
 			if (total < fsize) {
 				EPRINTF("total %d less than fsize %d\n",
-						(int)total, (int)fsize);
+					(int) total, (int) fsize);
 				free(buf);
 				fclose(f);
 				*size = 0;
@@ -713,12 +706,35 @@ get_proc_file(pid_t pid, char *name, size_t *size)
 }
 
 char *
+get_proc_link(pid_t pid, char *name)
+{
+	char *link, *buf;
+
+	if (!pid)
+		return NULL;
+	OPRINTF("getting process link %s\n", name);
+	link = calloc(64, sizeof(*link));
+	snprintf(link, 64, "/proc/%d/%s", pid, name);
+	buf = calloc(PATH_MAX + 1, sizeof(*buf));
+	if (readlink(link, buf, PATH_MAX)) {
+		EPRINTF("%s: %s\n", link, strerror(errno));
+		free(link);
+		free(buf);
+		return NULL;
+	}
+	free(link);
+	link = strdup(buf);
+	free(buf);
+	return link;
+}
+
+char *
 get_proc_environ(char *name)
 {
 	char *pos, *end;
 
 	if (!wm->env && (wm->noenv || !wm->pid
-	    || !(wm->env = get_proc_file(wm->pid, "environ", &wm->nenv)))) {
+			 || !(wm->env = get_proc_file(wm->pid, "environ", &wm->nenv)))) {
 		wm->noenv = True;
 		goto nope;
 	}
@@ -742,6 +758,18 @@ get_proc_comm(pid_t pid)
 		if (strrchr(comm, '\n'))
 			*strrchr(comm, '\n') = '\0';
 	return comm;
+}
+
+char *
+get_proc_exe(pid_t pid)
+{
+	return get_proc_link(pid, "exe");
+}
+
+char *
+get_proc_cwd(pid_t pid)
+{
+	return get_proc_link(pid, "cwd");
 }
 
 /** @brief Get the wm's idea of the $XDG_DATA_HOME:$XDG_DATA_DIRS.
@@ -1093,7 +1121,8 @@ find_wm_comm()
 char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
 	"fvwm", "wmaker", "afterstep", "metacity", "twm", "ctwm", "vtwm",
 	"etwm", "echinus", "uwm", "awesome", "matwm", "waimea", "wind", "2bwm",
-	"wmx", "flwm", "mwm", "dtwm", "spectrwm", "yeahwm", NULL
+	"wmx", "flwm", "mwm", "dtwm", "spectrwm", "yeahwm", "cwm", "dwm",
+	"perlwm", "aewm", "mutter", "xfwm", "kwm", NULL
 };
 
 /** @brief Find the wm process without name or pid.
@@ -1130,7 +1159,7 @@ find_wm_proc_any()
 			continue;
 		pid = atoi(d->d_name);
 		if (!(name = get_proc_file(pid, "comm", &size))) {
-			DPRINTF("no comm for pid %d\n", (int)pid);
+			DPRINTF("no comm for pid %d\n", (int) pid);
 			continue;
 		}
 		if (strrchr(name, '\n'))
@@ -1146,7 +1175,7 @@ find_wm_proc_any()
 		}
 		OPRINTF("%s is a window manager\n", name);
 		if (!(buf = get_proc_file(pid, "environ", &size))) {
-			DPRINTF("no environ for pid %d\n", (int)pid);
+			DPRINTF("no environ for pid %d\n", (int) pid);
 			continue;
 		}
 		OPRINTF("checking DISPLAY for %s\n", name);
@@ -1208,7 +1237,7 @@ find_wm_proc_by_name()
 		EPRINTF("/proc: %s\n", strerror(errno));
 		return False;
 	}
-      dsp = strdup(getenv("DISPLAY") ? : "");
+	dsp = strdup(getenv("DISPLAY") ? : "");
 	while ((d = readdir(dir))) {
 		if (strspn(d->d_name, "0123456789") != strlen(d->d_name))
 			continue;
@@ -1302,7 +1331,7 @@ check_proc()
 		wm->env = buf;
 		wm->nenv = size;
 		have_proc = True;
-		OPRINTF("got environ with %d bytes\n", (int)size);
+		OPRINTF("got environ with %d bytes\n", (int) size);
 	} else {
 		wm->noenv = True;
 		EPRINTF("could not get process environ for pid %ld", wm->pid);
@@ -1379,8 +1408,7 @@ check_wm()
 			     || (wm->host && s->wm->host &&
 				 !strcmp(wm->host, s->wm->host))) &&
 			    (wm->pid && s->wm->pid && wm->pid == s->wm->pid)) {
-				OPRINTF("found duplicate wm on screen %d\n",
-						s->screen);
+				OPRINTF("found duplicate wm on screen %d\n", s->screen);
 				unref_wm();
 				wm = scr->wm = s->wm;
 				ref_wm();
@@ -1439,8 +1467,7 @@ show_wm()
 	}
 	if (wm->ch.res_name || wm->ch.res_class)
 		OPRINTF("%d %s: '%s', '%s'\n", screen, wm->name,
-				wm->ch.res_name ? : "(none)",
-				wm->ch.res_class ? : "(none)");
+			wm->ch.res_name ? : "(none)", wm->ch.res_class ? : "(none)");
 	if (wm->rcfile)
 		OPRINTF("%d %s: rcfile %s\n", screen, wm->name, wm->rcfile);
 	if (wm->pdir)
@@ -1476,23 +1503,39 @@ Bool
 detect_wm()
 {
 	Bool have_wm = False;
-	int s;
 
-	for (s = 0; s < nscr; s++) {
-		screen = s;
+	if (options.wmname) {
+		screen = DefaultScreen(dpy);
+		if (0 <= options.screen && options.screen < nscr)
+			screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
 		wm = scr->wm;
-		if (check_wm()) {
-			OPRINTF("found wm %s(%ld) for screen %d\n",
+		unref_wm();
+		ref_wm();
+		wm->name = strdup(options.wmname);
+		have_wm = True;
+		if (options.output > 1)
+			show_wm();
+	} else {
+		int s;
+
+		for (s = 0; s < nscr; s++) {
+			screen = s;
+			scr = screens + screen;
+			root = scr->root;
+			wm = scr->wm;
+			if (check_wm()) {
+				OPRINTF("found wm %s(%ld) for screen %d\n",
 					wm->name, wm->pid, screen);
-			have_wm = True;
-			if (options.output > 1)
-				show_wm();
+				have_wm = True;
+				if (options.output > 1)
+					show_wm();
+			}
 		}
+		if (!have_wm)
+			EPRINTF("%s\n", "could not find any window managers");
 	}
-	if (!have_wm)
-		EPRINTF("%s\n", "could not find any window managers");
 	return have_wm;
 }
 
@@ -1524,6 +1567,14 @@ get_optarg(char *optname)
 	return NULL;
 }
 
+char *
+get_rcfile_optarg(char *optname)
+{
+	if (options.wmname)
+		return options.rcfile;
+	return get_optarg(optname);
+}
+
 void
 get_simple_dirs(char *wmname)
 {
@@ -1552,7 +1603,7 @@ void
 get_rcfile_simple(char *wmname, char *option)
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg(option);
+	char *file = get_rcfile_optarg(option);
 	int len;
 	struct stat st;
 
@@ -1567,6 +1618,7 @@ get_rcfile_simple(char *wmname, char *option)
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
 		char rc[32];
 
@@ -1595,6 +1647,69 @@ get_rcfile_simple(char *wmname, char *option)
 		}
 	}
 	get_simple_dirs(wmname);
+}
+
+void
+list_dir_simple(char *xdir, char *dname, char *fname, char *style)
+{
+	DIR *dir;
+	char *dirname, *file;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen(dname) + 2;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/");
+	strcat(dirname, dname);
+	if (!(dir = opendir(dirname))) {
+		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen(fname) + 3;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dirname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode))
+			goto got_it;
+		else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		}
+		strcat(file, "/");
+		strcat(file, fname);
+		if (stat(file, &st)) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			free(file);
+			continue;
+		}
+	      got_it:
+		if (!options.theme || find_xde_theme(d->d_name))
+			fprintf(stdout, "%s %s%s\n", d->d_name, file,
+				(style && !strcmp(style, file)) ? " *" : "");
+		free(file);
+	}
+	closedir(dir);
+	free(dirname);
 }
 
 Bool
@@ -1646,23 +1761,24 @@ void
 get_rcfile_FLUXBOX()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-rc");
+	char *file = get_rcfile_optarg("-rc");
+	int len;
 
 	free(wm->rcfile);
 	if (file) {
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.fluxbox/init") + 1,
-			   sizeof(*wm->rcfile));
+		len = strlen(home) + strlen("/.fluxbox/init") + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.fluxbox/init");
 	}
@@ -1779,6 +1895,23 @@ get_style_FLUXBOX()
 	return wm->style;
 }
 
+/** @brief Reload a fluxbox style.
+  *
+  * Sending SIGUSR2 to the fluxbox PID provided in the _BLACKBOX_PID property on
+  * the root window will result in a reconfigure of fluxbox (which is what
+  * fluxbox itself does when changing styles); send SIGHUP, a restart.
+  *
+  */
+void
+reload_style_FLUXBOX()
+{
+	if (wm->pid)
+		kill(wm->pid, SIGUSR2);
+	else
+		EPRINTF("%s", "cannot reload fluxbox without a pid\n");
+
+}
+
 /** @brief Set the fluxbox style.
   *
   * When fluxbox changes the style, it writes the path to the new style in the
@@ -1791,10 +1924,6 @@ get_style_FLUXBOX()
   * restarting.  However, fluxbox has the problem that simply reloading the
   * configuration does not result in a change to the menu styles (in particular
   * the font color), so a restart is likely required.
-  *
-  * Sending SIGUSR2 to the fluxbox PID provided in the _BLACKBOX_PID property on
-  * the root window will result in a reconfigure of fluxbox (which is what
-  * fluxbox itself does when changing styles); send SIGHUP, a restart.
   *
   * Note that when fluxbox restarts, it dow not change the
   * _NET_SUPPORTING_WM_CHECK root window property but it does change the
@@ -1835,7 +1964,7 @@ set_style_FLUXBOX()
 	if (options.dryrun)
 		goto no_change;
 	XrmPutFileDatabase(wm->db, wm->rcfile);
-	kill(wm->pid, SIGUSR2);
+	reload_style_FLUXBOX();
       no_change:
 	if (wm->db) {
 		XrmDestroyDatabase(wm->db);
@@ -1852,55 +1981,7 @@ set_style_FLUXBOX()
 void
 list_dir_FLUXBOX(char *xdir, char *style)
 {
-	DIR *dir;
-	char *dirname, *file;
-	struct dirent *d;
-	struct stat st;
-	int len;
-
-	if (!xdir)
-		return;
-	len = strlen(xdir) + strlen("/styles") + 1;
-	dirname = calloc(len, sizeof(*dirname));
-	strcpy(dirname, xdir);
-	strcat(dirname, "/styles");
-	if ((dir = opendir(dirname))) {
-		while ((d = readdir(dir))) {
-			if (d->d_name[0] == '.')
-				continue;
-			len = strlen(dirname) + strlen(d->d_name) +
-			    strlen("/theme.cfg") + 2;
-			file = calloc(len, sizeof(*file));
-			strcpy(file, dirname);
-			strcat(file, "/");
-			strcat(file, d->d_name);
-			if (stat(file, &st)) {
-				DPRINTF("%s: %s\n", file, strerror(errno));
-				free(file);
-				continue;
-			}
-			if (S_ISDIR(st.st_mode)) {
-				strcat(file, "/theme.cfg");
-				if (stat(file, &st)) {
-					DPRINTF("%s: %s\n", file, strerror(errno));
-					free(file);
-					continue;
-				}
-				*strrchr(file, '/') = '\0';
-			} else if (!S_ISREG(st.st_mode)) {
-				DPRINTF("%s: not a directory or file\n", file);
-				free(file);
-				continue;
-			}
-			if (!options.theme || find_xde_theme(d->d_name))
-				fprintf(stdout, "%s %s%s\n", d->d_name, file,
-					(style && !strcmp(style, file)) ? " *" : "");
-			free(file);
-		}
-		closedir(dir);
-	} else
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
-	free(dirname);
+	return list_dir_simple(xdir, "styles", "theme.cfg", style);
 }
 
 /** @brief List fluxbox styles.
@@ -2032,20 +2113,34 @@ get_style_BLACKBOX()
 	return wm->style;
 }
 
-/*
- * When blackbox changes the style, it writes the path to the new style in the
- * session.styleFile resource in the ~/.blackboxrc file and then reloads the
- * configuration.
- *
- * The session.styleFile entry looks like:
- *
- *   session.styleFile:	/usr/share/blackbox/styles/Airforce
- *
- * Unlike other window managers, it reloads the configuration rather than restarting.
- * Sending SIGUSR1 to the blackbox PID provided in _NET_WM_PID property on the
- * _NET_SUPPORTING_WM_CHECK window> will effect the reconfiguration that results in
- * rereading of the style file.
- */
+/** @brief Reload a blackbox style.
+  *
+  * Sending SIGUSR1 to the blackbox PID provided in _NET_WM_PID property on the
+  * _NET_SUPPORTING_WM_CHECK window> will effect the reconfiguration that
+  * results in rereading of the style file.
+  */
+void
+reload_style_BLACKBOX()
+{
+	if (wm->pid)
+		kill(wm->pid, SIGUSR1);
+	else
+		EPRINTF("%s", "cannot reload blackbox without a pid\n");
+}
+
+
+/** @brief Set the blackbox style.
+  *
+  * When blackbox changes the style, it writes the path to the new style in the
+  * session.styleFile resource in the ~/.blackboxrc file and then reloads the
+  * configuration.
+  *
+  * The session.styleFile entry looks like:
+  *
+  *   session.styleFile:	/usr/share/blackbox/styles/Airforce
+  *
+  * Unlike other window managers, it reloads the configuration rather than restarting.
+  */
 void
 set_style_BLACKBOX()
 {
@@ -2079,7 +2174,7 @@ set_style_BLACKBOX()
 	if (options.dryrun)
 		goto no_change;
 	XrmPutFileDatabase(wm->db, wm->rcfile);
-	kill(wm->pid, SIGUSR1);
+	reload_style_BLACKBOX();
       no_change:
 	if (wm->db) {
 		XrmDestroyDatabase(wm->db);
@@ -2172,7 +2267,7 @@ void
 get_rcfile_OPENBOX()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("--config-file");
+	char *file = get_rcfile_optarg("--config-file");
 	char *cnfg = get_proc_environ("XDG_CONFIG_HOME");
 	int len;
 
@@ -2181,21 +2276,22 @@ get_rcfile_OPENBOX()
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
 		if (cnfg) {
-			wm->rcfile = calloc(strlen(cnfg) + strlen("/openbox/rc.xml") + 1,
-					    sizeof(*wm->rcfile));
+			len = strlen(cnfg) + strlen("/openbox/rc.xml") + 1;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, cnfg);
 		} else {
-			wm->rcfile = calloc(strlen(home) + strlen("/.config") +
-					    strlen("/openbox/rc.xml") + 1,
-					    sizeof(*wm->rcfile));
+			len = strlen(home) + strlen("/.config") +
+			    strlen("/openbox/rc.xml") + 1;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
 			strcat(wm->rcfile, "/.config");
 		}
@@ -2291,52 +2387,24 @@ get_style_OPENBOX()
 	return NULL;
 }
 
-/*
- * When openbox changes its theme, it changes the _OB_THEME property on the root
- * window.  openbox also changes the theme section in ~/.config/openbox/rc.xml and
- * writes the file and performs a reconfigure.
- *
- * openbox sets the _OB_CONFIG_FILE property on the root window when the
- * configuration file differs from the default (but not otherwise).
- *
- * openbox does not provide internal actions for setting the theme: it uses an
- * external theme setting program that communicates with the window manager.
- *
- * openbox can be reconfigured by sending an _OB_CONTROL message to the root window
- * with a control type in data.l[0].  The control type can be one of:
- *
- * OB_CONTROL_RECONFIGURE    1   reconfigure
- * OB_CONTROL_RESTART        2   restart
- * OB_CONTROL_EXIT           3   exit
- *
- * When xde-session runs, it sets the OPENBOX_RCFILE environment variable.
- * xde-session and associated tools will always launch openbox with a command such
- * as:
- *
- *   openbox ${OPENBOX_RCFILE:+--config-file $OPENBOX_RCFILE}
- *
- * The default configuration file when OPENBOX_RCFILE is not specified is
- * $XDG_CONFIG_HOME/openbox/rc.xml.  The location of other openbox configuration
- * files are specified by the initial configuration file.  xde-session typically sets
- * OPENBOX_RCFILE to $XDG_CONFIG_HOME/openbox/xde-rc.xml.
- */
 #define OB_CONTROL_RECONFIGURE	    1	/* reconfigure */
 #define OB_CONTROL_RESTART	    2	/* restart */
 #define OB_CONTROL_EXIT		    3	/* exit */
 
+/** @brief Reload an openbox style.
+  *
+  * Openbox can be reconfigured by sending an _OB_CONTROL message to the root
+  * window with a control type in data.l[0].  The control type can be one of:
+  *
+  * OB_CONTROL_RECONFIGURE    1   reconfigure
+  * OB_CONTROL_RESTART        2   restart
+  * OB_CONTROL_EXIT           3   exit
+  *
+  */
 void
-set_style_OPENBOX()
+reload_style_OPENBOX()
 {
 	XEvent ev;
-	char *stylefile;
-
-	if (!(stylefile = find_style_OPENBOX())) {
-		EPRINTF("cannot find style '%s'\n", options.style);
-		return;
-	}
-
-	if (options.dryrun)
-		goto no_change;
 
 	ev.xclient.type = ClientMessage;
 	ev.xclient.display = dpy;
@@ -2351,82 +2419,64 @@ set_style_OPENBOX()
 	XSendEvent(dpy, root, False,
 		   SubstructureNotifyMask | SubstructureRedirectMask, &ev);
 	XFlush(dpy);
+}
+
+/** @brief Set the openbox style.
+  *
+  * When openbox changes its theme, it changes the _OB_THEME property on the root
+  * window.  openbox also changes the theme section in ~/.config/openbox/rc.xml and
+  * writes the file and performs a reconfigure.
+  *
+  * openbox sets the _OB_CONFIG_FILE property on the root window when the
+  * configuration file differs from the default (but not otherwise).
+  *
+  * openbox does not provide internal actions for setting the theme: it uses an
+  * external theme setting program that communicates with the window manager.
+  *
+  * When xde-session runs, it sets the OPENBOX_RCFILE environment variable.
+  * xde-session and associated tools will always launch openbox with a command such
+  * as:
+  *
+  *   openbox ${OPENBOX_RCFILE:+--config-file $OPENBOX_RCFILE}
+  *
+  * The default configuration file when OPENBOX_RCFILE is not specified is
+  * $XDG_CONFIG_HOME/openbox/rc.xml.  The location of other openbox configuration
+  * files are specified by the initial configuration file.  xde-session typically sets
+  * OPENBOX_RCFILE to $XDG_CONFIG_HOME/openbox/xde-rc.xml.
+  */
+void
+set_style_OPENBOX()
+{
+	char *stylefile;
+
+	if (!(stylefile = find_style_OPENBOX())) {
+		EPRINTF("cannot find style '%s'\n", options.style);
+		return;
+	}
+
+	if (options.dryrun)
+		goto no_change;
+
+	reload_style_OPENBOX();
       no_change:
 	return;
 }
 
 void
-list_dir_OPENBOX(char *xdir)
+list_dir_OPENBOX(char *xdir, char *style)
 {
-	DIR *dir;
-	char *dirname, *file;
-	struct dirent *d;
-	struct stat st;
-	int len;
-
-	if (!xdir || !*xdir)
-		return;
-	len = strlen(xdir) + strlen("/themes") + 1;
-	dirname = calloc(len, sizeof(*dirname));
-	strcpy(dirname, xdir);
-	strcat(dirname, "/themes");
-	if ((dir = opendir(dirname))) {
-		while ((d = readdir(dir))) {
-			if (d->d_name[0] == '.')
-				continue;
-			len = strlen(dirname) + strlen(d->d_name) +
-				strlen("/openbox-3/themerc") + 2;
-			file = calloc(len, sizeof(*file));
-			strcpy(file, dirname);
-			strcat(file, "/");
-			strcat(file, d->d_name);
-			strcat(file, "/openbox-3/themerc");
-			if (stat(file, &st)) {
-				DPRINTF("%s: %s\n", file, strerror(errno));
-				free(file);
-				continue;
-			}
-			if (!S_ISREG(st.st_mode)) {
-				DPRINTF("%s: not a file\n", file);
-				free(file);
-				continue;
-			}
-			if (!options.theme || find_xde_theme(d->d_name))
-				fprintf(stdout, "%s %s\n", d->d_name, file);
-			free(file);
-		}
-		closedir(dir);
-	} else
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
-	free(dirname);
+	return list_dir_simple(xdir, "themes", "openbox-3/themerc", style);
 }
 
 void
 list_styles_OPENBOX()
 {
-	char *data, *home, *dirs, *dir, *end;
-	int len;
+	char **dir, *style = get_style_OPENBOX();
 
-	home = strdup(getenv("HOME") ?: ".");
-	len = strlen(home) + strlen("/.local.share") + 1;
-	dirs = calloc(len, sizeof(*dirs));
-	strcpy(dirs, home);
-	strcat(dirs, "/.local/share");
-	data = strdup(getenv("XDG_DATA_DIRS") ?: "/usr/local/share:/usr/share");
-	home = strdup(getenv("XDG_DATA_HOME") ?: dirs);
-	free(dirs);
-	len = strlen(home) + strlen(data) + 2;
-	dirs = calloc(len, sizeof(*dirs));
-	strcpy(dirs, home);
-	strcat(dirs, ":");
-	strcat(dirs, data);
-	free(data);
-	free(home);
-	for (dir = dirs, end = dir + strlen(dir); dir < end; dir += strlen(dir) + 1) {
-		*strchrnul(dir, ':') = '\0';
-		list_dir_OPENBOX(dir);
-	}
-	free(dirs);
+	get_xdg_dirs();
+
+	for (dir = wm->xdg_dirs; *dir; dir++)
+		list_dir_OPENBOX(*dir, style);
 }
 
 /** @} */
@@ -2435,23 +2485,22 @@ list_styles_OPENBOX()
   */
 /** @{ */
 
-/* @brief Find the icewm rc file and default directory.
- *
- * Icewm takes a command such as: 
- *
- *   icewm [-c, --config=RCFILE] [-t, --theme=FILE]
- *
- * The default if RCFILE is not specified is ~/.icewm/preferences, unless the
- * ICEWM_PRIVCFG environment variable is specified, 
- * 
- *
- */
+/** @brief Find the icewm rc file and default directory.
+  *
+  * Icewm takes a command such as: 
+  *
+  *   icewm [-c, --config=RCFILE] [-t, --theme=FILE]
+  *
+  * The default if RCFILE is not specified is ~/.icewm/preferences, unless the
+  * ICEWM_PRIVCFG environment variable is specified, 
+  */
 void
 get_rcfile_ICEWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("--config");
+	char *file = get_rcfile_optarg("--config");
 	char *cnfg = get_proc_environ("ICEWM_PRIVCFG");
+	int len;
 
 	free(wm->udir);
 	wm->udir = calloc(strlen(home) + strlen("/.icewm") + 1, sizeof(*wm->udir));
@@ -2462,8 +2511,8 @@ get_rcfile_ICEWM()
 		if (cnfg[0] == '/')
 			wm->pdir = strdup(cnfg);
 		else {
-			wm->pdir =
-			    calloc(strlen(home) + strlen(cnfg) + 2, sizeof(*wm->pdir));
+			len = strlen(home) + strlen(cnfg) + 2;
+			wm->pdir = calloc(len, sizeof(*wm->pdir));
 			strcpy(wm->pdir, home);
 			strcat(wm->pdir, "/");
 			strcat(wm->pdir, cnfg);
@@ -2478,17 +2527,16 @@ get_rcfile_ICEWM()
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(wm->pdir) + strlen(file) + 2,
-				   sizeof(*wm->rcfile));
+			len = strlen(wm->pdir) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, wm->pdir);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
-		wm->rcfile =
-		    calloc(strlen(wm->pdir) + strlen("/preferences") + 1,
-			   sizeof(*wm->rcfile));
+		len = strlen(wm->pdir) + strlen("/preferences") + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 		strcpy(wm->rcfile, wm->pdir);
 		strcat(wm->rcfile, "/preferences");
 	}
@@ -2553,40 +2601,6 @@ get_style_ICEWM()
 	return NULL;
 }
 
-/*
- * When icewm changes the style, it writes the new style to the ~/.icewm/theme or
- * $ICEWM_PRIVCFG/theme file and then restarts.  The ~/.icewm/theme file looks like:
- *
- *   Theme="Penguins/default.theme"
- *   #Theme="Airforce/default.theme"
- *   ##Theme="Penguins/default.theme"
- *   ###Theme="Pedestals/default.theme"
- *   ####Theme="Penguins/default.theme"
- *   #####Theme="Airforce/default.theme"
- *   ######Theme="Archlinux/default.theme"
- *   #######Theme="Airforce/default.theme"
- *   ########Theme="Airforce/default.theme"
- *   #########Theme="Airforce/default.theme"
- *   ##########Theme="Penguins/default.theme"
- *
- * icewm cannot distinguish between system an user styles.  The theme name specifies
- * a directory in the /usr/share/icewm/themes, ~/.icewm/themes or
- * $ICEWM_PRIVCFG/themes subdirectories.
- *
- * There are two ways to get icewm to reload the theme, one is to send a SIGHUP to
- * the window manager process.  The other is to send an _ICEWM_ACTION client message
- * to the root window.
- *
- * When xde-session runs, it sets the ICEWM_PRIVCFG environment variable.
- * xde-session and associated tools will always set this environment variable before
- * launching icewm.  icewm respects this environment variable and no special options
- * are necessary when launching icewm.
- *
- * The default configuration directory when ICEWM_PRIVCFG is not specified is
- * ~/.icewm.  The location of all other icewm configuration files are in this
- * directory.  xde-session typically sets ICEWM_PRIVCFG to $XDG_CONFIG_HOME/icewm.
- */
-
 #define ICEWM_ACTION_NOP		0
 #define ICEWM_ACTION_PING		1
 #define ICEWM_ACTION_LOGOUT		2
@@ -2597,6 +2611,67 @@ get_style_ICEWM()
 #define ICEWM_ACTION_WINDOWLIST		7
 #define ICEWM_ACTION_RESTARTWM		8
 
+/** @brief Reload an icewm style.
+  *
+  * There are two ways to get icewm to reload the theme, one is to send a SIGHUP
+  * to the window manager process.  The other is to send an _ICEWM_ACTION client
+  * message to the root window.
+  */
+void
+reload_style_ICEWM()
+{
+	XEvent ev;
+
+	if (wm->pid)
+		kill(wm->pid, SIGHUP);
+
+	ev.xclient.type = ClientMessage;
+	ev.xclient.display = dpy;
+	ev.xclient.window = root;
+	ev.xclient.message_type = XInternAtom(dpy, "_ICEWM_ACTION", False);
+	ev.xclient.format = 32;
+	ev.xclient.data.l[0] = ICEWM_ACTION_RESTARTWM;
+	ev.xclient.data.l[1] = 0;
+	ev.xclient.data.l[2] = 0;
+	ev.xclient.data.l[3] = 0;
+	ev.xclient.data.l[4] = 0;
+	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask,
+		   &ev);
+	XFlush(dpy);
+}
+
+/** @brief Set the icewm style.
+  *
+  * When icewm changes the style, it writes the new style to the ~/.icewm/theme
+  * or $ICEWM_PRIVCFG/theme file and then restarts.  The ~/.icewm/theme file
+  * looks like:
+  *
+  *   Theme="Penguins/default.theme"
+  *   #Theme="Airforce/default.theme"
+  *   ##Theme="Penguins/default.theme"
+  *   ###Theme="Pedestals/default.theme"
+  *   ####Theme="Penguins/default.theme"
+  *   #####Theme="Airforce/default.theme"
+  *   ######Theme="Archlinux/default.theme"
+  *   #######Theme="Airforce/default.theme"
+  *   ########Theme="Airforce/default.theme"
+  *   #########Theme="Airforce/default.theme"
+  *   ##########Theme="Penguins/default.theme"
+  *
+  * icewm cannot distinguish between system an user styles.  The theme name
+  * specifies a directory in the /usr/share/icewm/themes, ~/.icewm/themes or
+  * $ICEWM_PRIVCFG/themes subdirectories.
+  *
+  * When xde-session runs, it sets the ICEWM_PRIVCFG environment variable.
+  * xde-session and associated tools will always set this environment variable
+  * before launching icewm.  icewm respects this environment variable and no
+  * special options are necessary when launching icewm.
+  *
+  * The default configuration directory when ICEWM_PRIVCFG is not specified is
+  * ~/.icewm.  The location of all other icewm configuration files are in this
+  * directory.  xde-session typically sets ICEWM_PRIVCFG to
+  * $XDG_CONFIG_HOME/icewm.
+  */
 void
 set_style_ICEWM()
 {
@@ -2605,7 +2680,6 @@ set_style_ICEWM()
 	char *stylefile, *themerc, *buf, *pos, *end, *line;
 	int n, len;
 	size_t read, total;
-	XEvent ev;
 
 	if (!(stylefile = find_style_ICEWM())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
@@ -2650,22 +2724,7 @@ set_style_ICEWM()
 		*strchrnul(pos, '\n') = '\0';
 		fprintf(stderr, "#%s\n", pos);
 	}
-	if (wm->pid) {
-		kill(wm->pid, SIGHUP);
-		goto no_change;
-	}
-	ev.xclient.type = ClientMessage;
-	ev.xclient.display = dpy;
-	ev.xclient.window = root;
-	ev.xclient.message_type = XInternAtom(dpy, "_ICEWM_ACTION", False);
-	ev.xclient.format = 32;
-	ev.xclient.data.l[0] = ICEWM_ACTION_RESTARTWM;
-	ev.xclient.data.l[1] = 0;
-	ev.xclient.data.l[2] = 0;
-	ev.xclient.data.l[3] = 0;
-	ev.xclient.data.l[4] = 0;
-	XSendEvent(dpy, root, False, SubstructureNotifyMask | SubstructureRedirectMask,
-		   &ev);
+	reload_style_ICEWM();
       no_change:
 	free(line);
       no_buf:
@@ -2847,7 +2906,8 @@ find_style_JWM()
 				if (S_ISDIR(st.st_mode)) {
 					strcat(path, "/style");
 					if (stat(path, &st)) {
-						DPRINTF("%s: %s\n", path, strerror(errno));
+						DPRINTF("%s: %s\n", path,
+							strerror(errno));
 						free(path);
 						path = NULL;
 						continue;
@@ -2989,29 +3049,27 @@ reload_style_JWM()
 	XSync(dpy, False);
 }
 
-/*
- * When jwm changes its style (the way we have it set up), it writes ~/.jwm/style to
- * include a new file and restarts.  The jwm style file, ~/.jwm/style looks like:
- *
- * <?xml version="1.0"?>
- * <JWM>
- *    <Include>/usr/share/jwm/styles/Squared-blue</Include>
- * </JWM>
- *
- * The last component of the path is the theme name.  System styles are located in
- * /usr/share/jwm/styles; user styles are located in ~/.jwm/styles.
- *
- * jwm can be reloaded or restarted by sending a _JWM_RELOAD or _JWM_RESTART
- * ClientMessage to the root window, or by executing jwm -reload or jwm -restart.
- *
- * xde-session sets the environment variable JWM_CONFIG_FILE to point to the primary
- * configuration file; JWM_CONFIG_DIR to point to the system configuration directory
- * (default /usr/share/jwm); JWM_CONFIG_HOME to point to the user configuration
- * directory (default ~/.jwm but set under an xde-session to ~/.config/jwm).
- *
- * Note that older versions of L<jwm(1)> do not provide tilde expansion in
- * configuration files.
- */
+/** @brief Set the jwm style.
+  *
+  * When jwm changes its style (the way we have it set up), it writes ~/.jwm/style to
+  * include a new file and restarts.  The jwm style file, ~/.jwm/style looks like:
+  *
+  * <?xml version="1.0"?>
+  * <JWM>
+  *    <Include>/usr/share/jwm/styles/Squared-blue</Include>
+  * </JWM>
+  *
+  * The last component of the path is the theme name.  System styles are located in
+  * /usr/share/jwm/styles; user styles are located in ~/.jwm/styles.
+  *
+  * xde-session sets the environment variable JWM_CONFIG_FILE to point to the primary
+  * configuration file; JWM_CONFIG_DIR to point to the system configuration directory
+  * (default /usr/share/jwm); JWM_CONFIG_HOME to point to the user configuration
+  * directory (default ~/.jwm but set under an xde-session to ~/.config/jwm).
+  *
+  * Note that older versions of jwm(1) do not provide tilde expansion in
+  * configuration files.
+  */
 void
 set_style_JWM()
 {
@@ -3152,23 +3210,24 @@ void
 get_rcfile_PEKWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("--config");
+	char *file = get_rcfile_optarg("--config");
+	int len;
 
 	free(wm->rcfile);
 	if (file) {
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(home) + strlen(file) + 2, sizeof(*wm->rcfile));
+			len = strlen(home) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
-		wm->rcfile =
-		    calloc(strlen(home) + strlen("/.pekwm/config") + 1,
-			   sizeof(*wm->rcfile));
+		len = strlen(home) + strlen("/.pekwm/config") + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 		strcpy(wm->rcfile, home);
 		strcat(wm->rcfile, "/.pekwm/config");
 	}
@@ -3203,33 +3262,46 @@ get_style_PEKWM()
 	return NULL;
 }
 
-/*
- * When pekwm changes its style, it places the theme directory in the ~/.pekwm/config
- * file.  This normally has the form:
- *
- *   Files {
- *       Theme = "/usr/share/pekwm/themes/Airforce"
- *   }
- *
- * The last component of the path is the theme name.  The full path is to a directory
- * which contains a F<theme> file.  System styles are located in
- * /usr/share/pekwm/themes; user styles are located in ~/.pekwm/themes.
- *
- * pekwm can be restarted by sending a SIGHUP signal to the pekwm process.  pekwm
- * sets its pid in the _NET_WM_PID(CARDINAL) property on the root window (not the
- * check window) as well as the fqdn of the host in the WM_CLIENT_MACHINE(STRING)
- * property, again on the root window.  The XDE::EWMH module figures this out.
- *
- * When xde-session runs, it sets the PEKWM_RCFILE environment variable.  xde-session
- * and associated tools always launch pekwm with a command such as:
- *
- *   pekwm ${PEKWM_RCFILE:+--config $PEKWM_RCFILE}
- *
- * The default configuration file when PEKWM_RCFILE is not specified is
- * ~/.pekwm/config.  The locations of other pekwm(1) configuration files are
- * specified in the initial configuration file.  xde-session typically sets
- * PEKWM_RCFILE to $XDG_CONFIG_HOME/pekwm/config.
- */
+/** @brief Reload pekwm style.
+  *
+  * pekwm can be restarted by sending a SIGHUP signal to the pekwm process.
+  * pekwm sets its pid in the _NET_WM_PID(CARDINAL) property on the root window
+  * (not the check window) as well as the fqdn of the host in the
+  * WM_CLIENT_MACHINE(STRING) property, again on the root window.  The XDE::EWMH
+  * module figures this out.
+  */
+void
+reload_style_PEKWM()
+{
+	if (wm->pid)
+		kill(wm->pid, SIGHUP);
+	else
+		EPRINTF("%s", "cannot reload pewkm without a pid\n");
+}
+
+/** @brief Set a pekwm style.
+  *
+  * When pekwm changes its style, it places the theme directory in the
+  * ~/.pekwm/config file.  This normally has the form:
+  *
+  *   Files {
+  *       Theme = "/usr/share/pekwm/themes/Airforce"
+  *   }
+  *
+  * The last component of the path is the theme name.  The full path is to a
+  * directory which contains a F<theme> file.  System styles are located in
+  * /usr/share/pekwm/themes; user styles are located in ~/.pekwm/themes.
+  *
+  * When xde-session runs, it sets the PEKWM_RCFILE environment variable.
+  * xde-session and associated tools always launch pekwm with a command such as:
+  *
+  *   pekwm ${PEKWM_RCFILE:+--config $PEKWM_RCFILE}
+  *
+  * The default configuration file when PEKWM_RCFILE is not specified is
+  * ~/.pekwm/config.  The locations of other pekwm(1) configuration files are
+  * specified in the initial configuration file.  xde-session typically sets
+  * PEKWM_RCFILE to $XDG_CONFIG_HOME/pekwm/config.
+  */
 void
 set_style_PEKWM()
 {
@@ -3279,7 +3351,7 @@ set_style_PEKWM()
 		else
 			fprintf(f, "%s\n", pos);
 	}
-	kill(wm->pid, SIGHUP);
+	reload_style_PEKWM();
       no_change:
 	free(line);
       no_buf:
@@ -3307,8 +3379,9 @@ void
 get_rcfile_FVWM()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
+	char *file = get_rcfile_optarg("-f");
 	char *cnfg = get_proc_environ("FVWM_USERDIR");
+	int len;
 
 	free(wm->udir);
 	wm->udir = calloc(strlen(home) + strlen("/.fvwm") + 1, sizeof(*wm->udir));
@@ -3319,8 +3392,8 @@ get_rcfile_FVWM()
 		if (cnfg[0] == '/')
 			wm->pdir = strdup(cnfg);
 		else {
-			wm->pdir =
-			    calloc(strlen(home) + strlen(cnfg) + 2, sizeof(*wm->pdir));
+			len = strlen(home) + strlen(cnfg) + 2;
+			wm->pdir = calloc(len, sizeof(*wm->pdir));
 			strcpy(wm->pdir, home);
 			strcat(wm->pdir, "/");
 			strcat(wm->pdir, cnfg);
@@ -3335,16 +3408,16 @@ get_rcfile_FVWM()
 		if (file[0] == '/')
 			wm->rcfile = strdup(file);
 		else {
-			wm->rcfile =
-			    calloc(strlen(wm->pdir) + strlen(file) + 2,
-				   sizeof(*wm->rcfile));
+			len = strlen(wm->pdir) + strlen(file) + 2;
+			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, wm->pdir);
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
-		wm->rcfile =
-		    calloc(strlen(wm->pdir) + strlen("/config") + 1, sizeof(*wm->rcfile));
+		len = strlen(wm->pdir) + strlen("/config") + 1;
+		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 		strcpy(wm->rcfile, wm->pdir);
 		strcat(wm->rcfile, "/config");
 	}
@@ -3365,6 +3438,11 @@ get_style_FVWM()
 }
 
 void
+reload_style_FVWM()
+{
+}
+
+void
 set_style_FVWM()
 {
 	char *stylefile;
@@ -3373,6 +3451,7 @@ set_style_FVWM()
 		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
+	reload_style_FVWM();
 }
 
 void
@@ -3579,7 +3658,7 @@ void
 get_rcfile_XTWM(char *xtwm)
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
+	char *file = get_rcfile_optarg("-f");
 	int len;
 	struct stat st;
 
@@ -3594,6 +3673,7 @@ get_rcfile_XTWM(char *xtwm)
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
 		char buf[16], rc[16];
 
@@ -3787,8 +3867,11 @@ get_style_XTWM(char *xtwm)
 /** @brief Reload an twm variant style.
   *
   * ctwm and etwm can be restarted by sending SIGHUP to the process.  vtwm will
-  * restart on a SIGUSR1.  twm has no restart mechanism and we will have to
-  * eventually try to get the session manager to restart it.
+  * restart on a SIGUSR1.  twm has no restart mechanism; however, we can invoke
+  * a reload of twm(1) by sending a synthetic key press and release to the
+  * window manager that it will  process as though the key combination has been
+  * pressed and released.  The default key combination for restart is CM-r; for
+  * quit, CM-Delete.
   */
 void
 reload_style_XTWM(char *xtwm)
@@ -3797,7 +3880,28 @@ reload_style_XTWM(char *xtwm)
 		kill(wm->pid, SIGHUP);
 	else if (!strcmp(xtwm, "vtwm"))
 		kill(wm->pid, SIGUSR1);
-	else 
+	else if (!strcmp(xtwm, "twm")) {
+		XEvent ev;
+
+		ev.xkey.type = KeyPress;
+		ev.xkey.display = dpy;
+		ev.xkey.window = root;
+		ev.xkey.subwindow = None;
+		ev.xkey.time = CurrentTime;
+		ev.xkey.x = 0;
+		ev.xkey.y = 0;
+		ev.xkey.x_root = 0;
+		ev.xkey.y_root = 0;
+		ev.xkey.state = ControlMask | Mod1Mask;
+		ev.xkey.keycode = XKeysymToKeycode(dpy, XStringToKeysym("r"));
+		ev.xkey.same_screen = True;
+		XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
+		XSync(dpy, False);
+
+		ev.xkey.type = KeyRelease;
+		XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
+		XSync(dpy, False);
+	} else
 		EPRINTF("don't know how to restart %s\n", xtwm);
 }
 
@@ -3853,62 +3957,7 @@ set_style_XTWM(char *xtwm)
 void
 list_dir_XTWM(char *xdir, char *style)
 {
-	DIR *dir;
-	char *dirname, *file;
-	struct dirent *d;
-	struct stat st;
-	int len;
-
-	if (!xdir || !*xdir)
-		return;
-	len = strlen(xdir) + strlen("/styles") + 1;
-	dirname = calloc(len, sizeof(*dirname));
-	strcpy(dirname, xdir);
-	strcat(dirname, "/styles");
-	if (!(dir = opendir(dirname))) {
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
-		free(dirname);
-		return;
-	}
-	while ((d = readdir(dir))) {
-		if (d->d_name[0] == '.')
-			continue;
-		len = strlen(dirname) + strlen(d->d_name) + strlen("/stylerc") + 2;
-		file = calloc(len, sizeof(*file));
-		strcpy(file, dirname);
-		strcat(file, "/");
-		strcat(file, d->d_name);
-		if (stat(file, &st)) {
-			EPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (S_ISREG(st.st_mode))
-			goto got_it;
-		else if (!S_ISDIR(st.st_mode)) {
-			DPRINTF("%s: not file or directory\n", file);
-			free(file);
-			continue;
-		}
-		strcat(file, "/stylerc");
-		if (stat(file, &st)) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (!S_ISREG(st.st_mode)) {
-			DPRINTF("%s: not a file\n", file);
-			free(file);
-			continue;
-		}
-	      got_it:
-		if (!options.theme || find_xde_theme(d->d_name))
-			fprintf(stdout, "%s %s%s\n", d->d_name, file,
-				(style && !strcmp(style, file)) ? " *" : "");
-		free(file);
-	}
-	closedir(dir);
-	free(dirname);
+	return list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 void
@@ -3927,8 +3976,6 @@ list_styles_XTWM(char *xtwm)
 			list_dir_XTWM(wm->sdir, style);
 	}
 }
-
-
 
 /** @} */
 
@@ -4076,6 +4123,312 @@ list_styles_ETWM()
 
 /** @} */
 
+/** @name CWM
+  */
+/** @{ */
+
+void
+get_rcfile_CWM()
+{
+	return get_rcfile_simple("cwm", "-c");
+}
+
+char *
+find_style_CWM()
+{
+	char *path = NULL;
+	int len, i;
+	struct stat st;
+
+	get_rcfile_CWM();
+	if (options.style[0] == '/') {
+		len = strlen(options.style) + strlen("/stylerc") + 1;
+		path = calloc(len, sizeof(*path));
+		strcpy(path, options.style);
+		if (stat(path, &st)) {
+			EPRINTF("%s: %s\n", path, strerror(errno));
+			free(path);
+			return NULL;
+		}
+		if (S_ISDIR(st.st_mode)) {
+			strcat(path, "/stylerc");
+			if (stat(path, &st)) {
+				EPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				return NULL;
+			}
+		} else if (!S_ISREG(st.st_mode)) {
+			EPRINTF("%s: not directory or file\n", path);
+			free(path);
+			return NULL;
+		}
+	} else {
+		for (i = 0; i < CHECK_DIRS; i++) {
+			if (!wm->dirs[i] || !wm->dirs[i][0])
+				continue;
+			len = strlen(wm->dirs[i]) + strlen("/styles/") +
+			    strlen(options.style) + strlen("/stylerc") + 1;
+			path = calloc(len, sizeof(*path));
+			strcpy(path, wm->dirs[i]);
+			strcat(path, "/styles/");
+			strcat(path, options.style);
+			if (stat(path, &st)) {
+				DPRINTF("%s: %s\n", path, strerror(errno));
+				free(path);
+				path = NULL;
+				continue;
+			}
+			if (S_ISDIR(st.st_mode)) {
+				strcat(path, "/stylerc");
+				if (stat(path, &st)) {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
+			} else if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not directory or file\n", path);
+				free(path);
+				path = NULL;
+				continue;
+			}
+			break;
+		}
+	}
+	return path;
+}
+
+/** @brief Get the cwm style.
+  *
+  * cwm(1) does not have a mechanism for including a file from the rc file;
+  * therefore, setting the style consists of symbolically linking the stylerc
+  * file to the style file, editting the style elements into the rcfile, and
+  * restarting the window manager.
+  */
+char *
+get_style_CWM()
+{
+	char *stylefile = NULL;
+	int i;
+	struct stat st;
+
+	get_rcfile_CWM();
+	for (i = 0; i < CHECK_DIRS; i++) {
+		if (i == 1)
+			continue;
+		if (!wm->dirs[i] || !wm->dirs[i][0])
+			continue;
+		if (lstat(wm->rcfile, &st)) {
+			DPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			continue;
+		}
+		if (S_ISLNK(st.st_mode)) {
+			stylefile = calloc(PATH_MAX + 1, sizeof(*stylefile));
+			if (readlink(wm->rcfile, stylefile, PATH_MAX) <= 0) {
+				DPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+				free(stylefile);
+				stylefile = NULL;
+				continue;
+			}
+		} else {
+			DPRINTF("%s: not a link\n", wm->rcfile);
+			continue;
+		}
+		if (stylefile[0] != '/') {
+			/* make absolute path */
+			memmove(stylefile + strlen(wm->dirs[i]) + 1,
+				stylefile, strlen(stylefile) + 1);
+			memcpy(stylefile, wm->rcfile, strlen(wm->dirs[i]) + 1);
+		}
+		break;
+	}
+	if (stylefile) {
+		char *pos;
+
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylename);
+		if ((pos = strstr(stylefile, "/stylerc")))
+			*pos = '\0';
+		wm->stylename = (pos = strrchr(stylefile, '/')) ?
+		    strdup(pos + 1) : strdup(stylefile);
+		free(stylefile);
+	}
+	return wm->style;
+}
+
+/** @brief Reload cwm style.
+  *
+  * cwm(1) does not respond to signals.  However, there are key bindings that
+  * can be set to reload cwm(1).  We can invoke a reload of cwm(1) by sending a
+  * synthetic key press and release to the window manager that it will process
+  * as though the key combination has been pressed and released.  The default
+  * key combination for restart is CMS-r, for quit CMS-q.
+  *
+  * Note that we can try this trick with TWM too ...
+  */
+void
+reload_style_CWM()
+{
+	XEvent ev;
+
+	ev.xkey.type = KeyPress;
+	ev.xkey.display = dpy;
+	ev.xkey.window = root;
+	ev.xkey.root = root;
+	ev.xkey.subwindow = None;
+	ev.xkey.time = CurrentTime;
+	ev.xkey.x = 0;
+	ev.xkey.y = 0;
+	ev.xkey.x_root = 0;
+	ev.xkey.y_root = 0;
+	ev.xkey.state = ControlMask | Mod1Mask | ShiftMask;
+	ev.xkey.keycode = XKeysymToKeycode(dpy, XStringToKeysym("r"));
+	ev.xkey.same_screen = True;
+	XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
+	XSync(dpy, False);
+
+	ev.xkey.type = KeyRelease;
+	XSendEvent(dpy, root, False, SubstructureRedirectMask, &ev);
+	XSync(dpy, False);
+}
+
+/** @brief Set the cwm style.
+  *
+  * cwm(1) does not have a mechanism for including a file from the rc file;
+  * therefore, setting the style consists of symbolically linking the stylerc
+  * file to the style file, editting the style elements into the rcfile, and
+  * restarting the window manager.
+  */
+void
+set_style_CWM()
+{
+	FILE *f;
+	char *buf = NULL, *pos, *end, *tok;
+	int bytes = 0, copy = 0, skip = 0, block;
+	char *stylefile, *style, *stylerc;
+	int len;
+
+	get_rcfile_CWM();
+	if (!wm->pid) {
+		EPRINTF("%s", "cannot set cwm style without a pid\n");
+		goto no_pid;
+	}
+	if (!(stylefile = find_style_CWM())) {
+		EPRINTF("cannot find cwm style '%s'\n", options.style);
+		goto no_stylefile;
+	}
+	if ((style = get_style_CWM()) && !strcmp(style, stylefile))
+		goto no_change;
+	if (options.dryrun)
+		goto no_change;
+	len = strlen(wm->pdir) + strlen("/stylerc") + 1;
+	stylerc = calloc(len, sizeof(*stylerc));
+	strcpy(stylerc, wm->pdir);
+	strcat(stylerc, "/style");
+	unlink(stylerc);
+	if (symlink(stylefile, stylerc)) {
+		EPRINTF("%s -> %s: %s\n", stylerc, stylefile, strerror(errno));
+		goto no_link;
+	}
+	/* edit settings into cwm rcfile */
+	if (!(f = fopen(wm->rcfile, "r"))) {
+		EPRINTF("%s :%s\n", wm->rcfile, strerror(errno));
+		goto no_rcfile;
+	}
+	/* read in entire file into buf skipping style elements */
+	buf = malloc(BUFSIZ);
+	for (pos = buf + bytes; fgets(buf + bytes, BUFSIZ, f);
+	     buf = realloc(buf, BUFSIZ + bytes), pos = buf + bytes) {
+		tok = pos + strspn(pos, " \t");
+		block = (strrchr(pos, '\\') && *(strrchr(pos, '\\') + 1) == '\n') ? 1 : 0;
+		if (skip || (!copy && ((len = strcspn(tok, " \t")) &&
+				       ((len == strlen("borderwidth")
+					 && !strncmp(tok, "borderwidth", len))
+					|| (len == strlen("color")
+					    && !strncmp(tok, "color", len))
+					|| (len == strlen("fontname")
+					    && !strncmp(tok, "fontname", len))
+					|| (len == strlen("gap")
+					    && !strncmp(tok, "gap", len))
+					|| (len == strlen("snapdist")
+					    && !strncmp(tok, "snapdist", len))
+					|| (len == strlen("moveamount")
+					    && !strncmp(tok, "moveamount", len))
+					|| (len == strlen("sticky")
+					    && !strncmp(tok, "sticky", len))
+				       )))) {
+			skip = block;
+		} else {
+			copy = block;
+			bytes += strlen(pos) + 1;
+		}
+	}
+	/* don't end on a block */
+	if (copy || skip) {
+		*buf++ = '\n';
+		*buf = '\0';
+		bytes++;
+		copy = skip = 0;
+	}
+	fclose(f);
+	if (!(f = fopen(stylerc, "r"))) {
+		EPRINTF("%s :%s\n", stylerc, strerror(errno));
+		goto no_stylerc;
+	}
+	/* append style file */
+	for (; fgets(buf + bytes, BUFSIZ, f);
+	     buf = realloc(buf, BUFSIZ + bytes), pos = buf + bytes) {
+		bytes += strlen(pos) + 1;
+	}
+	fclose(f);
+	if (!(f = fopen(wm->rcfile, "w"))) {
+		EPRINTF("%s :%s\n", wm->rcfile, strerror(errno));
+		goto no_stylerc;
+	}
+	/* write entire buffer back out */
+	for (pos = buf, end = buf + bytes; pos < end; pos += strlen(pos) + 1)
+		fprintf(f, "%s", pos);
+	fclose(f);
+	reload_style_CWM();
+      no_stylerc:
+	free(buf);
+      no_rcfile:
+      no_link:
+	free(stylerc);
+      no_change:
+	free(stylefile);
+      no_stylefile:
+      no_pid:
+	return;
+}
+
+void
+list_dir_CWM(char *xdir, char *style)
+{
+	return list_dir_simple(xdir, "styles", "stylerc", style);
+}
+
+void
+list_styles_CWM()
+{
+	char *style = get_style_CWM();
+
+	if (options.user) {
+		if (wm->pdir)
+			list_dir_CWM(wm->pdir, style);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			list_dir_CWM(wm->udir, style);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			list_dir_CWM(wm->sdir, style);
+	}
+}
+
+
+/** @} */
+
 /** @name ECHINUS
   */
 /** @{ */
@@ -4084,7 +4437,7 @@ void
 get_rcfile_ECHINUS()
 {
 	char *home = get_proc_environ("HOME") ? : ".";
-	char *file = get_optarg("-f");
+	char *file = get_rcfile_optarg("-f");
 	int len;
 
 	free(wm->rcfile);
@@ -4098,6 +4451,7 @@ get_rcfile_ECHINUS()
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
+		free(file);
 	} else {
 		len = strlen(home) + strlen("/.echinus/echinusrc") + 1;
 		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
@@ -4278,6 +4632,8 @@ get_style_ECHINUS()
 	return wm->style;
 }
 
+/** @brief Reload an echinus style.
+  */
 void
 reload_style_ECHINUS()
 {
@@ -4351,62 +4707,7 @@ set_style_ECHINUS()
 void
 list_dir_ECHINUS(char *xdir, char *style)
 {
-	DIR *dir;
-	char *dirname, *file;
-	struct dirent *d;
-	struct stat st;
-	int len;
-
-	if (!xdir || !*xdir)
-		return;
-	len = strlen(xdir) + strlen("/styles") + 1;
-	dirname = calloc(len, sizeof(*dirname));
-	strcpy(dirname, xdir);
-	strcat(dirname, "/styles");
-	if (!(dir = opendir(dirname))) {
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
-		free(dirname);
-		return;
-	}
-	while ((d = readdir(dir))) {
-		if (d->d_name[0] == '.')
-			continue;
-		len = strlen(dirname) + strlen(d->d_name) + strlen("/stylerc") + 2;
-		file = calloc(len, sizeof(*file));
-		strcpy(file, dirname);
-		strcat(file, "/");
-		strcat(file, d->d_name);
-		if (stat(file, &st)) {
-			EPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (S_ISREG(st.st_mode))
-			goto got_it;
-		else if (!S_ISDIR(st.st_mode)) {
-			DPRINTF("%s: not file or directory\n", file);
-			free(file);
-			continue;
-		}
-		strcat(file, "/stylerc");
-		if (stat(file, &st)) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (!S_ISREG(st.st_mode)) {
-			DPRINTF("%s: not a file\n", file);
-			free(file);
-			continue;
-		}
-	      got_it:
-		if (!options.theme || find_xde_theme(d->d_name))
-			fprintf(stdout, "%s %s%s\n", d->d_name, file,
-				(style && !strcmp(style, file)) ? " *" : "");
-		free(file);
-	}
-	closedir(dir);
-	free(dirname);
+	return list_dir_simple(xdir, "styles", "stylerc", style);
 }
 
 void
@@ -5292,6 +5593,10 @@ Options:\n\
         link style files where possible\n\
     -t, --theme\n\
         only list styles that are also XDE themes\n\
+    -w, --wmname WMNAME\n\
+        don't detect window manager, use WMNAME\n\
+    -f, --rcfile FILE\n\
+        assume window manager uses rc file FILE, needs -w\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -5318,6 +5623,8 @@ main(int argc, char *argv[])
 			{"screen",	required_argument,	NULL, 'S'},
 			{"link",	no_argument,		NULL, 'L'},
 			{"theme",	no_argument,		NULL, 't'},
+			{"wmname",	required_argument,	NULL, 'w'},
+			{"rcfile",	required_argument,	NULL, 'f'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -5330,10 +5637,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:LtnD::v::hVCH?", long_options,
-				     &option_index);
+		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:nD::v::hVCH?",
+				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:LtnDvhVC?");
+		c = getopt(argc, argv, "clsyuS:Ltw:f:nDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -5375,6 +5682,18 @@ main(int argc, char *argv[])
 			break;
 		case 't':
 			options.theme = True;
+			break;
+		case 'w':	/* -w, --wmname NAME */
+			if (!options.wmname)
+				options.wmname = strdup(optarg);
+			else
+				goto bad_option;
+			break;
+		case 'f':	/* -f, --rcfile FILE */
+			if (options.wmname && !options.rcfile)
+				options.rcfile = strdup(optarg);
+			else
+				goto bad_option;
 			break;
 		case 'n':	/* -n, --dry-run */
 			options.dryrun = True;
