@@ -212,10 +212,11 @@ extern char *xde_find_style_simple(char *dname, char *fname);
 extern Bool xde_test_file(char *path);
 extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style);
 extern void xde_list_styles_simple(void);
-extern void xde_init_xrm(void);
 extern void xde_get_rcfile_simple(char *wmname, char *rcname, char *option);
 extern char *xde_get_style_simple(char *fname, char *(*from_file) (char *));
+extern char *xde_get_style_database(void);
 extern void xde_set_style_simple(char *rcname, void (*to_file) (char *, char *));
+extern void xde_set_style_database(void);
 extern void xde_get_rcfile_XTWM(char *xtwm);
 extern void xde_get_xdg_dirs(void);
 

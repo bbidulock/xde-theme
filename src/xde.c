@@ -123,16 +123,14 @@ unref_wm()
 
 static Bool xrm_initialized = False;
 
-void
-__xde_init_xrm()
+static void
+init_xrm()
 {
 	if (!xrm_initialized) {
 		xrm_initialized = True;
 		XrmInitialize();
 	}
 }
-
-__asm__(".symver __xde_init_xrm,xde_init_xrm@@XDE_1.0");
 
 Atom _XA_BB_THEME;
 Atom _XA_BLACKBOX_PID;
@@ -1561,7 +1559,7 @@ void
 __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 {
 	DIR *dir;
-	char *dirname, *file;
+	char *dirname, *file, *stylename, *p;
 	struct dirent *d;
 	struct stat st;
 	int len;
@@ -1574,14 +1572,18 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 	strcat(dirname, "/");
 	strcat(dirname, dname);
 	if (!(dir = opendir(dirname))) {
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		DPRINTF("%s: %s\n", dirname, strerror(errno));
 		free(dirname);
 		return;
 	}
 	while ((d = readdir(dir))) {
 		if (d->d_name[0] == '.')
 			continue;
-		len = strlen(dirname) + strlen(d->d_name) + strlen(fname) + 3;
+		/* filename must end in fname */
+		if (fname[0] != '/' && (!(p = strstr(d->d_name, fname))
+		    || p[strlen(fname)] != '\0'))
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen(fname) + 2;
 		file = calloc(len, sizeof(*file));
 		strcpy(file, dirname);
 		strcat(file, "/");
@@ -1598,7 +1600,10 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 			free(file);
 			continue;
 		}
-		strcat(file, "/");
+		if (fname[0] != '/') {
+			free(file);
+			continue;
+		}
 		strcat(file, fname);
 		if (stat(file, &st)) {
 			DPRINTF("%s: %s\n", file, strerror(errno));
@@ -1611,9 +1616,13 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 			continue;
 		}
 	      got_it:
-		if (!options.theme || xde_find_theme(d->d_name))
-			fprintf(stdout, "%s %s%s\n", d->d_name, file,
+		stylename = strdup(d->d_name);
+		if (fname[0] != '/')
+			*strstr(stylename, fname) = '\0';
+		if (!options.theme || xde_find_theme(stylename))
+			fprintf(stdout, "%s %s%s\n", stylename, file,
 				(style && !strcmp(style, file)) ? " *" : "");
+		free(stylename);
 		free(file);
 	}
 	closedir(dir);
@@ -1650,7 +1659,7 @@ __xde_find_style_simple(char *dname, char *fname)
 
 	wm->ops->get_rcfile();
 	if (options.style[0] == '/') {
-		len = strlen(options.style) + strlen(fname) + 2;
+		len = strlen(options.style) + strlen(fname) + 1;
 		path = calloc(len, sizeof(*path));
 		strcpy(path, options.style);
 		if (stat(path, &st)) {
@@ -1659,7 +1668,6 @@ __xde_find_style_simple(char *dname, char *fname)
 			return NULL;
 		}
 		if (S_ISDIR(st.st_mode)) {
-			strcat(path, "/");
 			strcat(path, fname);
 			if (stat(path, &st)) {
 				EPRINTF("%s: %s\n", path, strerror(errno));
@@ -1676,7 +1684,7 @@ __xde_find_style_simple(char *dname, char *fname)
 			if (!wm->dirs[i] || !wm->dirs[i][0])
 				continue;
 			len = strlen(wm->dirs[i]) + strlen(dname) +
-			    strlen(options.style) + strlen(fname) + 4;
+			    strlen(options.style) + strlen(fname) + 3;
 			path = calloc(len, sizeof(*path));
 			strcpy(path, wm->dirs[i]);
 			strcat(path, "/");
@@ -1690,7 +1698,6 @@ __xde_find_style_simple(char *dname, char *fname)
 				continue;
 			}
 			if (S_ISDIR(st.st_mode)) {
-				strcat(path, "/");
 				strcat(path, fname);
 				if (stat(path, &st)) {
 					DPRINTF("%s: %s\n", path, strerror(errno));
@@ -1795,6 +1802,43 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 
 __asm__(".symver __xde_get_style_simple,xde_get_style_simple@@XDE_1.0");
 
+/** @brief Get style from resource database.
+  *
+  * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
+  */
+char *
+__xde_get_style_database()
+{
+	XrmValue value;
+	char *type, *pos;
+
+	wm->ops->get_rcfile();
+	if (!xde_test_file(wm->rcfile)) {
+		EPRINTF("rcfile %s does not exist\n", wm->rcfile);
+		return NULL;
+	}
+	init_xrm();
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file %s\n", wm->rcfile);
+		return NULL;
+	}
+	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
+			    &type, &value)) {
+		EPRINTF("no session.styleFile resource in database %s\n", wm->rcfile);
+		return NULL;
+	}
+	free(wm->style);
+	wm->style = strndup((char *) value.addr, value.size);
+	free(wm->stylename);
+	wm->stylename = (pos = strrchr(wm->style, '/')) ?
+	    strdup(pos + 1) : strdup(wm->style);
+	if ((pos = strstr(wm->stylename, ".style")) && pos[6] == '\0')
+		*pos = '\0';
+	return wm->style;
+}
+
+__asm__(".symver __xde_get_style_database,xde_get_style_database@@XDE_1.0");
+
 void
 __xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 {
@@ -1853,6 +1897,62 @@ __xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 }
 
 __asm__(".symver __xde_set_style_simple,xde_set_style_simple@@XDE_1.0");
+
+/** @brief Set the session.styleFile resource in the rcfile.
+  *
+  * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
+  */
+void
+__xde_set_style_database()
+{
+	char *stylefile, *line, *style;
+	int len;
+
+	if (options.reload && !wm->pid) {
+		EPRINTF("cannot reload %s without a pid\n", wm->name);
+		return;
+	}
+	if (!xde_test_file(wm->rcfile)) {
+		EPRINTF("rcfile %s does not exist\n", wm->rcfile);
+		return;
+	}
+	if (!(stylefile = wm->ops->find_style())) {
+		EPRINTF("cannot find style %s\n", options.style);
+		return;
+	}
+	if ((style = wm->ops->get_style()) && !strcmp(style, stylefile))
+		goto no_change;
+	init_xrm();
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file %s\n", wm->rcfile);
+		goto no_db;
+	}
+	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
+	line = calloc(len, sizeof(*line));
+	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
+	XrmPutLineResource(&wm->db, line);
+	free(line);
+	if (options.dryrun) {
+		OPRINTF("would write database to %s as follows:\n", wm->rcfile);
+		XrmPutFileDatabase(wm->db, "/dev/stderr");
+		if (options.reload)
+			OPRINTF("would reload %s\n", wm->name);
+	} else {
+		XrmPutFileDatabase(wm->db, wm->rcfile);
+		if (options.reload)
+			wm->ops->reload_style();
+	}
+      no_change:
+	if (wm->db) {
+		XrmDestroyDatabase(wm->db);
+		wm->db = NULL;
+	}
+      no_db:
+	free(stylefile);
+	return;
+}
+
+__asm__(".symver __xde_set_style_database,xde_set_style_database@@XDE_1.0");
 
 Bool
 __xde_test_file(char *path)

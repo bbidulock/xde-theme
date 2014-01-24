@@ -51,29 +51,7 @@
 static void
 get_rcfile_ECHINUS()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	char *file = xde_get_rcfile_optarg("-f");
-	int len;
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			len = strlen(home) + strlen(file) + 2;
-			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-		free(file);
-	} else {
-		len = strlen(home) + strlen("/.echinus/echinusrc") + 1;
-		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.echinus/echinusrc");
-	}
-	xde_get_simple_dirs("echinus");
+	xde_get_rcfile_simple("echinus", ".echinus/echinusrc", "-f");
 }
 
 /** @brief Find an echinus style from a style name.
@@ -85,7 +63,7 @@ get_rcfile_ECHINUS()
 static char *
 find_style_ECHINUS()
 {
-	return xde_find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "/stylerc");
 }
 
 static char *
@@ -189,7 +167,7 @@ set_style_ECHINUS()
 static void
 list_dir_ECHINUS(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", style);
 }
 
 static void

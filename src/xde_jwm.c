@@ -67,8 +67,8 @@ find_style_JWM()
 {
 	char *style;
 
-	if (!(style = xde_find_style_simple("styles", "style")))
-		style = xde_find_style_simple("themes", "style");
+	if (!(style = xde_find_style_simple("styles", "/style")))
+		style = xde_find_style_simple("themes", "/style");
 	return style;
 }
 
@@ -190,8 +190,8 @@ set_style_JWM()
 static void
 list_dir_JWM(char *xdir, char *style)
 {
-	xde_list_dir_simple(xdir, "styles", "style", style);
-	xde_list_dir_simple(xdir, "themes", "style", style);
+	xde_list_dir_simple(xdir, "styles", "/style", style);
+	xde_list_dir_simple(xdir, "themes", "/style", style);
 }
 
 static void

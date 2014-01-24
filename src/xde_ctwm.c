@@ -57,7 +57,7 @@ get_rcfile_CTWM()
 static char *
 find_style_CTWM()
 {
-	return xde_find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "/stylerc");
 }
 
 static char *
@@ -88,7 +88,7 @@ reload_style_CTWM()
 static void
 list_dir_CTWM(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", style);
 }
 
 static void

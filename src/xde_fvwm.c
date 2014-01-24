@@ -51,55 +51,13 @@
 static void
 get_rcfile_FVWM()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	char *file = xde_get_rcfile_optarg("-f");
-	char *cnfg = xde_get_proc_environ("FVWM_USERDIR");
-	int len;
-
-	free(wm->udir);
-	wm->udir = calloc(strlen(home) + strlen("/.fvwm") + 1, sizeof(*wm->udir));
-	strcpy(wm->udir, home);
-	strcat(wm->udir, "/.fvwm");
-	free(wm->pdir);
-	if (cnfg) {
-		if (cnfg[0] == '/')
-			wm->pdir = strdup(cnfg);
-		else {
-			len = strlen(home) + strlen(cnfg) + 2;
-			wm->pdir = calloc(len, sizeof(*wm->pdir));
-			strcpy(wm->pdir, home);
-			strcat(wm->pdir, "/");
-			strcat(wm->pdir, cnfg);
-		}
-	} else
-		wm->pdir = strdup(wm->udir);
-	free(wm->sdir);
-	wm->sdir = strdup("/usr/share/fvwm");
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			len = strlen(wm->pdir) + strlen(file) + 2;
-			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, wm->pdir);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-		free(file);
-	} else {
-		len = strlen(wm->pdir) + strlen("/config") + 1;
-		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, wm->pdir);
-		strcat(wm->rcfile, "/config");
-	}
+	xde_get_rcfile_simple("fvwm", ".fvwm/config", "-f");
 }
 
 static char *
 find_style_FVWM()
 {
-	return xde_find_style_simple("styles", "style");
+	return xde_find_style_simple("styles", "/style");
 }
 
 static char *

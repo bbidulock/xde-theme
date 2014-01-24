@@ -57,7 +57,7 @@ get_rcfile_UWM()
 static char *
 find_style_UWM()
 {
-	return xde_find_style_simple("styles", "style");
+	return xde_find_style_simple("styles", "/style");
 }
 
 static char *
@@ -150,7 +150,7 @@ reload_style_UWM()
 static void
 list_dir_UWM(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "style", style);
+	return xde_list_dir_simple(xdir, "styles", "/style", style);
 }
 
 static void

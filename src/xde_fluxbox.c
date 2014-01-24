@@ -69,29 +69,7 @@
 static void
 get_rcfile_FLUXBOX()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	char *file = xde_get_rcfile_optarg("-rc");
-	int len;
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			len = strlen(home) + strlen(file) + 2;
-			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-		free(file);
-	} else {
-		len = strlen(home) + strlen("/.fluxbox/init") + 1;
-		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.fluxbox/init");
-	}
-	xde_get_simple_dirs("fluxbox");
+	return xde_get_rcfile_simple("fluxbox", ".fluxbox/init", "-rc");
 }
 
 /** @brief Find a fluxbox style file from a style name.
@@ -103,7 +81,7 @@ get_rcfile_FLUXBOX()
 static char *
 find_style_FLUXBOX()
 {
-	return xde_find_style_simple("styles", "theme.cfg");
+	return xde_find_style_simple("styles", "/theme.cfg");
 }
 
 /** @brief Get the current fluxbox style.
@@ -114,33 +92,7 @@ find_style_FLUXBOX()
 static char *
 get_style_FLUXBOX()
 {
-	XrmValue value;
-	char *type, *pos;
-
-	if (wm->style)
-		return wm->style;
-
-	get_rcfile_FLUXBOX();
-	if (!xde_test_file(wm->rcfile)) {
-		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
-		return NULL;
-	}
-	xde_init_xrm();
-	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
-		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
-		return NULL;
-	}
-	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
-			    &type, &value)) {
-		EPRINTF("%s", "no session.styleFile resource in database\n");
-		return NULL;
-	}
-	free(wm->style);
-	wm->style = strndup((char *) value.addr, value.size);
-	free(wm->stylename);
-	wm->stylename = (pos = strrchr(wm->style, '/')) ?
-	    strdup(pos + 1) : strdup(wm->style);
-	return wm->style;
+	return xde_get_style_database();
 }
 
 /** @brief Reload a fluxbox style.
@@ -181,61 +133,13 @@ reload_style_FLUXBOX()
 static void
 set_style_FLUXBOX()
 {
-	char *stylefile, *line, *style;
-	int len;
-
-	get_rcfile_FLUXBOX();
-	if (!wm->pid) {
-		EPRINTF("%s", "cannot set fluxbox style without pid\n");
-		goto no_pid;
-	}
-	if (!xde_test_file(wm->rcfile)) {
-		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
-		goto no_rcfile;
-	}
-	if (!(stylefile = find_style_FLUXBOX())) {
-		EPRINTF("cannot find style '%s'\n", options.style);
-		goto no_stylefile;
-	}
-	if ((style = get_style_FLUXBOX()) && !strcmp(style, stylefile))
-		goto no_change;
-	xde_init_xrm();
-	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
-		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
-		goto no_db;
-	}
-	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
-	line = calloc(len, sizeof(*line));
-	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
-	XrmPutLineResource(&wm->db, line);
-	free(line);
-	if (options.dryrun) {
-		OPRINTF("would write database to %s as follows:\n", wm->rcfile);
-		XrmPutFileDatabase(wm->db, "/dev/stderr");
-		if (options.reload)
-			OPRINTF("%s", "would reload window manager\n");
-	} else {
-		XrmPutFileDatabase(wm->db, wm->rcfile);
-		if (options.reload)
-			reload_style_FLUXBOX();
-	}
-      no_change:
-	if (wm->db) {
-		XrmDestroyDatabase(wm->db);
-		wm->db = NULL;
-	}
-      no_db:
-	free(stylefile);
-      no_stylefile:
-      no_rcfile:
-      no_pid:
-	return;
+	return xde_set_style_database();
 }
 
 static void
 list_dir_FLUXBOX(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "theme.cfg", style);
+	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", style);
 }
 
 /** @brief List fluxbox styles.

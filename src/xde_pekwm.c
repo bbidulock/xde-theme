@@ -51,35 +51,13 @@
 static void
 get_rcfile_PEKWM()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	char *file = xde_get_rcfile_optarg("--config");
-	int len;
-
-	free(wm->rcfile);
-	if (file) {
-		if (file[0] == '/')
-			wm->rcfile = strdup(file);
-		else {
-			len = strlen(home) + strlen(file) + 2;
-			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/");
-			strcat(wm->rcfile, file);
-		}
-		free(file);
-	} else {
-		len = strlen(home) + strlen("/.pekwm/config") + 1;
-		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
-		strcpy(wm->rcfile, home);
-		strcat(wm->rcfile, "/.pekwm/config");
-	}
-	xde_get_simple_dirs("pekwm");
+	return xde_get_rcfile_simple("pekwm",  ".pekwm/config", "--config");
 }
 
 static char *
 find_style_PEKWM()
 {
-	return xde_find_style_simple("themes", "theme");
+	return xde_find_style_simple("themes", "/theme");
 }
 
 /** @brief Get the pekwm style.
@@ -255,7 +233,7 @@ set_style_PEKWM()
 static void
 list_dir_PEKWM(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "themes", "theme", style);
+	return xde_list_dir_simple(xdir, "themes", "/theme", style);
 }
 
 static void

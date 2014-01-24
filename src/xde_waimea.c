@@ -48,49 +48,92 @@
   */
 /** @{ */
 
+/** @brief Get the .waimearc file.
+  *
+  * Note that the style file can be overidden with the --stylefile=%s option and
+  * the action file can be overidden with the --actionfile=%s options.  DO NOT
+  * USE THE --stylefile=%s option!
+  */
 static void
 get_rcfile_WAIMEA()
 {
+	return xde_get_rcfile_simple("waimea", ".waimearc", "--rcfile");
 }
 
+/** @brief Find style in waimea style directory.
+  *
+  * Unlike most other window managers, style files for waimea are named
+  * %s.style, where %s is the style name and no subdirectories will do.
+  */
 static char *
 find_style_WAIMEA()
 {
-	get_rcfile_WAIMEA();
-	return NULL;
+	return xde_find_style_simple("styles", ".style");
 }
 
+/** @brief Get the waimea style.
+  *
+  * When waimea changes the style, like fluxbox and blackbox, it writes the path
+  * to the new style in the session.styleFile resource in the ~/.waimearc file
+  * and then reloads the configuration.
+  *
+  * The session.styleFile entry looks like:
+  *
+  *   session.styleFile:  /usr/share/waimea/styles/Default.style
+  *
+  */
 static char *
 get_style_WAIMEA()
 {
-	get_rcfile_WAIMEA();
-	return NULL;
+	return xde_get_style_database();
 }
 
-static void
-set_style_WAIMEA()
-{
-	char *stylefile;
-
-	if (!(stylefile = find_style_WAIMEA())) {
-		EPRINTF("cannot find style '%s'\n", options.style);
-		return;
-	}
-}
-
+/** @brief Reload waimea style.
+  *
+  * SIGHUP to the process will restart waimea.  SIGINT or SIGTERM will exit
+  * gracefully with a zero exit status.
+  */
 static void
 reload_style_WAIMEA()
 {
+	if (wm->pid)
+		kill(wm->pid, SIGHUP);
+	else
+		EPRINTF("cannot restart %s without a pid", wm->name);
 }
 
+/** @brief Set the waimea style.
+  *
+  * When waimea changes the style, like fluxbox and blackbox, it writes the path
+  * to the new style in the session.styleFile resource in the ~/.waimearc file
+  * and then reloads the configuration.
+  *
+  * The session.styleFile entry looks like:
+  *
+  *   session.styleFile:  /usr/share/waimea/styles/Default.style
+  *
+  */
+static void
+set_style_WAIMEA()
+{
+	return xde_set_style_database();
+}
+
+/** @brief List styles in waimea style directory.
+  *
+  * Unlike most other window managers, style files for waimea are named
+  * %s.style, where %s is the style name and no subdirectories will do.
+  */
 static void
 list_dir_WAIMEA(char *xdir, char *style)
 {
+	return xde_list_dir_simple(xdir, "styles", ".style", style);
 }
 
 static void
 list_styles_WAIMEA()
 {
+	return xde_list_styles_simple();
 }
 
 WmOperations xde_wm_ops = {

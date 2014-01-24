@@ -263,7 +263,7 @@ set_style_OPENBOX()
 static void
 list_dir_OPENBOX(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "themes", "openbox-3/themerc", style);
+	return xde_list_dir_simple(xdir, "themes", "/openbox-3/themerc", style);
 }
 
 static void

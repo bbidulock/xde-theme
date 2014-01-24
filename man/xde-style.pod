@@ -175,6 +175,11 @@ style system by directly editting the F<.matwmrc> configuration file.
 
 =item L<waimea(1)>
 
+L<waimea(1)> provides its own style system similar to L<fluxbox(1)> and
+L<blackbox(1)>.  B<xde-style> provides a style-setting mechanism for
+L<waimea(1)> that can be used from scripts outside the L<waimea(1)> root
+menu system.
+
 =item L<wind(1)>
 
 =item L<2bwm(1)>

@@ -75,39 +75,13 @@ get_rcfile_BLACKBOX()
 static char *
 find_style_BLACKBOX()
 {
-	return xde_find_style_simple("styles", "stylerc");
+	return xde_find_style_simple("styles", "/stylerc");
 }
 
 static char *
 get_style_BLACKBOX()
 {
-	XrmValue value;
-	char *type, *pos;
-
-	if (wm->style)
-		return wm->style;
-
-	get_rcfile_BLACKBOX();
-	if (!xde_test_file(wm->rcfile)) {
-		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
-		return NULL;
-	}
-	xde_init_xrm();
-	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
-		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
-		return NULL;
-	}
-	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
-			    &type, &value)) {
-		EPRINTF("%s", "no session.styleFile resource in database\n");
-		return NULL;
-	}
-	free(wm->style);
-	wm->style = strndup((char *) value.addr, value.size);
-	free(wm->stylename);
-	wm->stylename = (pos = strrchr(wm->style, '/')) ?
-	    strdup(pos + 1) : strdup(wm->style);
-	return wm->style;
+	return xde_get_style_database();
 }
 
 /** @brief Reload a blackbox style.
@@ -125,7 +99,6 @@ reload_style_BLACKBOX()
 		EPRINTF("%s", "cannot reload blackbox without a pid\n");
 }
 
-
 /** @brief Set the blackbox style.
   *
   * When blackbox changes the style, it writes the path to the new style in the
@@ -141,60 +114,13 @@ reload_style_BLACKBOX()
 static void
 set_style_BLACKBOX()
 {
-	char *stylefile, *line, *style;
-	int len;
-
-	if (!wm->pid) {
-		EPRINTF("%s", "cannot set blackbox style without pid\n");
-		goto no_pid;
-	}
-	if (!xde_test_file(wm->rcfile)) {
-		EPRINTF("rcfile '%s' does not exist\n", wm->rcfile);
-		goto no_rcfile;
-	}
-	if (!(stylefile = find_style_BLACKBOX())) {
-		EPRINTF("cannot find style '%s'\n", options.style);
-		goto no_stylefile;
-	}
-	if ((style = get_style_BLACKBOX()) && !strcmp(style, stylefile))
-		goto no_change;
-	xde_init_xrm();
-	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
-		EPRINTF("cannot read database file '%s'\n", wm->rcfile);
-		goto no_db;
-	}
-	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
-	line = calloc(len, sizeof(*line));
-	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
-	XrmPutLineResource(&wm->db, line);
-	free(line);
-	if (options.dryrun) {
-		OPRINTF("would write database to %s as follows:\n", wm->rcfile);
-		XrmPutFileDatabase(wm->db, "/dev/stderr");
-		if (options.reload)
-			OPRINTF("%s", "would reload window manager\n");
-	} else {
-		XrmPutFileDatabase(wm->db, wm->rcfile);
-		if (options.reload)
-			reload_style_BLACKBOX();
-	}
-      no_change:
-	if (wm->db) {
-		XrmDestroyDatabase(wm->db);
-		wm->db = NULL;
-	}
-      no_db:
-	free(stylefile);
-      no_stylefile:
-      no_rcfile:
-      no_pid:
-	return;
+	return xde_set_style_database();
 }
 
 static void
 list_dir_BLACKBOX(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", style);
 }
 
 static void
