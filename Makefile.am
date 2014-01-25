@@ -96,7 +96,7 @@ nobase_dist_share_DATA += \
 	waimea/styles/Squared-green/lhalf_focused.xpm \
 	waimea/styles/Squared-green/lhalf_pressed.xpm \
 	waimea/styles/Squared-green/lhalf_unfocus.xpm \
-	waimea/styles/Squared-cadet/max_focused.xpm \
+	waimea/styles/Squared-green/max_focused.xpm \
 	waimea/styles/Squared-green/max_pressed.xpm \
 	waimea/styles/Squared-green/max_unfocus.xpm \
 	waimea/styles/Squared-green/menu_focused.xpm \
