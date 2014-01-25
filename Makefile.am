@@ -11,6 +11,158 @@ nobase_dist_share_SCRIPTS =
 nobase_nodist_share_SCRIPTS =
 
 nobase_dist_share_DATA += \
+	waimea/styles/Squared-cadet/stylerc
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-cadet/close_focused.xpm \
+	waimea/styles/Squared-cadet/close_pressed.xpm \
+	waimea/styles/Squared-cadet/close_unfocus.xpm \
+	waimea/styles/Squared-cadet/lhalf_focused.xpm \
+	waimea/styles/Squared-cadet/lhalf_pressed.xpm \
+	waimea/styles/Squared-cadet/lhalf_unfocus.xpm \
+	waimea/styles/Squared-cadet/max_focused.xpm \
+	waimea/styles/Squared-cadet/max_pressed.xpm \
+	waimea/styles/Squared-cadet/max_unfocus.xpm \
+	waimea/styles/Squared-cadet/menu_focused.xpm \
+	waimea/styles/Squared-cadet/menu_pressed.xpm \
+	waimea/styles/Squared-cadet/menu_unfocus.xpm \
+	waimea/styles/Squared-cadet/min_focused.xpm \
+	waimea/styles/Squared-cadet/min_pressed.xpm \
+	waimea/styles/Squared-cadet/min_unfocus.xpm \
+	waimea/styles/Squared-cadet/res_focused.xpm \
+	waimea/styles/Squared-cadet/res_pressed.xpm \
+	waimea/styles/Squared-cadet/res_unfocus.xpm \
+	waimea/styles/Squared-cadet/rhalf_focused.xpm \
+	waimea/styles/Squared-cadet/rhalf_pressed.xpm \
+	waimea/styles/Squared-cadet/rhalf_unfocus.xpm \
+	waimea/styles/Squared-cadet/shade_focused.xpm \
+	waimea/styles/Squared-cadet/shade_pressed.xpm \
+	waimea/styles/Squared-cadet/shade_unfocus.xpm \
+	waimea/styles/Squared-cadet/stick_focused.xpm \
+	waimea/styles/Squared-cadet/stick_pressed.xpm \
+	waimea/styles/Squared-cadet/stick_unfocus.xpm \
+	waimea/styles/Squared-cadet/stuck_focused.xpm \
+	waimea/styles/Squared-cadet/stuck_pressed.xpm \
+	waimea/styles/Squared-cadet/stuck_unfocus.xpm \
+	waimea/styles/Squared-cadet/unshade_focused.xpm \
+	waimea/styles/Squared-cadet/unshade_pressed.xpm \
+	waimea/styles/Squared-cadet/unshade_unfocus.xpm
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-blue/stylerc
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-blue/close_focused.xpm \
+	waimea/styles/Squared-blue/close_pressed.xpm \
+	waimea/styles/Squared-blue/close_unfocus.xpm \
+	waimea/styles/Squared-blue/lhalf_focused.xpm \
+	waimea/styles/Squared-blue/lhalf_pressed.xpm \
+	waimea/styles/Squared-blue/lhalf_unfocus.xpm \
+	waimea/styles/Squared-blue/max_focused.xpm \
+	waimea/styles/Squared-blue/max_pressed.xpm \
+	waimea/styles/Squared-blue/max_unfocus.xpm \
+	waimea/styles/Squared-blue/menu_focused.xpm \
+	waimea/styles/Squared-blue/menu_pressed.xpm \
+	waimea/styles/Squared-blue/menu_unfocus.xpm \
+	waimea/styles/Squared-blue/min_focused.xpm \
+	waimea/styles/Squared-blue/min_pressed.xpm \
+	waimea/styles/Squared-blue/min_unfocus.xpm \
+	waimea/styles/Squared-blue/res_focused.xpm \
+	waimea/styles/Squared-blue/res_pressed.xpm \
+	waimea/styles/Squared-blue/res_unfocus.xpm \
+	waimea/styles/Squared-blue/rhalf_focused.xpm \
+	waimea/styles/Squared-blue/rhalf_pressed.xpm \
+	waimea/styles/Squared-blue/rhalf_unfocus.xpm \
+	waimea/styles/Squared-blue/shade_focused.xpm \
+	waimea/styles/Squared-blue/shade_pressed.xpm \
+	waimea/styles/Squared-blue/shade_unfocus.xpm \
+	waimea/styles/Squared-blue/stick_focused.xpm \
+	waimea/styles/Squared-blue/stick_pressed.xpm \
+	waimea/styles/Squared-blue/stick_unfocus.xpm \
+	waimea/styles/Squared-blue/stuck_focused.xpm \
+	waimea/styles/Squared-blue/stuck_pressed.xpm \
+	waimea/styles/Squared-blue/stuck_unfocus.xpm \
+	waimea/styles/Squared-blue/unshade_focused.xpm \
+	waimea/styles/Squared-blue/unshade_pressed.xpm \
+	waimea/styles/Squared-blue/unshade_unfocus.xpm
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-green/stylerc
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-green/close_focused.xpm \
+	waimea/styles/Squared-green/close_pressed.xpm \
+	waimea/styles/Squared-green/close_unfocus.xpm \
+	waimea/styles/Squared-green/lhalf_focused.xpm \
+	waimea/styles/Squared-green/lhalf_pressed.xpm \
+	waimea/styles/Squared-green/lhalf_unfocus.xpm \
+	waimea/styles/Squared-cadet/max_focused.xpm \
+	waimea/styles/Squared-green/max_pressed.xpm \
+	waimea/styles/Squared-green/max_unfocus.xpm \
+	waimea/styles/Squared-green/menu_focused.xpm \
+	waimea/styles/Squared-green/menu_pressed.xpm \
+	waimea/styles/Squared-green/menu_unfocus.xpm \
+	waimea/styles/Squared-green/min_focused.xpm \
+	waimea/styles/Squared-green/min_pressed.xpm \
+	waimea/styles/Squared-green/min_unfocus.xpm \
+	waimea/styles/Squared-green/res_focused.xpm \
+	waimea/styles/Squared-green/res_pressed.xpm \
+	waimea/styles/Squared-green/res_unfocus.xpm \
+	waimea/styles/Squared-green/rhalf_focused.xpm \
+	waimea/styles/Squared-green/rhalf_pressed.xpm \
+	waimea/styles/Squared-green/rhalf_unfocus.xpm \
+	waimea/styles/Squared-green/shade_focused.xpm \
+	waimea/styles/Squared-green/shade_pressed.xpm \
+	waimea/styles/Squared-green/shade_unfocus.xpm \
+	waimea/styles/Squared-green/stick_focused.xpm \
+	waimea/styles/Squared-green/stick_pressed.xpm \
+	waimea/styles/Squared-green/stick_unfocus.xpm \
+	waimea/styles/Squared-green/stuck_focused.xpm \
+	waimea/styles/Squared-green/stuck_pressed.xpm \
+	waimea/styles/Squared-green/stuck_unfocus.xpm \
+	waimea/styles/Squared-green/unshade_focused.xpm \
+	waimea/styles/Squared-green/unshade_pressed.xpm \
+	waimea/styles/Squared-green/unshade_unfocus.xpm
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-grey/stylerc
+
+nobase_dist_share_DATA += \
+	waimea/styles/Squared-grey/close_focused.xpm \
+	waimea/styles/Squared-grey/close_pressed.xpm \
+	waimea/styles/Squared-grey/close_unfocus.xpm \
+	waimea/styles/Squared-grey/lhalf_focused.xpm \
+	waimea/styles/Squared-grey/lhalf_pressed.xpm \
+	waimea/styles/Squared-grey/lhalf_unfocus.xpm \
+	waimea/styles/Squared-grey/max_focused.xpm \
+	waimea/styles/Squared-grey/max_pressed.xpm \
+	waimea/styles/Squared-grey/max_unfocus.xpm \
+	waimea/styles/Squared-grey/menu_focused.xpm \
+	waimea/styles/Squared-grey/menu_pressed.xpm \
+	waimea/styles/Squared-grey/menu_unfocus.xpm \
+	waimea/styles/Squared-grey/min_focused.xpm \
+	waimea/styles/Squared-grey/min_pressed.xpm \
+	waimea/styles/Squared-grey/min_unfocus.xpm \
+	waimea/styles/Squared-grey/res_focused.xpm \
+	waimea/styles/Squared-grey/res_pressed.xpm \
+	waimea/styles/Squared-grey/res_unfocus.xpm \
+	waimea/styles/Squared-grey/rhalf_focused.xpm \
+	waimea/styles/Squared-grey/rhalf_pressed.xpm \
+	waimea/styles/Squared-grey/rhalf_unfocus.xpm \
+	waimea/styles/Squared-grey/shade_focused.xpm \
+	waimea/styles/Squared-grey/shade_pressed.xpm \
+	waimea/styles/Squared-grey/shade_unfocus.xpm \
+	waimea/styles/Squared-grey/stick_focused.xpm \
+	waimea/styles/Squared-grey/stick_pressed.xpm \
+	waimea/styles/Squared-grey/stick_unfocus.xpm \
+	waimea/styles/Squared-grey/stuck_focused.xpm \
+	waimea/styles/Squared-grey/stuck_pressed.xpm \
+	waimea/styles/Squared-grey/stuck_unfocus.xpm \
+	waimea/styles/Squared-grey/unshade_focused.xpm \
+	waimea/styles/Squared-grey/unshade_pressed.xpm \
+	waimea/styles/Squared-grey/unshade_unfocus.xpm
+
+nobase_dist_share_DATA += \
 	fluxbox/styles/Squared-cadet/theme.cfg
 
 nobase_dist_share_DATA += \
