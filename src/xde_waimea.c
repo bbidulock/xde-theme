@@ -85,7 +85,12 @@ find_style_WAIMEA()
 static char *
 get_style_WAIMEA()
 {
-	return xde_get_style_database();
+	char name[64];
+	char clas[64];
+
+	snprintf(name, sizeof(name), "screen%d.styleFile", screen);
+	snprintf(clas, sizeof(clas), "Screen%d.StyleFile", screen);
+	return xde_get_style_database(name, clas);
 }
 
 /** @brief Reload waimea style.
@@ -116,7 +121,10 @@ reload_style_WAIMEA()
 static void
 set_style_WAIMEA()
 {
-	return xde_set_style_database();
+	char name[64];
+
+	snprintf(name, sizeof(name), "screen%d.styleFile", screen);
+	return xde_set_style_database(name, clas);
 }
 
 /** @brief List styles in waimea style directory.

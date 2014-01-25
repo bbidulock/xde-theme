@@ -1807,7 +1807,7 @@ __asm__(".symver __xde_get_style_simple,xde_get_style_simple@@XDE_1.0");
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
   */
 char *
-__xde_get_style_database()
+__xde_get_style_database(char *name, char *clas)
 {
 	XrmValue value;
 	char *type, *pos;
@@ -1822,9 +1822,8 @@ __xde_get_style_database()
 		EPRINTF("cannot read database file %s\n", wm->rcfile);
 		return NULL;
 	}
-	if (!XrmGetResource(wm->db, "session.styleFile", "Session.StyleFile",
-			    &type, &value)) {
-		EPRINTF("no session.styleFile resource in database %s\n", wm->rcfile);
+	if (!XrmGetResource(wm->db, name, clas, &type, &value)) {
+		EPRINTF("no %s resource in database %s\n", name, wm->rcfile);
 		return NULL;
 	}
 	free(wm->style);
@@ -1903,7 +1902,7 @@ __asm__(".symver __xde_set_style_simple,xde_set_style_simple@@XDE_1.0");
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
   */
 void
-__xde_set_style_database()
+__xde_set_style_database(char *name)
 {
 	char *stylefile, *line, *style;
 	int len;
@@ -1927,9 +1926,9 @@ __xde_set_style_database()
 		EPRINTF("cannot read database file %s\n", wm->rcfile);
 		goto no_db;
 	}
-	len = strlen(stylefile) + strlen("session.styleFile:\t\t") + 1;
+	len = strlen(stylefile) + strlen(name) + strlen(":\t\t") + 1;
 	line = calloc(len, sizeof(*line));
-	snprintf(line, len, "session.styleFile:\t\t%s", stylefile);
+	snprintf(line, len, "%s:\t\t%s", name, stylefile);
 	XrmPutLineResource(&wm->db, line);
 	free(line);
 	if (options.dryrun) {

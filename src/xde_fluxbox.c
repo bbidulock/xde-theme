@@ -92,7 +92,7 @@ find_style_FLUXBOX()
 static char *
 get_style_FLUXBOX()
 {
-	return xde_get_style_database();
+	return xde_get_style_database("session.styleFile", "Session.StyleFile");
 }
 
 /** @brief Reload a fluxbox style.
@@ -133,7 +133,7 @@ reload_style_FLUXBOX()
 static void
 set_style_FLUXBOX()
 {
-	return xde_set_style_database();
+	return xde_set_style_database("session.styleFile");
 }
 
 static void

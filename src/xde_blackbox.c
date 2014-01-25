@@ -81,7 +81,7 @@ find_style_BLACKBOX()
 static char *
 get_style_BLACKBOX()
 {
-	return xde_get_style_database();
+	return xde_get_style_database("session.styleFile", "Session.StyleFile");
 }
 
 /** @brief Reload a blackbox style.
@@ -114,7 +114,7 @@ reload_style_BLACKBOX()
 static void
 set_style_BLACKBOX()
 {
-	return xde_set_style_database();
+	return xde_set_style_database("session.styleFile");
 }
 
 static void
