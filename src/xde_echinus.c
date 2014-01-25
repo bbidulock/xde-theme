@@ -63,7 +63,7 @@ get_rcfile_ECHINUS()
 static char *
 find_style_ECHINUS()
 {
-	return xde_find_style_simple("styles", "/stylerc");
+	return xde_find_style_simple("styles", "/stylerc", "");
 }
 
 static char *
@@ -167,7 +167,7 @@ set_style_ECHINUS()
 static void
 list_dir_ECHINUS(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
 }
 
 static void

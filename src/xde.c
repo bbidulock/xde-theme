@@ -1556,7 +1556,7 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 __asm__(".symver __xde_get_rcfile_simple,xde_get_rcfile_simple@@XDE_1.0");
 
 void
-__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
+__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style)
 {
 	DIR *dir;
 	char *dirname, *file, *stylename, *p;
@@ -1579,10 +1579,6 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 	while ((d = readdir(dir))) {
 		if (d->d_name[0] == '.')
 			continue;
-		/* filename must end in fname */
-		if (fname[0] != '/' && (!(p = strstr(d->d_name, fname))
-		    || p[strlen(fname)] != '\0'))
-			continue;
 		len = strlen(dirname) + strlen(d->d_name) + strlen(fname) + 2;
 		file = calloc(len, sizeof(*file));
 		strcpy(file, dirname);
@@ -1593,32 +1589,35 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *style)
 			free(file);
 			continue;
 		}
-		if (S_ISREG(st.st_mode))
-			goto got_it;
-		else if (!S_ISDIR(st.st_mode)) {
+		if (S_ISREG(st.st_mode)) {
+			/* filename must end in suffix when specified */
+			if (suffix[0]
+			    && (!(p = strstr(d->d_name, suffix)) || p[strlen(suffix)])) {
+				DPRINTF("%s has no %s suffix\n", d->d_name, suffix);
+				free(file);
+				continue;
+			}
+		} else if (!S_ISDIR(st.st_mode)) {
 			DPRINTF("%s: not file or directory\n", file);
 			free(file);
 			continue;
+		} else {
+			strcat(file, fname);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
 		}
-		if (fname[0] != '/') {
-			free(file);
-			continue;
-		}
-		strcat(file, fname);
-		if (stat(file, &st)) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
-			free(file);
-			continue;
-		}
-		if (!S_ISREG(st.st_mode)) {
-			DPRINTF("%s: not a file\n", file);
-			free(file);
-			continue;
-		}
-	      got_it:
 		stylename = strdup(d->d_name);
-		if (fname[0] != '/')
-			*strstr(stylename, fname) = '\0';
+		if (suffix[0] && (p = strstr(d->d_name, suffix))
+		    && !p[strlen(suffix)])
+			*p = '\0';
 		if (!options.theme || xde_find_theme(stylename))
 			fprintf(stdout, "%s %s%s\n", stylename, file,
 				(style && !strcmp(style, file)) ? " *" : "");
@@ -1651,7 +1650,7 @@ __xde_list_styles_simple()
 __asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
 
 char *
-__xde_find_style_simple(char *dname, char *fname)
+__xde_find_style_simple(char *dname, char *fname, char *suffix)
 {
 	char *path = NULL;
 	int len, i;
@@ -1684,7 +1683,8 @@ __xde_find_style_simple(char *dname, char *fname)
 			if (!wm->dirs[i] || !wm->dirs[i][0])
 				continue;
 			len = strlen(wm->dirs[i]) + strlen(dname) +
-			    strlen(options.style) + strlen(fname) + 3;
+			    strlen(options.style) + strlen(fname) +
+			    strlen(suffix) + 4;
 			path = calloc(len, sizeof(*path));
 			strcpy(path, wm->dirs[i]);
 			strcat(path, "/");
@@ -1692,10 +1692,26 @@ __xde_find_style_simple(char *dname, char *fname)
 			strcat(path, "/");
 			strcat(path, options.style);
 			if (stat(path, &st)) {
-				DPRINTF("%s: %s\n", path, strerror(errno));
-				free(path);
-				path = NULL;
-				continue;
+				if (suffix[0]) {
+					strcat(path, suffix);
+					if (stat(path, &st)) {
+						DPRINTF("%s: %s\n", path, strerror(errno));
+						free(path);
+						path = NULL;
+						continue;
+					}
+					if (!S_ISREG(st.st_mode)) {
+						DPRINTF("%s: not a file\n", path);
+						free(path);
+						path = NULL;
+						continue;
+					}
+				} else {
+					DPRINTF("%s: %s\n", path, strerror(errno));
+					free(path);
+					path = NULL;
+					continue;
+				}
 			}
 			if (S_ISDIR(st.st_mode)) {
 				strcat(path, fname);

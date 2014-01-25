@@ -57,7 +57,7 @@ get_rcfile_CWM()
 static char *
 find_style_CWM()
 {
-	return xde_find_style_simple("styles", "/stylerc");
+	return xde_find_style_simple("styles", "/stylerc", "");
 }
 
 /** @brief Get the cwm style.
@@ -224,7 +224,7 @@ set_style_CWM()
 static void
 list_dir_CWM(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
 }
 
 static void

@@ -57,7 +57,7 @@ get_rcfile_PEKWM()
 static char *
 find_style_PEKWM()
 {
-	return xde_find_style_simple("themes", "/theme");
+	return xde_find_style_simple("themes", "/theme", "");
 }
 
 /** @brief Get the pekwm style.
@@ -233,7 +233,7 @@ set_style_PEKWM()
 static void
 list_dir_PEKWM(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "themes", "/theme", style);
+	return xde_list_dir_simple(xdir, "themes", "/theme", "", style);
 }
 
 static void

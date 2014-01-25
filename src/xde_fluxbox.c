@@ -81,7 +81,7 @@ get_rcfile_FLUXBOX()
 static char *
 find_style_FLUXBOX()
 {
-	return xde_find_style_simple("styles", "/theme.cfg");
+	return xde_find_style_simple("styles", "/theme.cfg", "");
 }
 
 /** @brief Get the current fluxbox style.
@@ -139,7 +139,7 @@ set_style_FLUXBOX()
 static void
 list_dir_FLUXBOX(char *xdir, char *style)
 {
-	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", style);
+	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", "", style);
 }
 
 /** @brief List fluxbox styles.

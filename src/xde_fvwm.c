@@ -57,7 +57,7 @@ get_rcfile_FVWM()
 static char *
 find_style_FVWM()
 {
-	return xde_find_style_simple("styles", "/style");
+	return xde_find_style_simple("styles", "/style", "");
 }
 
 static char *
