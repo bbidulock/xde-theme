@@ -182,9 +182,10 @@ extern WmScreen *screens;
 extern WmScreen *scr;
 extern unsigned int nscr;
 
-#define OPRINTF(format, ...) do { if (options.output > 1) fprintf(stderr, "I: " format, __VA_ARGS__); } while (0)
-#define DPRINTF(format, ...) do { if (options.debug) fprintf(stderr, "D: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); } while (0)
-#define EPRINTF(format, ...) do { fprintf(stderr, "E: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); } while (0)
+#define OPRINTF(format, ...) do { if (options.output > 1) fprintf(stderr, "I: " format, __VA_ARGS__); fflush(stderr); } while (0)
+#define DPRINTF(format, ...) do { if (options.debug) fprintf(stderr, "D: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); fflush(stderr); } while (0)
+#define EPRINTF(format, ...) do { fprintf(stderr, "E: %s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__); fflush(stderr); } while (0)
+#define DPRINT() do { if (options.debug) fprintf(stderr, "D: %s %s():%d\n", __FILE__, __func__, __LINE__); fflush(stderr); } while (0)
 
 extern Atom _XA_BB_THEME;
 extern Atom _XA_BLACKBOX_PID;

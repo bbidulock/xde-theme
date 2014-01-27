@@ -19,11 +19,215 @@ manager.
 
 =head1 ARGUMENTS
 
+=over
+
+=item I<STYLE>
+
+The style name or absolute or relative path to the style file.
+Specifies the style to list or set.
+
+=back
+
 =head1 OPTIONS
+
+B<xde-style> uses GNU C<get_options_long_only()> to parse options, so
+long options with a single dash are accepted.  B<xde-style> accepts the
+following options:
 
 =head2 COMMAND OPTIONS
 
+B<xde-style> accepts the command options as follows:
+
+=over
+
+=item B<-c>, B<--current>
+
+List the current style.  This is also the default when no command option
+is specified.
+
+=item B<-l>, B<--list> [I<OPTIONS>] [I<STYLE>]
+
+List available styles or the specified I<STYLE>.  General (non-command)
+options can precede a specified I<STYLE>.
+
+=item B<-s>, B<--set> [I<OPTIONS>] I<STYLE>
+
+Set the style specified by I<STYLE>.  General (non-command) options can
+preced the specified I<STYLE>.
+
+=item B<-h>, B<--help>, B<-?>, B<--?>
+
+Prints usage information to standard output and exits.  This command
+option can be preceded by other options to observe the settings that
+result in the help output.
+
+=item B<-V>, B<--version>
+
+Prints version information to standard output and exits.
+
+=item B<-C>, B<--copying>
+
+Prints copying permission ot standard output and exits.
+
+=back
+
 =head2 GENERAL OPTIONS
+
+B<xde-style> accepts the following non-command options:
+
+=over
+
+=item B<-y>, B<--system>
+
+When listing or setting styles, only list or set system styles.  The
+default is to list or set both system and user styles.
+
+Not all window managers can distinguish between system and user styles.
+Case in point is L<icewm(1)>, which, when setting a style, will use the
+first style encountered.  When a style name is both a user a system
+style, the user style takes precedence.  This option has no effect on
+L<icewm(1)>.
+
+=item B<-u>, B<--user>
+
+When listing or setting styles, only list or set user styles.  The
+default is to list or set both system and user styles.
+
+See note above under, B<--system>.
+
+=item B<-S>, B<--screen> I<SCREEN>
+
+Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
+on all screens unless the screen number is specified int he C<DISPLAY>
+environment varaiable, in which case the screen number defaults to the
+specified screen.  In general, a window manager with good multiple head
+support will add the screen number to the C<DISPLAY> environment
+variable for programs that it launches and the screen number does not
+need to be specified.
+
+=item B<-L>, B<--link>
+
+When setting the style, symbolic link the style files where possible.
+When not specified a symbolic link will be used whenever one already
+exists.
+
+Some window managers have two options for specifying style files.  One
+is to place the name of the file into a style file that then includes
+the ultimate style file; another is to symbolic link the style file to
+the ultimate style file.  The symbolic link can cause problems when the
+window manager looks for auxilliary files (such as pixmaps) in the same
+directory as the style file.
+
+=item B<-t>, B<--theme>
+
+When listing styles, only list styles that correspond to XDE themes.
+
+=item B<-w>, B<--wmname> I<WMNAME>
+
+Do not detect the window manager, but assume that the window manager
+named, I<WMNAME> is to be used.  The B<--screen> option and C<DISPLAY>
+environment variable are ignored.
+
+=item B<-f>, B<--rcfile> I<RCFILE>
+
+When the B<--wmname> option has been specified, use the file, I<RCFILE>,
+as the configuration file for the window manager.
+
+=item B<-r>, B<--reload>
+
+When setting the style, as the window manager to reload the new style.
+This may involve sending a signal or X client message to the window
+manager.  Reload can only be performed when the window manager has been
+detected (i.e. B<--wmname> was not specified).
+
+=item B<-D>, B<--debug> [I<LEVEL>]
+
+Increment or set the debug level to I<LEVEL>.  The default debug level
+is 0.
+
+=item B<-v>, B<--verbose> [I<LEVEL>]
+
+Increment or set output verbosity level to I<LEVEL>.  The default output
+verbosity level is 1.  This option may be repeated.
+
+=back
+
+=head1 OUTPUT FORMAT
+
+Diagnostic messages are always sent to standard error.  Requested output
+is sent to standard output.  B<xde-style> generates the following
+output:
+
+=over
+
+=item 1.
+
+When a request to list the current style has been made using the
+B<--current> option, two fields are printed on a single line separated
+by a single space: the style name and the style file specification.
+
+Example:
+
+ $> xde-style -w echinus
+ Default /home/brian/.echinus/styles/Default/stylerc
+
+=item 2.
+
+When a request to list a specified style has been made using the
+B<--list> option with a specified I<STYLE>, two or three fields are
+printed on one or two lines separated by a single space: the style name
+and the style file specification.  When one of the styles listed is the
+current style, an additional field containing an asterisk is output for
+that line.
+Styles are listed user styles before system styles, however,
+styles in each group are in no specific order:
+pass them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-style -w waimea -l Squared-blue
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/stylerc *
+ Squared-blue /usr/share/waimea/styles/Squared-blue
+
+=item 3.
+
+When a request to list all styles is made using the B<--list> option
+alone, all styles are listed as two or three fields per line, each field
+separated by a single space.  The current style will have an asterisk in
+the third field.
+Styles are listed user styles before system styles, however,
+styles in each group are in no specific order:
+pass them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-style -w waimea -l
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/stylerc *
+ Squared-green /home/brian/.waimea/styles/Squared-green/stylerc
+ Squared-blue /usr/share/waimea/styles/Squared-blue/stylerc
+ Squared-green /usr/share/waimea/styles/Squared-green/stylerc
+
+=item 4.
+
+When a request to list styles restricted to system or user styles using
+the B<--list> option in conjunction with the B<--system> or B<--user>
+option is made, all styles of the corresponding type are listed as two
+or three fields per line, each field separated by a single space.  The
+current style, if listed, will have an asterisk in the third field.
+Styles are listed in no specific order:
+pass them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-style -w waimea -l -y
+ Squared-blue /usr/share/waimea/styles/Squared-blue/stylerc
+ Squared-green /usr/share/waimea/styles/Squared-green/stylerc
+
+ $> xde-style -w waimea -l -u
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/stylerc *
+ Squared-green /home/brian/.waimea/styles/Squared-green/stylerc
+
+=back
 
 =head1 BEHAVIOUR
 

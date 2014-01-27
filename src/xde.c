@@ -1524,7 +1524,6 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
-		free(file);
 	} else {
 		len = strlen(home) + strlen(rcname) + 2;
 		wm->rcfile = calloc(len, sizeof(*wm->rcfile));
@@ -1547,7 +1546,6 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 				strcat(wm->rcfile, "/");
 				strcat(wm->rcfile, file);
 			}
-			free(file);
 		}
 	}
 	xde_get_simple_dirs(wmname);
@@ -1862,7 +1860,6 @@ __xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 	struct stat st;
 	Bool link = !to_file ? True : options.link;
 
-	wm->ops->get_rcfile();
 	if (!(stylefile = wm->ops->find_style())) {
 		EPRINTF("cannot find %s style '%s'\n", wm->name, options.style);
 		return;
@@ -1925,10 +1922,6 @@ __xde_set_style_database(char *name)
 
 	if (options.reload && !wm->pid) {
 		EPRINTF("cannot reload %s without a pid\n", wm->name);
-		return;
-	}
-	if (!xde_test_file(wm->rcfile)) {
-		EPRINTF("rcfile %s does not exist\n", wm->rcfile);
 		return;
 	}
 	if (!(stylefile = wm->ops->find_style())) {
@@ -2021,7 +2014,6 @@ __xde_get_rcfile_XTWM(char *xtwm)
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
-		free(file);
 	} else {
 		char names[4][16], *rcfile = NULL;
 		struct stat st;
@@ -2063,7 +2055,6 @@ __xde_get_rcfile_XTWM(char *xtwm)
 					strcat(rcfile, "/");
 					strcat(rcfile, file);
 				}
-				free(file);
 			}
 			wm->rcfile = rcfile;
 		} else {
@@ -2234,5 +2225,25 @@ get_wm_ops()
 
 	return NULL;
 }
+
+/** @name Event Handlers
+  *
+  * The following are event handlers for detecting various things.
+  *
+  * @{ */
+
+/** @brief Property change of _BLACKBOX_PID.
+  *
+  * When fluxbox(1) reloads, it does not change the _NET_SUPPORTING_WM_CHECK
+  * window, but it does change the _BLACKBOX_PID, even when it is just to
+  * replace it with the same value.
+  */
+Bool
+xde_event_handler_PropertyNotify_BLACKBOX_PID(XEvent *ev)
+{
+	return False;
+}
+
+/** @} */
 
 // vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:
