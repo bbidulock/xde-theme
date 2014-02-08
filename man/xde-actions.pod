@@ -1,0 +1,438 @@
+=head1 NAME
+
+xde-actions - adjust the feel for lightweight window managers
+
+=head1 SYNOPSIS
+
+ xde-actions [{-c|--current}] [options]
+ xde-actions {-l|--list} [options] [THEME]
+ xde-actions {-s|--set}  [options]  THEME
+ xde-actions [options] {-h|--help}
+ xde-actions {-V|--version}
+ xde-actions {-C|--copying}
+
+=head1 DESCRIPTION
+
+B<xde-actions> is a C<C>-language application that can be used to query
+or set the actions theme of a running or off-line (supported)
+lightweight window manager.
+
+See L</USAGE> and L</BEHAVIOR> for more detailed information.
+
+=head1 ARGUMENTS
+
+=over
+
+=item I<THEME>
+
+The actions theme name or absolute or relative path to the actions file.
+Specifies the actions to list or set.
+
+=back
+
+=head1 OPTIONS
+
+B<xde-actions> uses GNU C<get_options_long_only()> to parse options, so
+long options with a single dash are accepted; however, short options
+cannot be concatenated.  B<xde-actions> accepts the following options:
+
+=head2 COMMAND OPTIONS
+
+B<xde-actions> accepts the command options as follows:
+
+=over
+
+=item B<-c>, B<--current>
+
+List the current action themes.  This is also the default when no
+command option is specified.
+
+=item B<-l>, B<--list> [I<OPTIONS>] [I<THEME>]
+
+List available action themes or the specified I<THEME>.  General
+(non-command) options can precede a specified I<THEME>.
+
+=item B<-s>, B<--set> [I<OPTIONS>] I<THEME>
+
+Set the action theme specified by I<THEME>.  General (non-command)
+options can precede the specified I<THEME>.
+
+=item B<-h>, B<--help>, B<-?>, B<--?>
+
+Prints usage information to standard output and exits.  This command
+option can be preceded by other options to observe the settings that
+result in the help output.
+
+=item B<-V>, B<--version>
+
+Prints version information to standard output and exits.
+
+=item B<-C>, B<--copying>
+
+Prints copying permission to standard output and exits.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+B<xde-actions> accepts the following non-command options:
+
+=over
+
+=item B<-y>, B<--system>
+
+When listing or setting action themes, only list or set system themes.
+The default is to list or set both system and user themes.
+
+Note: Not all window managers can distinguish between system and user
+action themes.  Case in point is L<icewm(1)>, which, when setting the
+theme, will use the first theme encountered.  When a theme name is both
+a user and system theme, the user theme takes precedence.  This option
+has no effect on L<icewm(1)>.
+
+=item B<-u>, B<--user>
+
+When listing or setting action themes, only list or set user themes.
+The default is to list or set both system and user themes.
+
+See note above under, B<--system>.
+
+=item B<-S>, B<--screen> I<SCREEN>
+
+Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
+on all screens unless the screen number is specified int he C<DISPLAY>
+environment variable, in which case the screen number defaults to the
+specified screen.  In general, a window manager with good multiple head
+support will add the screen number to the C<DISPLAY> environment
+variable for programs that it launches and the screen number does not
+need to be specified.
+
+=item B<-L>, B<--link>
+
+When setting the action theme, symbolic link the action files where
+possible.  When not specified a symbolic link will be used whenever one
+already exists.
+
+Some window managers have two options for specifying action files.  One
+is to place the name of the file into a action file that then includes
+the ultimate action file; another is to symbolic link the action file to
+the ultimate action file.  The symbolic link can cause problems when the
+window manager looks for auxiliary files (such as pixmaps) in the same
+directory as the action file.
+
+=item B<-t>, B<--theme>
+
+When listing action themes, only list those that correspond to XDE themes.
+
+=item B<-w>, B<--wmname> I<WMNAME>
+
+Do not detect the window manager, but assume that the window manager
+named, I<WMNAME> is to be used.  The B<--screen> option and C<DISPLAY>
+environment variable are ignored.
+
+=item B<-f>, B<--rcfile> I<RCFILE>
+
+When the B<--wmname> option has been specified, use the file, I<RCFILE>,
+as the configuration file for the window manager.
+
+=item B<-r>, B<--reload>
+
+When setting the action themes, ask the window manager to reload the new
+actions.  This may involve sending a signal or X client message to the
+window manager.  Reload can only be performed when the window manager
+has been detected (i.e. B<--wmname> was not specified).
+
+=item B<-D>, B<--debug> [I<LEVEL>]
+
+Increment or set the debug level to I<LEVEL>.  The default debug level
+is 0.
+
+=item B<-v>, B<--verbose> [I<LEVEL>]
+
+Increment or set output verbosity level to I<LEVEL>.  The default output
+verbosity level is 1.  This option may be repeated.
+
+=back
+
+=head1 USAGE
+
+=head1 OUTPUT FORMAT
+
+Diagnostic messages are always sent to standard error.  Requested output
+is sent to standard output.  B<xde-actions> generates the following
+output:
+
+=over
+
+=item 1.
+
+When a request to list the current action theme has been made using the
+B<--current> option, two fields are printed on a single line separated
+by a single space: the theme name and the action file specification.
+
+Example:
+
+ $> xde-actions -w echinus
+ Default /home/brian/.echinus/styles/Default/actionrc
+
+=item 2.
+
+When a request to list a specified action theme has been made using the
+B<--list> option with a specified I<THEME>, two or three fields are
+printed on one or two lines separated by a single space: the action
+theme name and the action file specification.  When one of the themes
+listed is the current theme, an additional field containing an asterisk
+is output for that line.  Action themes are listed user themes before
+system themes, however, themes in each group are in no specific order:
+pass them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-actions -w waimea -l Squared-blue
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/actionrc *
+ Squared-blue /usr/share/waimea/styles/Squared-blue/actionrc
+
+=item 3.
+
+When a request to list all action themes is made using the B<--list>
+option alone, all action themes are listed as two or three fields per
+line, each field separated by a single space.  The current theme will
+have an asterisk in the third field.  Action themes are listed user
+themes before system themes, however, themes in each group are in no
+specific order: pass them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-actions -w waimea -l
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/actionrc *
+ Squared-green /home/brian/.waimea/styles/Squared-green/actionrc
+ Squared-blue /usr/share/waimea/styles/Squared-blue/actionrc
+ Squared-green /usr/share/waimea/styles/Squared-green/actionrc
+
+=item 4.
+
+When a request to list action themes restricted to system or user themes
+using the B<--list> option in conjunction with the B<--system> or
+B<--user> option is made, all themes of the corresponding type are
+listed as two or three fields per line, each field separated by a single
+space.  The current action theme, if listed, will have an asterisk in
+the third field.  Action themes are listed in no specific order: pass
+them through L<sort(1)> if you want them sorted.
+
+Example:
+
+ $> xde-style -w waimea -l -y
+ Squared-blue /usr/share/waimea/styles/Squared-blue/actionrc
+ Squared-green /usr/share/waimea/styles/Squared-green/actionrc
+
+ $> xde-style -w waimea -l -u
+ Squared-blue /home/brian/.waimea/styles/Squared-blue/actionrc *
+ Squared-green /home/brian/.waimea/styles/Squared-green/actionrc
+
+=back
+
+=head1 BEHAVIOR
+
+
+=head1 WINDOW MANAGERS
+
+B<xde-actions> supports various window managers through the use of
+plug-ins.  Plug-ins are provided for the following lightweight window
+managers:
+
+=over
+
+=item L<fluxbox(1)>
+
+L<fluxbox(1)> provides its own actions file, named F<keys>.  The
+location of the F<keys> file is set in the main configuration file.
+
+=item L<blackbox(1)>
+
+L<blackbox(1)> does not provide its own actions file.  An auxiliary
+program, L<bbkeys(1)> reads a configuration file, normally
+F<$HOME/.bbkeys>.
+
+=item L<openbox(1)>
+
+L<openbox(1)> does not provide a separate actions file.  Actions are set
+in the primary configuration file (i.e. F<rc.xml>).  B<xde-actions> has
+little choice but to strip the C<E<lt>mouseE<gt>> and
+C<E<lt>keyboardE<gt>> sections from the main configuration file and
+replace them.
+
+=item L<icewm(1)>
+
+L<icewm(1)> does not provide a separate actions file.  Actions are set
+in the primary configuration file (i.e. F<preferences>).  However,
+L<icewm(1)> theme files can set anything whatsoever.  Therefore, setting
+a "style" in L<icewm(1)> also sets the action theme.  Unfortunately, the
+two are inexorably tied together as there is no way to include another
+configuration file.
+
+=item L<jwm(1)>
+
+L<jwm(1)> does not provide an action system (or style system for that
+matter).  B<xde-actions> provides an action-setting mechanism using the
+C<E<lt>IncludeE<gt>> mechanism of the L<jwm(1)> configuration file and
+provides an action-setting mechanism that can be used from outside the
+L<jwm(1)> root menu.  The F<xde-styles> package also provides some shell
+scripts that can be used from within the L<jwm(1)> root menu.
+
+=item L<pekwm(1)>
+
+L<pekwm(1)> provides its own action files, named F<keys> and F<mouse>.
+The location of the F<keys> and F<mouse> files are set in the main
+configuration file.
+
+=item L<fvwm(1)>
+
+L<fvwm(1)> has an add-on theme system call L<fvwm-themes(1)> which is,
+however, pretty clunky.  B<xde-actions> provides an action theme system
+using the powerful configuration file system of L<fvwm(1)> and provides
+an action theme-setting mechanism that can be used from outside of the
+L<fvwm(1)> root menu.  The F<xde-styles> package also provides some
+configuration scripts that can be used from within the L<fvwm(1)> root
+menu.
+
+=item L<wmaker(1)>
+
+L<wmaker(1)> does not provide a separate actions file.  Actions are set
+in the primary configuration file (i.e.
+F<GNUstsep/Defaults/WindowMaker>). However, L<wmaker(1)> theme files can
+set anything whatsoever.  Therefore, setting a "theme" in L<wmaker(1)>
+also sets the action theme.  Unfortunately, the two are inexorably tied
+together as there is no way to include another configuration file.
+
+=item L<afterstep(1)>
+
+L<afterstep(1)> provides its own feel system.  B<xde-actions> provides
+an action-theme-setting mechanism for L<afterstep(1)> that can be used
+from scripts outside of the L<afterstep(1)> root menu.
+
+=item L<metacity(1)>
+
+L<metacity(1)> provides its own action theme system based on
+L<gsettings(1)> or L<dconf(1)>.   B<xde-styles> provides an action-theme
+setting mechanism for L<metacity(1)> that can be used without the need
+for an entire GNOME desktop.
+
+=item L<twm(1)>
+
+L<twm(1)> does not provide an action theme system.  B<xde-actions>
+provides an action theme system using an L<m4(1)> configuration system
+and provides an action-theme setting mechanism that can be used from
+from outside of the L<twm(1)> root menu.  The F<xde-styles> package also
+provides some shell scripts and L<m4(1)> configuration files that can be
+used from within the L<twm(1)> root menu.
+
+=item L<ctwm(1)>
+
+L<ctwm(1)> does not provide a style system.  B<xde-actions> provides a
+action theme system the same as for L<twm(1)>.
+
+=item L<vtwm(1)>
+
+L<vtwm(1)> does not provide a style system.  B<xde-actions> provides a
+action theme system the same as for L<twm(1)>.
+
+=item L<etwm(1)>
+
+L<etwm(1)> does not provide a style system.  B<xde-actions> provides a
+action theme system the same as for L<twm(1)>.
+
+=item L<cwm(1)>
+
+L<cwm(1)> does not provide an action system.  B<xde-actions> provides an
+action system by directly editing the L<cwmrc(5)> configuration file.
+
+=item L<echinus(1)>
+
+L<echinus(1)> does not provide an action system.  B<xde-actions>
+provides an action system based on the C<#include> directive observed by
+X Resource Manager files.
+
+=item L<uwm(1)>
+
+L<uwm(1)> (µwm) does not provide an action system.  B<xde-styles> provides
+an action system based on the C<include> mechanism of the
+L<uwm(1)> configuration file and provides an action-theme-setting
+mechanism that can be used from outside of the L<uwm(1)> root menu.  The
+F<xde-styles> package also provides some shell scripts that can be used
+from within the L<uwm(1)> root menu.
+
+=item L<awesome(1)>
+
+L<awesome(1)> typically provides key and mouse bindings from the primary
+L<lua(1)> configuration file.  B<xde-actions> provides an actions system
+that can be used from scripts outside of the L<awesome(1)> L<lua(1)>
+configuration system.
+
+=item L<matwm2(1)>
+
+L<matwm2(1)> does not provide a style system.  B<xde-styles> provides a
+style system be directly editing the F<.matwmrc> configuration file.
+
+=item L<waimea(1)>
+
+L<waimea(1)> provides its own action theme system similar to
+L<fluxbox(1)>.  It uses an F<actions> file in the configuration
+directory.  B<xde-actions> provides an action-theme-setting mechanism
+for L<waimea(1)> that can be used from scripts outside the L<waimea(1)>
+root menu system.
+
+=item L<wind(1)>
+
+TODO.
+
+=item L<2bwm(1)>
+
+TODO.
+
+=item L<flwm(1)>
+
+TODO.
+
+=item L<mwm(1)>
+
+TODO.
+
+=item L<dtwm(1)>
+
+TODO.
+
+=item L<spectrwm(1)>
+
+TODO.
+
+=item L<yeahwm(1)>
+
+TODO.
+
+=back
+
+=head1 HISTORY
+
+Very few lightweight window managers provide support for changing the
+mouse or keyboard actions in accordance with a theme.  When providing
+themes for the X Desktop Environment (XDE) I wanted a consistent
+thematic feel to be applied across window managers, so I wrote
+B<xde-actions> to perform that function.
+
+I considered writing a key binder in the fashion of L<bbkeys(1)> to be
+used with these window managers; however, window manager key bindings
+could easily conflict.  Also, some lightweight window managers can only
+access some functions internally (most tiling window managers).  I still
+have an L<xde-keys(1)> program that is intended on providing assistance
+to window managers that do not provide some functions (like fill), but
+which can be accomplished easily using EWMH or WMH.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=head1 SEE ALSO
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin

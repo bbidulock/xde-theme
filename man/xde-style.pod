@@ -17,6 +17,8 @@ B<xde-style> is a C-language application that can be used to query or
 set the style of a running or off-line (supported) lightweight window
 manager.
 
+See L</USAGE> and L</BEHAVIOR> for more detailed information.
+
 =head1 ARGUMENTS
 
 =over
@@ -31,8 +33,8 @@ Specifies the style to list or set.
 =head1 OPTIONS
 
 B<xde-style> uses GNU C<get_options_long_only()> to parse options, so
-long options with a single dash are accepted.  B<xde-style> accepts the
-following options:
+long options with a single dash are accepted; however, short options
+cannot be concatenated.  B<xde-style> accepts the following options:
 
 =head2 COMMAND OPTIONS
 
@@ -53,7 +55,7 @@ options can precede a specified I<STYLE>.
 =item B<-s>, B<--set> [I<OPTIONS>] I<STYLE>
 
 Set the style specified by I<STYLE>.  General (non-command) options can
-preced the specified I<STYLE>.
+precede the specified I<STYLE>.
 
 =item B<-h>, B<--help>, B<-?>, B<--?>
 
@@ -82,11 +84,11 @@ B<xde-style> accepts the following non-command options:
 When listing or setting styles, only list or set system styles.  The
 default is to list or set both system and user styles.
 
-Not all window managers can distinguish between system and user styles.
-Case in point is L<icewm(1)>, which, when setting a style, will use the
-first style encountered.  When a style name is both a user a system
-style, the user style takes precedence.  This option has no effect on
-L<icewm(1)>.
+Note: Not all window managers can distinguish between system and user
+styles.  Case in point is L<icewm(1)>, which, when setting a style, will
+use the first style encountered.  When a style name is both a user and
+system style, the user style takes precedence.  This option has no
+effect on L<icewm(1)>.
 
 =item B<-u>, B<--user>
 
@@ -135,7 +137,7 @@ as the configuration file for the window manager.
 
 =item B<-r>, B<--reload>
 
-When setting the style, as the window manager to reload the new style.
+When setting the style, ask the window manager to reload the new style.
 This may involve sending a signal or X client message to the window
 manager.  Reload can only be performed when the window manager has been
 detected (i.e. B<--wmname> was not specified).
@@ -151,6 +153,8 @@ Increment or set output verbosity level to I<LEVEL>.  The default output
 verbosity level is 1.  This option may be repeated.
 
 =back
+
+=head1 USAGE
 
 =head1 OUTPUT FORMAT
 
@@ -187,7 +191,7 @@ Example:
 
  $> xde-style -w waimea -l Squared-blue
  Squared-blue /home/brian/.waimea/styles/Squared-blue/stylerc *
- Squared-blue /usr/share/waimea/styles/Squared-blue
+ Squared-blue /usr/share/waimea/styles/Squared-blue/stylerc
 
 =item 3.
 
@@ -235,8 +239,8 @@ Example:
 
 =head1 WINDOW MANAGERS
 
-B<xde-style> supports various window managers throught the use of
-plugins.  Plugins are provided for the following lightweight window
+B<xde-style> supports various window managers through the use of
+plug-ins.  Plug-ins are provided for the following lightweight window
 managers:
 
 =over
@@ -314,7 +318,7 @@ can be used without the need for an entire GNOME desktop.
 
 L<twm(1)> does not provide a style system.  B<xde-styles> provides a
 style system using an L<m4(1)> configuration system and provides a
-style-setting mechanism that can be used form outside of the L<twm(1)>
+style-setting mechanism that can be used from outside of the L<twm(1)>
 root menu.  The F<xde-styles> package also provides some shell scripts
 and L<m4(1)> configuration files that can be used from within the
 L<twm(1)> root menu.
@@ -322,34 +326,22 @@ L<twm(1)> root menu.
 =item L<ctwm(1)>
 
 L<ctwm(1)> does not provide a style system.  B<xde-styles> provides a
-style system using an L<m4(1)> configuration system and provides a
-style-setting mechanism that can be used from outside of the L<ctwm(1)>
-root menu.  The F<xde-styles> package also provides some shell scripts
-and L<m4(1)> configuration files that can be used from within the
-L<ctwm(1)> root menu.
+style system the same as for L<twm(1)>.
 
 =item L<vtwm(1)>
 
 L<vtwm(1)> does not provide a style system.  B<xde-styles> provides a
-style system using an L<m4(1)> configuration system and provides a
-style-setting mechanism that can be used from outside of the L<vtwm(1)>
-root menu.  The F<xde-styles> package also provides some shell scripts
-and L<m4(1)> configuration files that can be used from within the
-L<vtwm(1)> root menu.
+style system the same as for L<twm(1)>.
 
 =item L<etwm(1)>
 
 L<etwm(1)> does not provide a style system.  B<xde-styles> provides a
-style system using an L<m4(1)> configuration system and provides a
-style-setting mechanism that can be used from outside of the L<etwm(1)>
-root menu.  The F<xde-styles> package also provides some shell scripts
-and L<m4(1)> configuration files that can be used from within the
-L<etwm(1)> root menu.
+style system the same as for L<twm(1)>.
 
 =item L<cwm(1)>
 
 L<cwm(1)> does not provide a style system.  B<xde-styles> provides a
-style system by directly editting the L<cwmrc(5)> configuration file.
+style system by directly editing the L<cwmrc(5)> configuration file.
 
 =item L<echinus(1)>
 
@@ -370,12 +362,12 @@ the L<uwm(1)> root menu.
 
 L<awesome(1)> provides a style system.  B<xde-styles> provides a
 style-setting mechanism for L<awesome(1)> that can be used from scripts
-outside of the L<awesome> root menu system.
+outside of the L<awesome(1)> root menu system.
 
 =item L<matwm2(1)>
 
 L<matwm2(1)> does not provide a style system.  B<xde-styles> provides a
-style system by directly editting the F<.matwmrc> configuration file.
+style system by directly editing the F<.matwmrc> configuration file.
 
 =item L<waimea(1)>
 
@@ -386,28 +378,51 @@ menu system.
 
 =item L<wind(1)>
 
+TODO.
+
 =item L<2bwm(1)>
+
+TODO.
 
 =item L<wmx(1)>
 
+TODO.
+
 =item L<flwm(1)>
+
+TODO.
 
 =item L<mwm(1)>
 
+TODO.
+
 =item L<dtwm(1)>
+
+TODO.
 
 =item L<spectrwm(1)>
 
+TODO.
+
 =item L<yeahwm(1)>
+
+TODO.
 
 =back
 
 =head1 HISTORY
 
+Many lightweight window managers provide a style system.  However, few
+window managers provide a style setting mechanism that can be used from
+outside of their root menu system.  This is primarily why I wrote
+B<xde-style>.
+
 =head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
 
 =head1 SEE ALSO
 
 =cut
 
-# vim: sw=4 tw=72
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin

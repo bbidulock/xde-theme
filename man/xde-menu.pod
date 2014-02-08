@@ -1,0 +1,71 @@
+=head1 NAME
+
+xde-menu - adjust the root menu for lightweight window managers
+
+=head1 SYNOPSIS
+
+B<xde-menu> is a C<C>-language application that assists lightweight
+window managers by creating a root menu in accordance with XDG
+specifications.
+
+=head1 DESCRIPTION
+
+See L</USAGE> and L</BEHAVIOR> for more detailed information.
+
+=head1 USAGE
+
+=head1 BEHAVIOR
+
+=head1 WINDOW MANAGERS
+
+=head1 HISTORY
+
+I wrote B<xde-menu> for a number of reasons:
+
+=over
+
+=item 1.
+
+Existing lightweight window manager menu generators that read XDG
+F<.desktop> files (e.g. L<fbmenugen(1)>, L<menutray(1)>) do not conform
+to the XDG menu generation specification and in particular are incapable
+of merging menus.
+
+=item 2.
+
+Existing XDG menu generators (such as the SuSE L<xdg_menu(1)> perl
+script) do not properly merge default merge directories and do no
+observe C<E<lt>LayoutE<gt>> commands.  Also, they are poor at including
+icons in the generated menus.  They, of course, do not generate tray
+menus either.
+
+=item 3.
+
+Existing XDG menu generators run once and keep cache information, or
+have a I<regenerate> command placed in the menu.  They do not monitor
+XDG directories for changes and update menu on changes.
+
+=item 4.
+
+The L<lxpanel(1)> and L<pcmanfm(1)> menu generators do not have any of
+the above deficiencies; however, they do not create window manager
+specific sub-menus.  Also, they are buggy and generally fail to display
+a menu at all when they have a problem.
+
+=item 5.
+
+None of the menu-generating facilities that I have found can handle a
+NFS-mounted home directory.  I find this annoying: XDG menus are host
+specific.
+
+=back
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=head1 SEE ALSO
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin

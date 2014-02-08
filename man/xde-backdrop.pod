@@ -1,0 +1,241 @@
+=head1 NAME
+
+xde-backdrop - adjust the backdrop for lightweight window managers
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+B<xde-backdrop> is a C<C>-language application that assists lightweight
+window managers by changing the backdrop of the desktop in response to
+changes in desktop.  It supports window managers that conform to one or
+more of NetWM/EWMH, WinWM/WMH, Motif/MWMH.
+
+See L</USAGE> and L</BEHAVIOR> for more detailed information.
+
+=head1 ARGUMENTS
+
+=over
+
+=item I<THEME>
+
+The backdrop theme name or absolute or relative path to the theme file.
+Specifies the theme to list or set.
+
+=head1 OPTIONS
+
+B<xde-backdrop> uses GNU L<get_options_long_only(3)> to parse options,
+so long options with a single dash are accepted, but short options
+cannot be concatentated.  B<xde-backdrop> accepts the following options:
+
+=head2 COMMAND OPTIONS
+
+B<xde-backdrop> accepts the following command options:
+
+=over
+
+=item B<-q>, B<--quit>
+
+Ask a running instance of B<xde-backdrop> to quit. 
+
+=item B<-c>, B<--current>
+
+List the current backdrop theme.
+
+=item B<-l>, B<--list> [I<OPTIONS>] [I<THEME>]
+
+List available backdrop themes or the specified I<THEME>.  General
+(non-command) options can precede a specified I<THEME>.
+
+=item B<-s>, B<--set> [I<OPtIONS>] I<THEME>
+
+Set the theme specified by I<THEME>.  General (non-command) options can
+preceed the specified I<THEME>.
+
+=item B<-h>, B<--help>, B<-?>, B<--?>
+
+Prints usage information to standard output and exits.  This command
+option can be preceded by other options to observe the settings that
+result in the help output.
+
+=item B<-V>, B<--version>
+
+Prints version information to standard output and exits.
+
+=item B<-C>, B<--copying>
+
+Prints copying permission ot standard output and exits.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+=item B<-S>, B<--screen> I<SCREEN>
+
+Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
+on all screens unless the screen number is specified int he C<DISPLAY>
+environment variable, in which case the screen number defaults to the
+specified screen.  In general, a window manager with good multiple head
+support will add the screen number to the C<DISPLAY> environment
+variable for programs that it launches and the screen number does not
+need to be specified.
+
+=item B<-r>, B<--replace>
+
+Normally, when another instance of B<xde-backdrop> is already running
+for a display, B<xde-backdrop> will pass its arguments to the running
+instance and exit.  With this option, B<xde-backdrop> will instead
+replace the running instance of B<xde-backdrop>.
+
+=item B<-w>, B<--wmname> I<WMNAME>
+
+Do not detect the window manager, but assume that the window manager
+named, I<WMNAME> is to be used.  The B<--screen> option and C<DISPLAY>
+environment variable are ignored.
+
+=item B<-f>, B<--rcfile> I<RCFILE>
+
+When the B<--wmname> option has been specified, use the file, I<RCFILE>,
+as the configuration file for the window manager.
+
+=item B<-D>, B<--debug> [I<LEVEL>]
+
+Increment or set the debug level to I<LEVEL>.  The default debug level
+is 0.
+
+=item B<-v>, B<--verbose> [I<LEVEL>]
+
+Increment or set output verbosity level to I<LEVEL>.  The default output
+verbosity level is 1.  This option may be repeated.
+
+=head1 USAGE
+
+B<xde-backdrop> was written to work within the X Desktop Environment
+(XDE); however, it can be run standalone against any window manager.
+
+=head1 BEHAVIOR
+
+To avoid problems that might arise form running B<xde-backdrop> on
+NFS-mounted home directories or when running on multiple displays on the
+same host, B<xde-backdrop> remembers its settings based on user, window
+manager, host, display and screen.
+
+B<xde-backdrop> operational behaviour is as follows:
+
+=over
+
+=item 1.
+
+When B<xde-backdrop> starts, it checks for the presence of a window
+manager.  When no window manager is present, it sets a default backdrop
+and waits for a window manager.  When a window manager is present, it
+behaves the same way as for a window manager change (see below).
+
+=item 2.
+
+When the first window manager starts, or when B<xde-backdrop> was
+started while a window manager was running, or when B<xde-backdrop>
+detects a window manager change (or restart), it performs the following
+actions:
+
+=over
+
+=item a)
+
+It waits for a preset delay.   The purpose of the delay is that some
+lightweight window managers set the background when they start.
+B<xde-backdrop> will ignore changes made to the background during this
+interval.
+
+=item b)
+
+It then searches for a match to a backdrop theme setting in the
+following order:
+
+ Xde*theme.manager.host.display.screen
+ Xde*theme.manager.host.display.*
+ Xde*theme.*.host.display.screen
+ Xde*theme.*.host.display.*
+ Xde*theme.manager.host.*.*
+ Xde*theme.*.host.*.*
+ Xde*theme.*.*.*.*
+
+It accomplishes this search by reading an X resource file in
+F<$XDG_CONFIG_HOME/xde/settings>.
+
+=item c)
+
+The matching theme (or default when there is no match) is then applied
+and normal operation is entered.
+
+=back
+
+=item 3.
+
+During normal operation, B<xde-backdrop> performs the following actions:
+
+=over 
+
+=item a)
+
+Monitors for requested changes to the backdrop theme, applies those
+themes, alters the settings resource file accordingly and then re-enters
+normal operation.
+
+=item b)
+
+Monitors for changes to the background made by external backdrop setting
+programs.  It does this by monitoring a number of root window properties
+used by backdrop setting programs (see L</PROPERTIES>).  It then
+customizes the backdrop theme in accordance with the changes and option
+settings, alters the setting resource file accordingly, and then
+re-enters normal operation.
+
+=back
+
+=back
+
+=head1 THEME SUPPORT
+
+=head1 WINDOW MANAGERS
+
+=head1 HISTORY
+
+Changing backgrounds when desktops or workspaces and work areas was not
+possible some decades ago due to the limited memory capabilities of X
+Servers at the time.  There is no such limitation today, even on
+embedded systems.  The only lightweight window managers with this
+capability are L<wmaker(1)>, L<waimea(1)>, L<lxde(1)> (running
+L<pcmanfm(1)> in B<-desktop> mode), L<jwm(1)>, L<fvwm(1)> (with the
+F<Backer> module): each with their own limitations.
+
+For example: L<fvwm(1)> has the F<Backer> module that can perform
+desktop switching in the same fashion as B<xde-backdrop>; however, it
+does not store the full set of pixmaps on the X Server and thus
+switching between workspaces and work areas is both sluggish and causes
+screen flashes.  In particular, changing desktops rapidly with the
+scroll wheel is particularly unresponsive.
+
+L<wmaker(1)> cannot handle monitors but is otherwise satisfactory.
+L<jwm(1)> cannot scale background images to fill the screen.  L<lxde(1)>
+requires running L<pcmanfm(1)> which is buggy and does not handle
+monitors well.
+
+Placing different backgrounds on different desktops or workspaces, work
+areas and even monitors helps the user of the desktop environment take
+notice of desktop changes in an intuitive way without having to take
+visual reference of a desktop pager.  It is a useful features that is
+missing from most lightweight window managers.
+
+I wrote B<xde-backdrop> for the X Desktop Environment (XDE) to overcome
+the limitations of the lightweight window managers that it supports.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=head1 SEE ALSO
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin
