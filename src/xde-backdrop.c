@@ -108,7 +108,7 @@ typedef struct {
 	int base;
 } Extension;
 
-Extention ext[BaseLast];
+Extension ext[BaseLast];
 
 int ext_xinerama;			/* */
 int ext_xrandr;				/* */

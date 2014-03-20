@@ -9,7 +9,8 @@ libxde_la_LIBADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -R $(xdemoddir) \
 		    -Wl,--version-script -Wl,xde.VERSION -ldl
 
-bin_PROGRAMS = xde-theme xde-style xde-backdrop
+bin_PROGRAMS = xde-theme xde-style
+EXTRA_PROGRAMS = xde-backdrop
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c
