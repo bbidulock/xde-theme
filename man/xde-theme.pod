@@ -301,7 +301,9 @@ L<bsetbg(1)>.
 =item L<openbox(1)>
 
 L<openbox(1)> does not provide any theme-based background setting of its
-own.
+own.  L<openbox(1)> does have a coherent style and theme system that
+L<xde-theme(1)>  uses to detect the operational styles and apply the
+necessary backdrops.
 
 =item L<icewm(1)>
 
@@ -312,21 +314,23 @@ F<~/.icewm/prefoverride> can be used to override settings in the
 F<~/.icewm/preferences> file and it appears that L<icewmbg(1)> respects
 that.  The documentation in L<icewm(1)> indicates that L<icewmbg(1)> can
 be used to set backgrounds on multiple desktops; however, examination of
-the code fro 1.3.7 reveals that the code for that is completely strapped
+the code for 1.3.7 reveals that the code for that is completely strapped
 out.
 
 Basically, one need not even run B<icewmbg> when using B<xde-theme>.  An
 XDE session will not invoke B<icewmbg> and, therefore, can set the
-B<--delay> option to zero (0).
+B<--delay> option to zero (0).  Note that B<icewmbg> can be sent a
+client message to ask to to exit and B<xde-theme> sends just such a
+message when it starts up or detects that B<icewm> has restarted.
 
 =item L<jwm(1)>
 
 L<jwm(1)> supports setting per-desktop backgrounds as part of its
 configuration file (and thus through the sytle mechanism that I added to
-the L<jwm(1)> configuration).  The built-in background setter works just
-find and it is not necessary to run B<xde-theme> on this window manager.
-Nevertheless, B<xde-theme> works fine when L<jwm(1)> is configured to
-not use its internal background setter.
+the L<jwm(1)> configuration).  The difficulty with the built-in
+background setter is that it will not scale backdrops; however,
+B<xde-theme> works fine when L<jwm(1)> is configured to not use its
+internal background setter.
 
 =item L<pekwm(1)>
 
@@ -347,6 +351,9 @@ B<xde-theme> instead.
 
 =item L<metacity(1)>
 
+L<metacity(1)> does not provide any theme-based background setting of
+its own.
+
 =item L<echinus(1)>
 
 L<echinus(1)> does not really provides for setting backgrounds;
@@ -359,12 +366,32 @@ restart.
 
 =item L<ctwm(1)>
 
+L<ctwm(1)> does not provide any theme-based background setting of its
+own.  When used with the style and theme mechanism of L<xde-styles(1)>,
+L<xde-theme(1)> operates well with L<ctwm(1)>.
+
 =item L<vtwm(1)>
+
+L<vtwm(1)> does not provide any theme-based background setting of its
+own.  When used with the style and theme mechanism of L<xde-styles(1)>,
+L<xde-theme(1)> operates well with L<vtwm(1)>.
 
 =item L<dtwm(1)>
 
-L<metacity(1)> does not provide any theme-based background setting of
-its own.
+
+=item L<dwm(1)>
+
+=item L<xdwm(1)>
+
+=item L<echinus(1)>
+
+=item L<velox(1)>
+
+These L<dwm(1)> variants have no sytle setting mechanism whatsoever, or
+it is to primitive to be called a style system.  Nevertheless, so far as
+theses window managers are WMH/WinWMH or EWMH/NetWM compliant, they can
+still be supported by L<xde-theme(1)>.
+
 
 =back
 

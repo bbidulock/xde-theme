@@ -52,6 +52,13 @@ is specified.
 List available styles or the specified I<STYLE>.  General (non-command)
 options can precede a specified I<STYLE>.
 
+=item B<-m>, B<--menu> [I<OPTIONS>] [I<STYLE>]
+
+List available styles or the specified I<STYLE>.  General (non-command)
+options can precede a specified I<STYLE>.  This differs from B<--list>
+in that the output is in the format of a sub-menu for the specified or
+detected window manager.
+
 =item B<-s>, B<--set> [I<OPTIONS>] I<STYLE>
 
 Set the style specified by I<STYLE>.  General (non-command) options can
@@ -69,7 +76,7 @@ Prints version information to standard output and exits.
 
 =item B<-C>, B<--copying>
 
-Prints copying permission ot standard output and exits.
+Prints copying permission to standard output and exits.
 
 =back
 
@@ -101,7 +108,7 @@ See note above under, B<--system>.
 
 Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
 on all screens unless the screen number is specified int he C<DISPLAY>
-environment varaiable, in which case the screen number defaults to the
+environment variable, in which case the screen number defaults to the
 specified screen.  In general, a window manager with good multiple head
 support will add the screen number to the C<DISPLAY> environment
 variable for programs that it launches and the screen number does not
@@ -117,7 +124,7 @@ Some window managers have two options for specifying style files.  One
 is to place the name of the file into a style file that then includes
 the ultimate style file; another is to symbolic link the style file to
 the ultimate style file.  The symbolic link can cause problems when the
-window manager looks for auxilliary files (such as pixmaps) in the same
+window manager looks for auxiliary files (such as pixmaps) in the same
 directory as the style file.
 
 =item B<-t>, B<--theme>
@@ -249,25 +256,31 @@ managers:
 
 L<fluxbox(1)> provides its own style system.  B<xde-style> provides a
 style-setting mechanism for L<fluxbox(1)> that can be used from scripts
-outside of the L<fluxbox(1)> root menu system.
+outside of the L<fluxbox(1)> root menu system.  B<xde-style> can also
+provide a style sub-menu for L<fluxbox(1)>.
 
 =item L<blackbox(1)>
 
 L<blackbox(1)> provides its own style system.  B<xde-styles> provides a
 style-setting mechanism for L<blackbox(1)> that can be used from scripts
-outside of the L<blackbox> root menu system.
+outside of the L<blackbox> root menu system.  B<xde-style> can also
+provide a style sub-menu for L<blackbox(1)>.
 
 =item L<openbox(1)>
 
 L<openbox(1)> provides its own style system.  B<xde-styles> provides a
 style-setting mechanism for L<openbox(1)> that can be used from scripts
 outside of the L<openbox> root menu without need for L<obconf(1)>.
+B<xde-style> can also provide a style sub-menu for L<openbox(1)>.
 
 =item L<icewm(1)>
 
 L<icewm(1)> provides its own style system.  B<xde-styles> provides a
 style-setting mechanism for L<icewm(1)> that can be used from scripts
-outside of the L<icewm(1)> root menu.
+outside of the L<icewm(1)> root menu.  Style sub-menus for L<icewm(1)>
+are not normally specified externally; however, B<xde-styles> can also
+provide a style sub-menu for L<icewm(1)>; however, it simply cannot
+override the L<icewm(1)> style menus.
 
 =item L<jwm(1)>
 
@@ -276,14 +289,16 @@ style system using the C<E<lt>IncludeE<gt>> mechanism of the L<jwm(1)>
 configuration file and provides a style-setting mechanism that can be
 used from outside of the L<jwm(1)> root menu.  The F<xde-styles> package
 also provides some shell scripts that can be used from within the
-L<jwm(1)> root menu.
+L<jwm(1)> root menu.  B<xde-style> can also generate a style sub-menu
+for L<jwm(1)> using this mechanism.
 
 =item L<pekwm(1)>
 
 L<pekwm(1)> provides its own style system using scripts; however, these
 scripts can only be invoked from within L<pekwm(1)>.  B<xde-styles>
 provides a style-setting mechanism for L<pekwm(1)> that can be used from
-scripts outside of the L<pekwm(1)> root menu.
+scripts outside of the L<pekwm(1)> root menu.  B<xde-style> can also
+generate a style sub-menu for L<pekwm(1)>.
 
 =item L<fvwm(1)>
 
@@ -321,7 +336,8 @@ style system using an L<m4(1)> configuration system and provides a
 style-setting mechanism that can be used from outside of the L<twm(1)>
 root menu.  The F<xde-styles> package also provides some shell scripts
 and L<m4(1)> configuration files that can be used from within the
-L<twm(1)> root menu.
+L<twm(1)> root menu.  B<xde-style> can also generate a style sub-menu
+that can be used by this mechanism.
 
 =item L<ctwm(1)>
 
