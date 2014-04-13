@@ -1,0 +1,276 @@
+=head1 NAME
+
+xde-identify - query information about running lightweight window managers
+
+=head1 SYNOPSIS
+
+ xde-identify [options]
+ xde-identify [options] {-h|--help}
+ xde-identify {-V|--version}
+ xde-identify {-C|--copying}
+
+=head1 DESCRIPTION
+
+B<xde-itentify> is a C-language application that can be used to query
+information about a running or off-line (supported) lightweight window
+manager.
+
+See L</USAGE> and L</BEHAVIOUR> for more detailed information.
+
+=head1 OPTIONS
+
+B<xde-identify> uses GNU <get_options_long_only()> to parse options, so
+long options with a single dash are accepted; however, short options
+cannot be concatenated.  B<xde-identify> accepts the following options:
+
+=head2 COMMAND OPTIONS
+
+B<xde-style> accepts the command options as follows:
+
+=over
+
+=item B<-h>, B<--help>, B<-?>, B<--?>
+
+Prints usage information to standard output and exits.  This command
+option can be preceded by other options to observe the settings that
+result in the help output.
+
+=item B<-V>, B<--version>
+
+Prints version information to standard output and exits.
+
+=item B<-C>, B<--copying>
+
+Prints copying permission to standard output and exits.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+B<xde-style> accepts the following non-command options:
+
+=over
+
+=item B<-S>, B<--screen> I<SCREEN>
+
+Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
+on all screens unless the screen number is specified int he C<DISPLAY>
+environment variable, in which case the screen number defaults to the
+specified screen.  In general, a window manager with good multiple head
+support will add the screen number to the C<DISPLAY> environment
+variable for programs that it launches and the screen number does not
+need to be specified.
+
+=item B<-w>, B<--wmname> I<WMNAME>
+
+Do not detect the window manager, but assume that the window manager
+named, I<WMNAME> is to be used.  The B<--screen> option and C<DISPLAY>
+environment variable are ignored.
+
+=item B<-f>, B<--rcfile> I<RCFILE>
+
+When the B<--wmname> option has been specified, use the file, I<RCFILE>,
+as the configuration file for the window manager.
+
+=item B<-D>, B<--debug> [I<LEVEL>]
+
+Increment or set the debug level to I<LEVEL>.  The default debug level
+is 0.
+
+=item B<-v>, B<--verbose> [I<LEVEL>]
+
+Increment or set output verbosity level to I<LEVEL>.  The default output
+verbosity level is 1.  This option may be repeated.
+
+=back
+
+=head1 USAGE
+
+=head1 OUTPUT FORMAT
+
+=over
+
+=item B<XDE_WM_NAME>
+
+Set to the name of the window manager.
+
+=item B<XDE_WM_NETWM_SUPPORT>
+
+Set to C<true> when the window manager claims support for EWMH/NewWM;
+C<false> otherwise.
+
+=item B<XDE_WM_WINWM_SUPPORT>
+
+Set to C<true> when the window manager claims support for GNOME/WinWM;
+C<false> otherwise.
+
+=item B<XDE_WM_MAKER_SUPPORT>
+
+Set to C<true> when the window manager claims support for WindowMaker;
+C<false> otherwise.
+
+=item B<XDE_WM_MOTIF_SUPPORT>
+
+Set to C<true> when the window manager claims support for OSF/Motif;
+C<false> otherwise.
+
+=item B<XDE_WM_ICCCM_SUPPORT>
+
+Set to C<true> when the window manager claims support for ICCCM 2.0;
+C<false> otherwise.
+
+=item B<XDE_WM_REDIR_SUPPORT>
+
+Set to C<true> when the window manager has redirected mapping events;
+C<false> otherwise.
+
+=item B<XDE_WM_PID>
+
+Set to the numeric value of the process identifier of the window manager
+process.
+
+=item B<XDE_WM_HOST>
+
+Set to the fully qualified domain name of the host on which the window
+manager is running.
+
+=item B<XDE_WM_RES_NAME>
+
+Set to the resource name of the window manager.
+
+=item B<XDE_WM_RES_CLASS>
+
+Set to the resource class of the window manager.
+
+=item B<XDE_WM_CMDLINE>
+
+Set to the window manager process command line as reported by the
+F</proc> file system.
+
+=item B<XDE_WM_COMMAND>
+
+Set to the window manager process command as reported by the
+B<WM_COMMAND> property.
+
+=item B<XDE_WM_RCFILE>
+
+Set the rc file being used by the window manager.
+
+=item B<XDE_WM_PRVDIR>
+
+Set to the private directory in which the window manager configuration
+data resides.
+
+=item B<XDE_WM_USRDIR>
+
+Set to the user directory in which the window manager configuration data
+resides.
+
+=item B<XDE_WM_SYSDIR>
+
+Set to the system directory in which the default window manager
+configuration data resides.
+
+=item B<XDE_WM_STYLEFILE>
+
+Set to the full path file name of the style file.
+
+=item B<XDE_WM_STYLE>
+
+Set to the style.
+
+=item B<XDE_WM_STYLENAME>
+
+Set to the style name.
+
+=item B<XDE_WM_MENUFILE>
+
+Set to the full path file name of the menu file.
+
+=back
+
+=head1 BEHAVIOUR
+
+=head1 WINDOW MANAGERS
+
+B<xde-identify> directly supports various window managers through the
+use of plug-ins.  Plug-ins are provided for the following lightweight
+window managers:
+
+=over
+
+=item L<fluxbox(1)>
+
+=item L<blackbox(1)>
+
+=item L<openbox(1)>
+
+=item L<icewm(1)>
+
+=item L<jwm(1)>
+
+=item L<pekwm(1)>
+
+=item L<fvwm(1)>
+
+=item L<wmaker(1)>
+
+=item L<afterstep(1)>
+
+=item L<metacity(1)>
+
+=item L<twm(1)>
+
+=item L<ctwm(1)>
+
+=item L<vtwm(1)>
+
+=item L<etwm(1)>
+
+=item L<cwm(1)>
+
+=item L<echinus(1)>
+
+=item L<uwm(1)>
+
+=item L<awesome(1)>
+
+=item L<matwm2(1)>
+
+=item L<waimea(1)>
+
+=item L<wind(1)>
+
+=item L<2bwm(1)>
+
+=item L<wmx(1)>
+
+=item L<flwm(1)>
+
+=item L<mwm(1)>
+
+=item L<dtwm(1)>
+
+=item L<spectrwm(1)>
+
+=item L<yeahwm(1)>
+
+=back
+
+=head1 HISTORY
+
+Although you would think that L<wmctrl(1)> or L<xdotool(1)> would
+provide an option to identify the running window manager by name, they
+don't.  This is primarily why I wrote B<xde-identify>.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=head1 SEE ALSO
+
+L<xde-style(1)>, L<xde-menu(1)>
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin

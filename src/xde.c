@@ -1374,7 +1374,7 @@ __xde_identify_wm()
 	if (wm->sdir)
 		fprintf(stdout, "XDE_WM_SYSDIR=\"%s\"\n", wm->sdir);
 	if (wm->stylefile)
-		fprintf(stdout, "XDE_WM_STYLE_FILE=\"%s\"\n", wm->stylefile);
+		fprintf(stdout, "XDE_WM_STYLEFILE=\"%s\"\n", wm->stylefile);
 	if (wm->style)
 		fprintf(stdout, "XDE_WM_STYLE=\"%s\"\n", wm->style);
 	if (wm->stylename)
