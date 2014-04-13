@@ -45,3 +45,7 @@ libtool
 *.la
 *.lo
 m4/
+AUTHORS
+NEWS
+COPYING
+INSTALL
