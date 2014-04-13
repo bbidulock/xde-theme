@@ -71,15 +71,30 @@ find_style_WAIMEA()
 	return xde_find_style_simple("styles", "/stylerc", ".style");
 }
 
+/** @brief Get the waimea menu.
+  *
+  * The waimea menu file is in the screen%d.menuFile resource in the rc file.
+  */
+static char *
+get_menu_WAIMEA()
+{
+	char name[64];
+	char clas[64];
+
+	snprintf(name, sizeof(name), "screen%d.menuFile", screen);
+	snprintf(clas, sizeof(clas), "Screen%d.MenuFile", screen);
+	return xde_get_menu_database(name, clas);
+}
+
 /** @brief Get the waimea style.
   *
   * When waimea changes the style, like fluxbox and blackbox, it writes the path
-  * to the new style in the session.styleFile resource in the ~/.waimearc file
+  * to the new style in the screen%d.styleFile resource in the ~/.waimearc file
   * and then reloads the configuration.
   *
-  * The session.styleFile entry looks like:
+  * The screen%d.styleFile entry looks like:
   *
-  *   session.styleFile:  /usr/share/waimea/styles/Default.style
+  *   screen%d.styleFile:  /usr/share/waimea/styles/Default.style
   *
   */
 static char *
@@ -152,7 +167,8 @@ WmOperations xde_wm_ops = {
 	&set_style_WAIMEA,
 	&reload_style_WAIMEA,
 	&list_dir_WAIMEA,
-	&list_styles_WAIMEA
+	&list_styles_WAIMEA,
+	&get_menu_WAIMEA
 };
 
 /** @} */

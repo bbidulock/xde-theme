@@ -84,6 +84,17 @@ find_style_FLUXBOX()
 	return xde_find_style_simple("styles", "/theme.cfg", "");
 }
 
+/** @brief Get the current menu file.
+  *
+  * The current menu file is set in the session.menuFile resources in the rc
+  * file.
+  */
+static char *
+get_menu_FLUXBOX()
+{
+	return xde_get_menu_database("session.menuFile", "Session.MenuFile");
+}
+
 /** @brief Get the current fluxbox style.
   *
   * The current fluxbox style is set in the session.styleFile resource in the rc
@@ -101,12 +112,27 @@ get_style_FLUXBOX()
   * the root window will result in a reconfigure of fluxbox (which is what
   * fluxbox itself does when changing styles); send SIGHUP, a restart.
   *
+  * NOTE WELL: Fluxbox changed its behaviour after release 1.3.5.
+  *
+  * Before:
+  *   SIGHUP  - restart
+  *   SIGUSR1 - reload configuration
+  *   SIGUSR2 - reload menu file
+  *
+  * After:
+  *   SIGHUP - exit
+  *   SIGUSR1 - restart
+  *   SIGUSR2 - reload configuration
+  *
+  * The only single signal that is consistent across version is SIGUSR1 which
+  * will reload in the before case and restart in the after case.
+  *
   */
 static void
 reload_style_FLUXBOX()
 {
 	if (wm->pid)
-		kill(wm->pid, SIGUSR2);
+		kill(wm->pid, SIGUSR1);
 	else
 		EPRINTF("%s", "cannot reload fluxbox without a pid\n");
 
@@ -158,7 +184,8 @@ WmOperations xde_wm_ops = {
 	&set_style_FLUXBOX,
 	&reload_style_FLUXBOX,
 	&list_dir_FLUXBOX,
-	&list_styles_FLUXBOX
+	&list_styles_FLUXBOX,
+	&get_menu_FLUXBOX
 };
 
 /** @} */

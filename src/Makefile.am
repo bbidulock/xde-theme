@@ -9,23 +9,28 @@ libxde_la_LIBADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -R $(xdemoddir) \
 		    -Wl,--version-script -Wl,xde.VERSION -ldl
 
-bin_PROGRAMS = xde-theme xde-style
+bin_PROGRAMS = xde-theme xde-style xde-identify
 EXTRA_PROGRAMS = xde-backdrop
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c
 xde_theme_LDADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
-xde_theme_LDFLAGS = -R $(xdemoddir)
+xde_theme_LDFLAGS = -R $(xdemoddir) -ldl -dlpreopen xde-fluxbox.la
+
+xde_identify_CPPFLAGS = -DNAME=\"xde-identify\"
+xde_identify_SOURCES = xde-identify.c
+xde_identify_LDADD = libxde.la $(X11_LIBS)
+xde_identify_LDFLAGS = -R $(xdemoddir) -ldl -dlpreopen xde-fluxbox.la
 
 xde_style_CPPFLAGS = -DNAME=\"xde-style\"
 xde_style_SOURCES = xde-style.c
 xde_style_LDADD = libxde.la $(X11_LIBS)
-xde_style_LDFLAGS = -R $(xdemoddir)
+xde_style_LDFLAGS = -R $(xdemoddir) -ldl -dlpreopen xde-fluxbox.la
 
 xde_backdrop_CPPFLAGS = -DNAME=\"xde-backdrop\"
 xde_backdrop_SOURCES = xde-backdrop.c
 xde_backdrop_LDADD = libxde.la $(X11_LIBS)
-xde_backdrop_LDFLAGS = -R $(xdemoddir)
+xde_backdrop_LDFLAGS = -R $(xdemoddir) -ldl -dlpreopen xde-fluxbox.la
 
 xdemod_LTLIBRARIES = \
 	xde-2bwm.la \

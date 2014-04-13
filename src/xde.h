@@ -98,13 +98,14 @@
 
 typedef struct {
 	char *name;
-	void (*get_rcfile)(void);
-	char *(*find_style)(void);
+	void (*get_rcfile) (void);
+	char *(*find_style) (void);
 	char *(*get_style) (void);
 	void (*set_style) (void);
-	void (*reload_style)(void);
-	void (*list_dir)(char *, char *);
+	void (*reload_style) (void);
+	void (*list_dir) (char *, char *);
 	void (*list_styles) (void);
+	char *(*get_menu) (void);
 } WmOperations;
 
 typedef struct {
@@ -141,6 +142,7 @@ typedef struct {
 	char *stylefile;		/* Window manager style file */
 	char *style;			/* WM current style */
 	char *stylename;		/* WM current style name */
+	char *menu;			/* WM current menu */
 	Bool noenv;			/* Do we have an environment? */
 	char *env;			/* Window manager environment */
 	size_t nenv;			/* Number of characters in environment */
@@ -216,6 +218,7 @@ extern Options options;
 extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);
 extern void xde_show_wms(void);
+extern void xde_identify_wm(void);
 extern Bool xde_find_theme(char *name);
 extern char *xde_get_proc_environ(char *name);
 extern char *xde_get_rcfile_optarg(char *optname);
@@ -227,6 +230,7 @@ extern void xde_list_styles_simple(void);
 extern void xde_get_rcfile_simple(char *wmname, char *rcname, char *option);
 extern char *xde_get_style_simple(char *fname, char *(*from_file) (char *));
 extern char *xde_get_style_database(char *name, char *clas);
+extern char *xde_get_menu_database(char *name, char *clas);
 extern void xde_set_style_simple(char *rcname, void (*to_file) (char *, char *));
 extern void xde_set_style_database(char *name);
 extern void xde_get_rcfile_XTWM(char *xtwm);

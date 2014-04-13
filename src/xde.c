@@ -342,6 +342,8 @@ check_recursive(Atom atom, Atom type)
 	unsigned long *data = NULL;
 	Window check;
 
+	OPRINTF("recursive check for atom 0x%lx\n", atom);
+
 	if (XGetWindowProperty(dpy, root, atom, 0L, 1L, False, type, &real,
 			       &format, &nitems, &after,
 			       (unsigned char **) &data) == Success && format != 0) {
@@ -413,7 +415,7 @@ check_winwm()
 	int i = 0;
 
 	do {
-		wm->winwm_check = check_recursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_WINDOW);
+		wm->winwm_check = check_recursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL);
 	} while (i++ < 2 && !wm->winwm_check);
 
 	if (wm->winwm_check) {
@@ -512,26 +514,32 @@ find_wm_comp()
 
 	OPRINTF("checking wm compliance for screen %d\n", screen);
 
+	OPRINTF("checking redirection\n");
 	if (check_redir()) {
 		have_wm = True;
 		OPRINTF("redirection on window 0x%lx\n", wm->redir_check);
 	}
+	OPRINTF("checking ICCCM 2.0 compliance\n");
 	if (check_icccm()) {
 		have_wm = True;
 		OPRINTF("ICCCM 2.0 window 0x%lx\n", wm->icccm_check);
 	}
+	OPRINTF("checking OSF/Motif compliance\n");
 	if (check_motif()) {
 		have_wm = True;
 		OPRINTF("OSF/Motif window 0x%lx\n", wm->motif_check);
 	}
+	OPRINTF("checking WindowMaker compliance\n");
 	if (check_maker()) {
 		have_wm = True;
 		OPRINTF("WindowMaker window 0x%lx\n", wm->maker_check);
 	}
+	OPRINTF("checking GNOME/WMH compliance\n");
 	if (check_winwm()) {
 		have_wm = True;
 		OPRINTF("GNOME/WMH window 0x%lx\n", wm->winwm_check);
 	}
+	OPRINTF("checking NetWM/EWMH compliance\n");
 	if (check_netwm()) {
 		have_wm = True;
 		OPRINTF("NetWM/EWMH window 0x%lx\n", wm->netwm_check);
@@ -889,24 +897,18 @@ check_same_host()
 	len2 = strlen(buf);
 	if (len1 < len2) {
 		if (!strncasecmp(wm->host, buf, len1) && buf[len1 + 1] == '.') {
-			free(wm->host);
-			wm->host = NULL;
 			OPRINTF("%s\n", "host is local host");
-			return wm->host;
+			return NULL;
 		}
 	} else if (len2 > len1) {
 		if (!strncasecmp(wm->host, buf, len2) && wm->host[len2 + 1] == '.') {
-			free(wm->host);
-			wm->host = NULL;
 			OPRINTF("%s\n", "host is local host");
-			return wm->host;
+			return NULL;
 		}
 	} else {
 		if (!strcasecmp(wm->host, buf)) {
-			free(wm->host);
-			wm->host = NULL;
 			OPRINTF("%s\n", "host is local host");
-			return wm->host;
+			return NULL;
 		}
 	}
 	OPRINTF("%s\n", "host is remote host");
@@ -928,7 +930,7 @@ find_wm_host()
 			break;
 	if (!wm->host)
 		OPRINTF("could not find wm host on screen %d\n", screen);
-	return check_same_host();
+	return wm->host;
 }
 
 static pid_t
@@ -1196,7 +1198,7 @@ check_proc()
 
 	OPRINTF("checking wm process for screen %d\n", screen);
 
-	if (!wm->name || (wm->host || !wm->pid)) {
+	if (!wm->name || (check_same_host() || !wm->pid)) {
 		EPRINTF("%s\n", "not enough information to check wm process");
 		return have_proc;	/* no can do */
 	}
@@ -1241,7 +1243,7 @@ find_wm_proc()
 
 	OPRINTF("finding wm process for screen %d\n", screen);
 
-	if (wm->host) {
+	if (wm->host && check_same_host()) {
 		/* not on this host */
 		OPRINTF("%s\n", "process is remote");
 		have_proc = False;
@@ -1317,6 +1319,70 @@ check_wm()
 	return False;
 }
 
+void
+__xde_identify_wm()
+{
+	fprintf(stdout, "XDE_WM_NAME=\"%s\"\n", wm->name);
+	fprintf(stdout, "XDE_WM_NETWM_SUPPORT=%s\n", wm->netwm_check ? "\"true\"" : "\"false\"");
+	fprintf(stdout, "XDE_WM_WINWM_SUPPORT=%s\n", wm->winwm_check ? "\"true\"" : "\"false\"");
+	fprintf(stdout, "XDE_WM_MAKER_SUPPORT=%s\n", wm->maker_check ? "\"true\"" : "\"false\"");
+	fprintf(stdout, "XDE_WM_MOTIF_SUPPORT=%s\n", wm->motif_check ? "\"true\"" : "\"false\"");
+	fprintf(stdout, "XDE_WM_ICCCM_SUPPORT=%s\n", wm->icccm_check ? "\"true\"" : "\"false\"");
+	fprintf(stdout, "XDE_WM_REDIR_SUPPORT=%s\n", wm->redir_check ? "\"true\"" : "\"false\"");
+	if (wm->pid)
+		fprintf(stdout, "XDE_WM_PID=%ld\n", wm->pid);
+	if (wm->host)
+		fprintf(stdout, "XDE_WM_HOST=\"%s\"\n", wm->host);
+	if (wm->ch.res_name)
+		fprintf(stdout, "XDE_WM_RES_NAME=\"%s\"\n", wm->ch.res_name);
+	if (wm->ch.res_class)
+		fprintf(stdout, "XDE_WM_RES_CLASS=\"%s\"\n", wm->ch.res_class);
+	if (wm->argv && wm->argc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->argc; i++)
+			len += strlen(wm->argv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->argc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->argv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "XDE_WM_CMDLINE=\"%s\"\n", cmd);
+	}
+	if (wm->cargv && wm->cargc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->cargc; i++)
+			len += strlen(wm->cargv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->cargc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->cargv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "XDE_WM_COMMAND=\"%s\"\n", cmd);
+	}
+	if (wm->rcfile)
+		fprintf(stdout, "XDE_WM_RCFILE=\"%s\"\n", wm->rcfile);
+	if (wm->pdir)
+		fprintf(stdout, "XDE_WM_PRVDIR=\"%s\"\n", wm->pdir);
+	if (wm->udir)
+		fprintf(stdout, "XDE_WM_USRDIR=\"%s\"\n", wm->udir);
+	if (wm->sdir)
+		fprintf(stdout, "XDE_WM_SYSDIR=\"%s\"\n", wm->sdir);
+	if (wm->stylefile)
+		fprintf(stdout, "XDE_WM_STYLE_FILE=\"%s\"\n", wm->stylefile);
+	if (wm->style)
+		fprintf(stdout, "XDE_WM_STYLE=\"%s\"\n", wm->style);
+	if (wm->stylename)
+		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
+}
+
+__asm__(".symver __xde_identify_wm,xde_identify_wm@@XDE_1.0");
+
 static void
 show_wm()
 {
@@ -1326,6 +1392,8 @@ show_wm()
 		OPRINTF("%d %s: WinWM 0x%lx\n", screen, wm->name, wm->winwm_check);
 	if (wm->maker_check)
 		OPRINTF("%d %s: Maker 0x%lx\n", screen, wm->name, wm->maker_check);
+	if (wm->motif_check)
+		OPRINTF("%d %s: Motif 0x%lx\n", screen, wm->name, wm->motif_check);
 	if (wm->icccm_check)
 		OPRINTF("%d %s: ICCCM 0x%lx\n", screen, wm->name, wm->icccm_check);
 	if (wm->redir_check)
@@ -1816,6 +1884,46 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 
 __asm__(".symver __xde_get_style_simple,xde_get_style_simple@@XDE_1.0");
 
+/** @brief Get menu from resource database.
+  *
+  * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
+  */
+char *
+__xde_get_menu_database(char *name, char *clas)
+{
+	XrmValue value;
+	char *type;
+
+	wm->ops->get_rcfile();
+	if (!xde_test_file(wm->rcfile)) {
+		EPRINTF("rcfile %s does not exist\n", wm->rcfile);
+		return NULL;
+	}
+	init_xrm();
+	if (!wm->db && !(wm->db = XrmGetFileDatabase(wm->rcfile))) {
+		EPRINTF("cannot read database file %s\n", wm->rcfile);
+		return NULL;
+	}
+	if (!XrmGetResource(wm->db, name, clas, &type, &value)) {
+		EPRINTF("no %s resource in database %s\n", name, wm->rcfile);
+		return NULL;
+	}
+	free(wm->menu);
+	/* watch out for tilde expansion */
+	if (*(char *) value.addr == '~') {
+		char *home = xde_get_proc_environ("HOME") ? : ".";
+
+		wm->menu = calloc(strlen(home) + value.size, sizeof(*wm->menu));
+		strcpy(wm->menu, home);
+		strncat(wm->menu, (char *)value.addr + 1, value.size - 1);
+	} else {
+		wm->menu = strndup((char *) value.addr, value.size);
+	}
+	return wm->menu;
+}
+
+__asm__(".symver __xde_get_menu_database,xde_get_menu_database@@XDE_1.0");
+
 /** @brief Get style from resource database.
   *
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
@@ -2120,6 +2228,13 @@ list_styles_NONE()
 {
 }
 
+static char *
+get_menu_NONE()
+{
+	get_rcfile_NONE();
+	return NULL;
+}
+
 static WmOperations wm_ops_NONE = {
 	"none",
 	&get_rcfile_NONE,
@@ -2128,7 +2243,8 @@ static WmOperations wm_ops_NONE = {
 	&set_style_NONE,
 	&reload_style_NONE,
 	&list_dir_NONE,
-	&list_styles_NONE
+	&list_styles_NONE,
+	&get_menu_NONE
 };
 
 /** @} */

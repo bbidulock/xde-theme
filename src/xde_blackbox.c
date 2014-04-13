@@ -78,6 +78,22 @@ find_style_BLACKBOX()
 	return xde_find_style_simple("styles", "/stylerc", "");
 }
 
+/** @brief Get the current menu file.
+  *
+  * The current menu file is set in the session.menuFile resources in the rc
+  * file.
+  */
+static char *
+get_menu_BLACKBOX()
+{
+	return xde_get_menu_database("session.menuFile", "Session.MenuFile");
+}
+
+/** @brief Get the current blackbox style.
+  *
+  * The current blackbox style is set in the session.styleFile resource in the rc
+  * file.
+  */
 static char *
 get_style_BLACKBOX()
 {
@@ -137,7 +153,8 @@ WmOperations xde_wm_ops = {
 	&set_style_BLACKBOX,
 	&reload_style_BLACKBOX,
 	&list_dir_BLACKBOX,
-	&list_styles_BLACKBOX
+	&list_styles_BLACKBOX,
+	&get_menu_BLACKBOX
 };
 
 /** @} */
