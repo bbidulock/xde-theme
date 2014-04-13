@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-
-<JWM>
-   <RootMenu height="16" onroot="13">
-      <Include>/home/brian/.jwm/menu</Include>
-   </RootMenu>
-</JWM>

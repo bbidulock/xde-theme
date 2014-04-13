@@ -1,6 +1,0 @@
-Style *		IconBox 10 -80 -0 -0,	    IconGrid 64 64, IconFill left bottom, \
-		IconBox 10 +300 -150 -80,   IconGrid 64 64, IconFill bottom left
-Style *		SlipperyIcon, IconTitle
-Style *		MiniIcon mini.doc.xpm, Icon page.xpm
-
-# vim: set ft=fvwm:
