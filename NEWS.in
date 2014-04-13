@@ -1,0 +1,13 @@
+@PACKAGE@ -- NEWS file.  @DATE@
+
+History of major user-visible changes:
+======================================
+
+Release @PACKAGE@-@VERSION@ released @DATE@
+-------------------------------------------
+
+Split @PACKAGE@ package from xde-styles.  This contains
+only the binary programs.  This is the initial development
+release of @PACKAGE@.
+
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

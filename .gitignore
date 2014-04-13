@@ -28,7 +28,7 @@ configure.ac
 ChangeLog
 .deps/
 autoconf.h
-*.in
+autoconf.h.in
 *~
 xde-theme
 *.o
@@ -53,3 +53,4 @@ THANKS
 TODO
 README
 xde-theme-*.tar.xz
+xde-identify
