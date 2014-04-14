@@ -1379,6 +1379,8 @@ __xde_identify_wm()
 		fprintf(stdout, "XDE_WM_STYLE=\"%s\"\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
+	if (wm->menu)
+		fprintf(stdout, "XDE_WM_MENU=\"%s\"\n", wm->menu);
 }
 
 __asm__(".symver __xde_identify_wm,xde_identify_wm@@XDE_1.0");
@@ -1745,7 +1747,21 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 			return NULL;
 		}
 	} else {
-		for (i = 0; i < CHECK_DIRS; i++) {
+		int beg, end;
+
+		if (options.user && !options.system) {
+			beg = 0;
+			end = 2;
+		}
+		else if (options.system && !options.user) {
+			beg = 2;
+			end = CHECK_DIRS;
+		}
+		else {
+			beg = 0;
+			end = CHECK_DIRS;
+		}
+		for (i = beg; i < end; i++) {
 			if (!wm->dirs[i] || !wm->dirs[i][0])
 				continue;
 			len = strlen(wm->dirs[i]) + strlen(dname) +
@@ -1805,11 +1821,23 @@ char *
 __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 {
 	char *stylerc = NULL, *stylefile = NULL;
-	int i, len;
+	int i, len, beg, end;
 	struct stat st;
 
 	wm->ops->get_rcfile();
-	for (i = 0; i < CHECK_DIRS; i++) {
+	if (options.user && !options.system) {
+		beg = 0;
+		end = 2;
+	}
+	else if (options.system && !options.user) {
+		beg = 2;
+		end = CHECK_DIRS;
+	}
+	else {
+		beg = 0;
+		end = CHECK_DIRS;
+	}
+	for (i = beg; i < end; i++) {
 		if (i == 1)
 			continue;
 		if (!wm->dirs[i] || !wm->dirs[i][0])
@@ -2266,6 +2294,13 @@ find_style_UNKNOWN()
 }
 
 static char *
+get_menu_UNKNOWN()
+{
+	get_rcfile_UNKNOWN();
+	return NULL;
+}
+
+static char *
 get_style_UNKNOWN()
 {
 	get_rcfile_UNKNOWN();
@@ -2306,7 +2341,8 @@ static WmOperations wm_ops_UNKNOWN = {
 	&set_style_UNKNOWN,
 	&reload_style_UNKNOWN,
 	&list_dir_UNKNOWN,
-	&list_styles_UNKNOWN
+	&list_styles_UNKNOWN,
+	&get_menu_UNKNOWN
 };
 
 /** @} */

@@ -123,7 +123,7 @@ static char *
 find_style_ICEWM()
 {
 	char *p, *file, *path = calloc(PATH_MAX, sizeof(*path));
-	int i, len;
+	int i, len, beg, end;
 
 	if (options.style[0] == '.' || options.style[0] == '/') {
 		EPRINTF("path in icewm style name '%s'\n", wm->style);
@@ -144,20 +144,48 @@ find_style_ICEWM()
 		file = calloc(len, sizeof(*file));
 		snprintf(file, len, "%s", options.style);
 	}
-	for (i = 0; i < CHECK_DIRS; i++) {
+	if (options.user && !options.system) {
+		beg = 0;
+		end = 2;
+	}
+	else if (options.system && !options.user) {
+		beg = 2;
+		end = CHECK_DIRS;
+	}
+	else {
+		beg = 0;
+		end = CHECK_DIRS;
+	}
+	for (i = beg; i < end; i++) {
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		snprintf(path, PATH_MAX, "%s/themes/%s", wm->dirs[i], file);
 		if (xde_test_file(path))
 			break;
 	}
-	if (i < CHECK_DIRS) {
-		free(file);
+	if (i < end) {
+		free(options.style);
+		options.style = file;
 		return path;
 	}
 	free(file);
 	free(path);
 	return NULL;
+}
+
+static char *
+get_menu_ICEWM()
+{
+	char *menurc;
+	int len;
+
+	get_rcfile_ICEWM();
+	len = strlen(wm->pdir) + strlen("/menu") + 1;
+	menurc = calloc(len, sizeof(*menurc));
+	snprintf(menurc, len, "%s/menu", wm->pdir);
+	free(wm->menu);
+	wm->menu = menurc;
+	return menurc;
 }
 
 /** @brief Get the icewm style.
@@ -184,8 +212,8 @@ get_style_ICEWM()
 {
 	FILE *f;
 	struct stat st;
-	char *stylefile, *themerc, *buf, *pos, *end;
-	int i, len;
+	char *stylefile, *themerc, *buf, *pos, *trm;
+	int i, len, beg, end;
 	size_t read, total;
 
 	get_rcfile_ICEWM();
@@ -203,32 +231,53 @@ get_style_ICEWM()
 	}
 	buf = calloc(st.st_size + 1, sizeof(*buf));
 	/* read entire file into buffer */
-	for (total = 0; total < st.st_size; total += read)
-		if ((read = fread(buf + total, 1, st.st_size - total, f)))
-			if (total < st.st_size)
-				goto no_buf;
-	pos = end = buf;
+	total = 0;
+	while (total < st.st_size) {
+		read = fread(buf + total, 1, st.st_size - total, f);
+		total += read;
+		if (total >= st.st_size)
+			break;
+		if (ferror(f)) {
+			EPRINTF("%s: %s\n", themerc, strerror(errno));
+			goto no_buf;
+		}
+		if (feof(f))
+			break;
+	}
+	pos = trm = buf;
 	if (strncmp(pos, "Theme=\"", 7) != 0) {
 		EPRINTF("no theme at start of rc file\n");
 		goto no_theme;
 	}
 	pos += 7;
-	if (!(end = strchr(pos, '"'))) {
+	if (!(trm = strchr(pos, '"'))) {
 		EPRINTF("no theme at start of rc file\n");
 		goto no_theme;
 	}
-	*end = '\0';
+	*trm = '\0';
 	free(wm->stylename);
 	wm->stylename = strdup(pos);
 	stylefile = calloc(PATH_MAX, sizeof(*stylefile));
-	for (i = 0; i < CHECK_DIRS; i++) {
+	if (options.user && !options.system) {
+		beg = 0;
+		end = 2;
+	}
+	else if (options.system && !options.user) {
+		beg = 2;
+		end = CHECK_DIRS;
+	}
+	else {
+		beg = 0;
+		end = CHECK_DIRS;
+	}
+	for (i = beg; i < end; i++) {
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		snprintf(stylefile, PATH_MAX, "%s/themes/%s", wm->dirs[i], wm->stylename);
 		if (xde_test_file(stylefile))
 			break;
 	}
-	if (i < CHECK_DIRS) {
+	if (i < end) {
 		free(wm->style);
 		wm->style = strdup(stylefile);
 	}
@@ -265,8 +314,10 @@ reload_style_ICEWM()
 {
 	XEvent ev;
 
+#if 0	/* client message is enough */
 	if (wm->pid)
 		kill(wm->pid, SIGHUP);
+#endif
 
 	ev.xclient.type = ClientMessage;
 	ev.xclient.display = dpy;
@@ -492,7 +543,8 @@ WmOperations xde_wm_ops = {
 	&set_style_ICEWM,
 	&reload_style_ICEWM,
 	&list_dir_ICEWM,
-	&list_styles_ICEWM
+	&list_styles_ICEWM,
+	&get_menu_ICEWM
 };
 
 /** @} */

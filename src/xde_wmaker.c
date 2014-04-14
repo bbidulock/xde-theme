@@ -92,10 +92,22 @@ static char *
 find_style_WMAKER()
 {
 	char *pos, *path = calloc(PATH_MAX, sizeof(*path)), *res = NULL;
-	int i, len;
+	int i, len, beg, end;
 
 	get_rcfile_WMAKER();
-	for (i = 0; i < CHECK_DIRS; i++) {
+	if (options.user && !options.system) {
+		beg = 0;
+		end = 2;
+	}
+	else if (options.system && !options.user) {
+		beg = 2;
+		end = CHECK_DIRS;
+	}
+	else {
+		beg = 0;
+		end = CHECK_DIRS;
+	}
+	for (i = beg; i < end; i++) {
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		strcpy(path, wm->dirs[i]);
