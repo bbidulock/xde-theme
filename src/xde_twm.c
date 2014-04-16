@@ -61,6 +61,12 @@ find_style_TWM()
 }
 
 static char *
+get_menu_TWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+static char *
 get_style_TWM()
 {
 	return xde_get_style_simple("stylerc", NULL);
@@ -124,7 +130,8 @@ WmOperations xde_wm_ops = {
 	&set_style_TWM,
 	&reload_style_TWM,
 	&list_dir_TWM,
-	&list_styles_TWM
+	&list_styles_TWM,
+	&get_menu_TWM
 };
 
 /** @} */

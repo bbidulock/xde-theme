@@ -67,6 +67,14 @@ find_style_MATWM2()
 }
 
 static char *
+get_menu_MATWM2()
+{
+	/* NOTE: matwm2(1) does not have a root menu of its own */
+	get_rcfile_MATWM2();
+	return NULL;
+}
+
+static char *
 get_style_MATWM2()
 {
 	return xde_get_style_simple("stylerc", NULL);
@@ -112,7 +120,8 @@ WmOperations xde_wm_ops = {
 	&set_style_MATWM2,
 	&reload_style_MATWM2,
 	&list_dir_MATWM2,
-	&list_styles_MATWM2
+	&list_styles_MATWM2,
+	&get_menu_MATWM2
 };
 
 /** @} */

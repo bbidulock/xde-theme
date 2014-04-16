@@ -358,6 +358,13 @@ style system the same as for L<twm(1)>.
 
 L<cwm(1)> does not provide a style system.  B<xde-styles> provides a
 style system by directly editing the L<cwmrc(5)> configuration file.
+This is not done yet, but it will probably be an L<m4(1)> configuration
+system similar to that provided for L<twm(1)>.  It will also include
+some shell scripts and L<m4(1)> configuration files that can be used
+from within a menu (such as L<xdg-traymenu(1)>).
+
+L<cwm(1)> only provides meager root menu.  XDE, therefore, pops a tray
+menu in response to button presses on the root window.
 
 =item L<echinus(1)>
 
@@ -384,6 +391,13 @@ outside of the L<awesome(1)> root menu system.
 
 L<matwm2(1)> does not provide a style system.  B<xde-styles> provides a
 style system by directly editing the F<.matwmrc> configuration file.
+This is not done yet, but it will probably be an L<m4(1)> configuration
+system similar to that provided for L<twm(1)>.  It will also include
+some shell scripts and L<m4(1)> configuration files that can be used
+from within a menu (such as L<xdg-traymenu(1)>).
+
+L<matwm2(1)> does not provide a root menu.  XDE, therefore, pops a tray
+menu in response to button presses on the root window.
 
 =item L<waimea(1)>
 

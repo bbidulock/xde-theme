@@ -61,6 +61,13 @@ find_style_WMX()
 }
 
 static char *
+get_menu_WMX()
+{
+	get_rcfile_WMX();
+	return NULL;
+}
+
+static char *
 get_style_WMX()
 {
 	get_rcfile_WMX();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_WMX,
 	&reload_style_WMX,
 	&list_dir_WMX,
-	&list_styles_WMX
+	&list_styles_WMX,
+	&get_menu_WMX
 };
 
 /** @} */

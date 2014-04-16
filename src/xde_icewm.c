@@ -86,6 +86,8 @@ get_rcfile_ICEWM()
 		wm->pdir = strdup(wm->udir);
 	free(wm->sdir);
 	wm->sdir = strdup("/usr/share/icewm");
+	free(wm->edir);
+	wm->edir = strdup("/etc/icewm");
 
 	free(wm->rcfile);
 	if (file) {
@@ -176,16 +178,7 @@ find_style_ICEWM()
 static char *
 get_menu_ICEWM()
 {
-	char *menurc;
-	int len;
-
-	get_rcfile_ICEWM();
-	len = strlen(wm->pdir) + strlen("/menu") + 1;
-	menurc = calloc(len, sizeof(*menurc));
-	snprintf(menurc, len, "%s/menu", wm->pdir);
-	free(wm->menu);
-	wm->menu = menurc;
-	return menurc;
+	return xde_get_menu_simple("menu", NULL);
 }
 
 /** @brief Get the icewm style.

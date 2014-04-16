@@ -61,6 +61,13 @@ find_style_YEAHWM()
 }
 
 static char *
+get_menu_YEAHWM()
+{
+	get_rcfile_YEAHWM();
+	return NULL;
+}
+
+static char *
 get_style_YEAHWM()
 {
 	get_rcfile_YEAHWM();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_YEAHWM,
 	&reload_style_YEAHWM,
 	&list_dir_YEAHWM,
-	&list_styles_YEAHWM
+	&list_styles_YEAHWM,
+	&get_menu_YEAHWM
 };
 
 /** @} */

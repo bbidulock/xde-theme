@@ -142,6 +142,7 @@ typedef struct {
 			char *pdir;	/* WM private directory */
 			char *udir;	/* WM user directory */
 			char *sdir;	/* WM system directory */
+			char *edir;	/* WM config directory */
 		};
 		char *dirs[CHECK_DIRS];
 	};

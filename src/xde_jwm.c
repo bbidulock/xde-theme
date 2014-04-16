@@ -103,14 +103,24 @@ from_file_JWM(char *stylerc)
 	return stylefile;
 }
 
+static char *
+get_menu_JWM()
+{
+	return xde_get_menu_simple("root", &from_file_JWM);
+}
+
 /** @brief Get the style for jwm.
   *
-  * There are two ways to implement the style system for echinus: symbolic links
+  * There are two ways to implement the style system for jwm(1): symbolic links
   * or <Include></Include> statements.  Both accept absolute or relative paths.
   * The style file in turn links to or include a style file from the appropriate
   * styles subdirectory.
   *
   * The symbolic link approach is likely best.  Either acheives the same result.
+  *
+  * NOTE: this only works with the xde-styles style system for jwm(1) and
+  * requires that the primary configuration file be that consistent with the
+  * xde-styles package.
   */
 static char *
 get_style_JWM()
@@ -208,7 +218,8 @@ WmOperations xde_wm_ops = {
 	&set_style_JWM,
 	&reload_style_JWM,
 	&list_dir_JWM,
-	&list_styles_JWM
+	&list_styles_JWM,
+	&get_menu_JWM
 };
 
 /** @} */

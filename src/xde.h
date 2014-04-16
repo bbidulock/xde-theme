@@ -93,7 +93,7 @@
 #include <libsn/sn.h>
 #endif
 
-#define CHECK_DIRS 3
+#define CHECK_DIRS 4
 #define CHECK_WINS 6
 
 typedef struct {
@@ -136,6 +136,7 @@ typedef struct {
 			char *pdir;	/* WM private directory */
 			char *udir;	/* WM user directory */
 			char *sdir;	/* WM system directory */
+			char *edir;	/* WM config directory */
 		};
 		char *dirs[CHECK_DIRS];
 	};
@@ -228,6 +229,7 @@ extern Bool xde_test_file(char *path);
 extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style);
 extern void xde_list_styles_simple(void);
 extern void xde_get_rcfile_simple(char *wmname, char *rcname, char *option);
+extern char *xde_get_menu_simple(char *fname, char *(*from_file) (char *));
 extern char *xde_get_style_simple(char *fname, char *(*from_file) (char *));
 extern char *xde_get_style_database(char *name, char *clas);
 extern char *xde_get_menu_database(char *name, char *clas);

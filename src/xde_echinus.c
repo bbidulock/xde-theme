@@ -108,6 +108,14 @@ from_file_ECHINUS(char *stylerc)
 	return stylefile;
 }
 
+static char *
+get_menu_ECHINUS()
+{
+	/* NOTE: echinus does not have a root menu */
+	get_rcfile_ECHINUS();
+	return NULL;
+}
+
 
 /** @brief Get the style for echinus.
   *
@@ -184,7 +192,8 @@ WmOperations xde_wm_ops = {
 	&set_style_ECHINUS,
 	&reload_style_ECHINUS,
 	&list_dir_ECHINUS,
-	&list_styles_ECHINUS
+	&list_styles_ECHINUS,
+	&get_menu_ECHINUS
 };
 
 /** @} */

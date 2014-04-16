@@ -61,6 +61,13 @@ find_style_FLWM()
 }
 
 static char *
+get_menu_FLWM()
+{
+	get_rcfile_FLWM();
+	return NULL;
+}
+
+static char *
 get_style_FLWM()
 {
 	get_rcfile_FLWM();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_FLWM,
 	&reload_style_FLWM,
 	&list_dir_FLWM,
-	&list_styles_FLWM
+	&list_styles_FLWM,
+	&get_menu_FLWM
 };
 
 /** @} */

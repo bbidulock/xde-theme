@@ -61,6 +61,12 @@ find_style_ETWM()
 }
 
 static char *
+get_menu_ETWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+static char *
 get_style_ETWM()
 {
 	return xde_get_style_simple("stylerc", NULL);
@@ -105,7 +111,8 @@ WmOperations xde_wm_ops = {
 	&set_style_ETWM,
 	&reload_style_ETWM,
 	&list_dir_ETWM,
-	&list_styles_ETWM
+	&list_styles_ETWM,
+	&get_menu_ETWM
 };
 
 /** @} */

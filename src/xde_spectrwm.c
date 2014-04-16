@@ -61,6 +61,14 @@ find_style_SPECTRWM()
 }
 
 static char *
+get_menu_SPECTRWM()
+{
+	/* NOTE: spectrwm(1) does not have a root menu */
+	get_rcfile_SPECTRWM();
+	return NULL;
+}
+
+static char *
 get_style_SPECTRWM()
 {
 	get_rcfile_SPECTRWM();
@@ -101,7 +109,8 @@ WmOperations xde_wm_ops = {
 	&set_style_SPECTRWM,
 	&reload_style_SPECTRWM,
 	&list_dir_SPECTRWM,
-	&list_styles_SPECTRWM
+	&list_styles_SPECTRWM,
+	&get_menu_SPECTRWM
 };
 
 /** @} */

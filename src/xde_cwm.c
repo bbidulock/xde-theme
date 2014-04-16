@@ -60,6 +60,13 @@ find_style_CWM()
 	return xde_find_style_simple("styles", "/stylerc", "");
 }
 
+static char *
+get_menu_CWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+
 /** @brief Get the cwm style.
   *
   * cwm(1) does not have a mechanism for including a file from the rc file;
@@ -241,7 +248,8 @@ WmOperations xde_wm_ops = {
 	&set_style_CWM,
 	&reload_style_CWM,
 	&list_dir_CWM,
-	&list_styles_CWM
+	&list_styles_CWM,
+	&get_menu_CWM
 };
 
 /** @} */

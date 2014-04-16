@@ -61,6 +61,13 @@ find_style_AWESOME()
 }
 
 static char *
+get_menu_AWESOME()
+{
+	get_rcfile_AWESOME();
+	return NULL;
+}
+
+static char *
 get_style_AWESOME()
 {
 	get_rcfile_AWESOME();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_AWESOME,
 	&reload_style_AWESOME,
 	&list_dir_AWESOME,
-	&list_styles_AWESOME
+	&list_styles_AWESOME,
+	&get_menu_AWESOME
 };
 
 /** @} */

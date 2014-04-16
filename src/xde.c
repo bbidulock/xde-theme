@@ -101,6 +101,7 @@ delete_wm()
 		free(wm->pdir);
 		free(wm->udir);
 		free(wm->sdir);
+		free(wm->edir);
 		free(wm->stylefile);
 		free(wm->style);
 		free(wm->env);
@@ -585,18 +586,24 @@ get_proc_file(pid_t pid, char *name, size_t *size)
 	}
 	free(file);
 	/* read entire file into buffer */
-	for (total = 0; total < fsize; total += read)
-		if (!(read = fread(buf + total, 1, fsize - total, f)))
-			if (total < fsize) {
-				EPRINTF("total %d less than fsize %d\n",
-					(int) total, (int) fsize);
-				free(buf);
-				fclose(f);
-				*size = 0;
-				return NULL;
-			}
+	total = 0;
+	while (total < fsize) {
+		read = fread(buf + total, 1, fsize - total, f);
+		total += read;
+		if (total >= fsize)
+			break;
+		if (ferror(f)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(buf);
+			fclose(f);
+			*size = 0;
+			return NULL;
+		}
+		if (feof(f))
+			break;
+	}
 	fclose(f);
-	*size = fsize;
+	*size = total;
 	return buf;
 }
 
@@ -1047,21 +1054,19 @@ find_wm_proc_any()
 	}
 	dsp = getenv("DISPLAY") ? : "";
 	dspnum = strdup(dsp);
-	if (strrchr(dspnum, '.'))
+	if (strrchr(dspnum, '.') && strrchr(dspnum, '.') > strrchr(dspnum, ':'))
 		*strrchr(dspnum, '.') = '\0';
 	while ((d = readdir(dir))) {
 		if (strspn(d->d_name, "0123456789") != strlen(d->d_name))
 			continue;
 		pid = atoi(d->d_name);
-		if (!(name = get_proc_file(pid, "comm", &size))) {
+		if (!(name = get_proc_comm(pid))) {
 			DPRINTF("no comm for pid %d\n", (int) pid);
 			continue;
 		}
-		if (strrchr(name, '\n'))
-			*strrchr(name, '\n') = '\0';
 		OPRINTF("checking if '%s' is a window manager\n", name);
 		for (i = 0; wm_list[i]; i++)
-			if (!strcmp(wm_list[i], name))
+			if (!strcasecmp(wm_list[i], name))
 				break;
 		if (!wm_list[i]) {
 			OPRINTF("%s is not a window manager\n", name);
@@ -1071,6 +1076,7 @@ find_wm_proc_any()
 		OPRINTF("%s is a window manager\n", name);
 		if (!(buf = get_proc_file(pid, "environ", &size))) {
 			DPRINTF("no environ for pid %d\n", (int) pid);
+			free(name);
 			continue;
 		}
 		OPRINTF("checking DISPLAY for %s\n", name);
@@ -1123,7 +1129,7 @@ find_wm_proc_by_name()
 	DIR *dir;
 	struct dirent *d;
 	pid_t pid;
-	char *buf, *pos, *end, *dsp;
+	char *name, *buf, *pos, *end, *dsp, *dspnum;
 	size_t size;
 
 	if (!wm->name)
@@ -1132,37 +1138,53 @@ find_wm_proc_by_name()
 		EPRINTF("/proc: %s\n", strerror(errno));
 		return False;
 	}
-	dsp = strdup(getenv("DISPLAY") ? : "");
+	dsp = getenv("DISPLAY") ? : "";
+	dspnum = strdup(dsp);
+	if (strrchr(dspnum, '.') && strrchr(dspnum, '.') > strrchr(dspnum, ':'))
+		*strrchr(dspnum, '.') = '\0';
 	while ((d = readdir(dir))) {
 		if (strspn(d->d_name, "0123456789") != strlen(d->d_name))
 			continue;
 		pid = atoi(d->d_name);
-		if (!(buf = get_proc_file(pid, "comm", &size)))
-			continue;
-		if (strrchr(buf, '\n'))
-			*strrchr(buf, '\n') = '\0';
-		if (strcmp(buf, wm->name)) {
-			free(buf);
+		if (!(name = get_proc_comm(pid))) {
+			DPRINTF("no comm for pid %d\n", (int) pid);
 			continue;
 		}
-		free(buf);
-		if (!(buf = get_proc_file(pid, "environ", &size)))
+		OPRINTF("checking if '%s' is the window manager\n", name);
+		if (strcasecmp(name, wm->name)) {
+			OPRINTF("%s is not the window manager\n", name);
+			free(name);
 			continue;
+		}
+		OPRINTF("%s is the window manager\n", name);
+		if (!(buf = get_proc_file(pid, "environ", &size))) {
+			DPRINTF("no environ for pid %d\n", (int) pid);
+			free(name);
+			continue;
+		}
+		OPRINTF("checking DISPLAY for %s\n", name);
 		for (pos = buf, end = buf + size; pos < end; pos += strlen(pos) + 1)
 			if (!strncmp(pos, "DISPLAY=", 8))
 				break;
-		if (pos >= buf) {
+		if (pos >= end) {
 			free(buf);
+			OPRINTF("no DISPLAY= for %s\n", name);
+			free(name);
 			continue;
 		}
-		if (!strcmp(dsp, pos + 8)) {
+		OPRINTF("testing %s for %s\n", pos, name);
+		pos += strlen("DISPLAY=");
+		if (!strcmp(dsp, pos) || !strcmp(dspnum, pos)) {
 			free(buf);
 			wm->pid = pid;
 			break;
 		}
+		OPRINTF("%s not on %s or %s\n", name, dsp, dspnum);
 		free(buf);
+		free(name);
 	}
 	closedir(dir);
+	free(dspnum);
 	return wm->pid ? True : False;
 }
 
@@ -1175,11 +1197,8 @@ static Bool
 find_wm_proc_by_pid()
 {
 	char *buf;
-	size_t size;
 
-	if ((buf = get_proc_file(wm->pid, "comm", &size))) {
-		if (strrchr(buf, '\n'))
-			*strrchr(buf, '\n') = '\0';
+	if ((buf = get_proc_comm(wm->pid))) {
 		free(wm->name);
 		wm->name = buf;
 		return True;
@@ -1373,6 +1392,8 @@ __xde_identify_wm()
 		fprintf(stdout, "XDE_WM_USRDIR=\"%s\"\n", wm->udir);
 	if (wm->sdir)
 		fprintf(stdout, "XDE_WM_SYSDIR=\"%s\"\n", wm->sdir);
+	if (wm->edir)
+		fprintf(stdout, "XDE_WM_ETCDIR=\"%s\"\n", wm->edir);
 	if (wm->stylefile)
 		fprintf(stdout, "XDE_WM_STYLEFILE=\"%s\"\n", wm->stylefile);
 	if (wm->style)
@@ -1443,6 +1464,8 @@ show_wm()
 		OPRINTF("%d %s: udir %s\n", screen, wm->name, wm->udir);
 	if (wm->sdir)
 		OPRINTF("%d %s: sdir %s\n", screen, wm->name, wm->sdir);
+	if (wm->edir)
+		OPRINTF("%d %s: edir %s\n", screen, wm->name, wm->edir);
 	if (wm->stylefile)
 		OPRINTF("%d %s: stylefile %s\n", screen, wm->name, wm->stylefile);
 	if (wm->style)
@@ -1567,6 +1590,10 @@ __xde_get_simple_dirs(char *wmname)
 	wm->sdir = calloc(strlen("/usr/share/") + strlen(wmname) + 1, sizeof(*wm->sdir));
 	strcpy(wm->sdir, "/usr/share/");
 	strcat(wm->sdir, wmname);
+	free(wm->edir);
+	wm->edir = calloc(strlen("/etc/") + strlen(wmname) + 1, sizeof(*wm->edir));
+	strcpy(wm->edir, "/etc/");
+	strcat(wm->edir, wmname);
 	if (!strcmp(wm->pdir, home)) {
 		free(wm->pdir);
 		wm->pdir = strdup(wm->udir);
@@ -1712,6 +1739,8 @@ __xde_list_styles_simple()
 	if (options.system) {
 		if (wm->sdir)
 			wm->ops->list_dir(wm->sdir, style);
+		if (wm->edir)
+			wm->ops->list_dir(wm->edir, style);
 	}
 }
 
@@ -1816,6 +1845,58 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 }
 
 __asm__(".symver __xde_find_style_simple,xde_find_style_simple@@XDE_1.0");
+
+char *
+__xde_get_menu_simple(char *fname, char *(*from_file) (char *))
+{
+	char *menurc = NULL, *menufile = NULL;
+	int i, len;
+
+	wm->ops->get_rcfile();
+
+	for (i = 0; i < CHECK_DIRS; i++) {
+		if (i == 1)
+			continue;
+		if (!wm->dirs[i] || !wm->dirs[i][0])
+			continue;
+		len = strlen(wm->dirs[i]) + strlen(fname) + 2;
+		menurc = calloc(len, sizeof(*menurc));
+		strcpy(menurc, wm->dirs[i]);
+		strcat(menurc, "/");
+		strcat(menurc, fname);
+		if (!from_file) {
+			menufile = menurc;
+			menurc = NULL;
+			break;
+		}
+		if (!xde_test_file(menurc)) {
+			free(menurc);
+			continue;
+		}
+		if (!(menufile = from_file(menurc))) {
+			/* from_file should print its own errors */
+			free(menurc);
+			continue;
+		}
+		if (menufile[0] != '/') {
+			/* WARNING: from_file must return a buffer large enough to add path prefix: 
+			   recommend PATH_MAX + 1 */
+			/* make absolute path */
+			memmove(menufile + strlen(wm->dirs[i]) + 1, menufile, strlen(menufile) + 1);
+			memcpy(menufile, menurc, strlen(wm->dirs[i]) + 1);
+		}
+		free(menurc);
+		menurc = NULL;
+		break;
+	}
+	if (menufile) {
+		free(wm->menu);
+		wm->menu = menufile;
+	}
+	return wm->menu;
+}
+
+__asm__(".symver __xde_get_menu_simple,xde_get_menu_simple@@XDE_1.0");
 
 char *
 __xde_get_style_simple(char *fname, char *(*from_file) (char *))

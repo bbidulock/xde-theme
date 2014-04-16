@@ -61,6 +61,12 @@ find_style_VTWM()
 }
 
 static char *
+get_menu_VTWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+static char *
 get_style_VTWM()
 {
 	return xde_get_style_simple("stylerc", NULL);
@@ -105,7 +111,8 @@ WmOperations xde_wm_ops = {
 	&set_style_VTWM,
 	&reload_style_VTWM,
 	&list_dir_VTWM,
-	&list_styles_VTWM
+	&list_styles_VTWM,
+	&get_menu_VTWM
 };
 
 /** @} */

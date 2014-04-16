@@ -61,6 +61,12 @@ find_style_CTWM()
 }
 
 static char *
+get_menu_CTWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+static char *
 get_style_CTWM()
 {
 	return xde_get_style_simple("stylerc", NULL);
@@ -105,7 +111,8 @@ WmOperations xde_wm_ops = {
 	&set_style_CTWM,
 	&reload_style_CTWM,
 	&list_dir_CTWM,
-	&list_styles_CTWM
+	&list_styles_CTWM,
+	&get_menu_CTWM
 };
 
 /** @} */

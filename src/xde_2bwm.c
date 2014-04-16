@@ -61,6 +61,14 @@ find_style_2BWM()
 }
 
 static char *
+get_menu_2BWM()
+{
+	/* NOTE: 2bwm(1) does not have a menu */
+	get_rcfile_2BWM();
+	return NULL;
+}
+
+static char *
 get_style_2BWM()
 {
 	get_rcfile_2BWM();
@@ -101,7 +109,8 @@ WmOperations xde_wm_ops = {
 	&set_style_2BWM,
 	&reload_style_2BWM,
 	&list_dir_2BWM,
-	&list_styles_2BWM
+	&list_styles_2BWM,
+	&get_menu_2BWM
 };
 
 /** @} */

@@ -61,6 +61,13 @@ find_style_MWM()
 }
 
 static char *
+get_menu_MWM()
+{
+	get_rcfile_MWM();
+	return NULL;
+}
+
+static char *
 get_style_MWM()
 {
 	get_rcfile_MWM();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_MWM,
 	&reload_style_MWM,
 	&list_dir_MWM,
-	&list_styles_MWM
+	&list_styles_MWM,
+	&get_menu_MWM
 };
 
 /** @} */

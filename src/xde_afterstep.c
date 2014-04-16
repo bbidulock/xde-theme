@@ -61,6 +61,13 @@ find_style_AFTERSTEP()
 }
 
 static char *
+get_menu_AFTERSTEP()
+{
+	get_rcfile_AFTERSTEP();
+	return NULL;
+}
+
+static char *
 get_style_AFTERSTEP()
 {
 	get_rcfile_AFTERSTEP();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_AFTERSTEP,
 	&reload_style_AFTERSTEP,
 	&list_dir_AFTERSTEP,
-	&list_styles_AFTERSTEP
+	&list_styles_AFTERSTEP,
+	&get_menu_AFTERSTEP
 };
 
 /** @} */

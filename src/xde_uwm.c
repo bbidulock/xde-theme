@@ -102,10 +102,36 @@ from_file_UWM(char *stylerc)
 	return stylefile;
 }
 
+/** @brief Get the menu for uwm.
+  *
+  * NOTE: this only works with the xde-styles style system for uwm(1) and
+  * requires that the suggested includes in the primary configuration file be
+  * used.
+  */
+static char *
+get_menu_UWM()
+{
+	return xde_get_menu_simple("menu", NULL);
+}
+
+
+/** @brief Get the style for uwm.
+  *
+  * There are two ways to implement the style system for uwm(1): symbolic links
+  * or include statements.  Both accept absolute or relative paths.  The style
+  * file in turn links to or includes a style file from the appropriate styles
+  * subdirectory.
+  *
+  * The symbolic link approach is likely best.  Either achieves the same result.
+  *
+  * NOTE: this only works with the xde-styles style system for uwm(1) and
+  * requires that the suggested includes in the primary configuration file be
+  * used.
+  */
 static char *
 get_style_UWM()
 {
-	return xde_get_style_simple("style", &from_file_UWM);
+	return xde_get_style_simple("theme", &from_file_UWM);
 }
 
 static void
@@ -167,7 +193,8 @@ WmOperations xde_wm_ops = {
 	&set_style_UWM,
 	&reload_style_UWM,
 	&list_dir_UWM,
-	&list_styles_UWM
+	&list_styles_UWM,
+	&get_menu_UWM
 };
 
 /** @} */

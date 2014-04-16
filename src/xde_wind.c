@@ -61,8 +61,17 @@ find_style_WIND()
 }
 
 static char *
+get_menu_WIND()
+{
+	/* NOTE: wind(1) does not have a menu file */
+	get_rcfile_WIND();
+	return NULL;
+}
+
+static char *
 get_style_WIND()
 {
+	/* NOTE: wind(1) does not have a style file */
 	get_rcfile_WIND();
 	return NULL;
 }
@@ -101,7 +110,8 @@ WmOperations xde_wm_ops = {
 	&set_style_WIND,
 	&reload_style_WIND,
 	&list_dir_WIND,
-	&list_styles_WIND
+	&list_styles_WIND,
+	&get_menu_WIND
 };
 
 /** @} */

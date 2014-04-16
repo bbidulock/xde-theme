@@ -61,6 +61,13 @@ find_style_DTWM()
 }
 
 static char *
+get_menu_DTWM()
+{
+	get_rcfile_DTWM();
+	return NULL;
+}
+
+static char *
 get_style_DTWM()
 {
 	get_rcfile_DTWM();
@@ -101,7 +108,8 @@ WmOperations xde_wm_ops = {
 	&set_style_DTWM,
 	&reload_style_DTWM,
 	&list_dir_DTWM,
-	&list_styles_DTWM
+	&list_styles_DTWM,
+	&get_menu_DTWM
 };
 
 /** @} */

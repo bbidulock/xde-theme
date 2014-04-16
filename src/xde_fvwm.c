@@ -61,6 +61,13 @@ find_style_FVWM()
 }
 
 static char *
+get_menu_FVWM()
+{
+	get_rcfile_FVWM();
+	return NULL;
+}
+
+static char *
 get_style_FVWM()
 {
 	get_rcfile_FVWM();
@@ -103,7 +110,8 @@ WmOperations xde_wm_ops = {
 	&set_style_FVWM,
 	&reload_style_FVWM,
 	&list_dir_FVWM,
-	&list_styles_FVWM
+	&list_styles_FVWM,
+	&get_menu_FVWM
 };
 
 /** @} */

@@ -61,6 +61,14 @@ find_style_METACITY()
 }
 
 static char *
+get_menu_METACITY()
+{
+	/* NOTE: metacity does not have a root menu of its own */
+	get_rcfile_METACITY();
+	return NULL;
+}
+
+static char *
 get_style_METACITY()
 {
 	get_rcfile_METACITY();
@@ -101,7 +109,8 @@ WmOperations xde_wm_ops = {
 	&set_style_METACITY,
 	&reload_style_METACITY,
 	&list_dir_METACITY,
-	&list_styles_METACITY
+	&list_styles_METACITY,
+	&get_menu_METACITY
 };
 
 /** @} */

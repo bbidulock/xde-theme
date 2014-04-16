@@ -113,6 +113,9 @@ get_rcfile_OPENBOX()
 	}
 	free(wm->sdir);
 	wm->sdir = strdup("/usr/share/openbox");
+	free(wm->edir);
+	wm->edir = strdup("/etc/xdg/openbox");
+
 	return;
 }
 
@@ -176,6 +179,13 @@ find_style_OPENBOX()
 	free(file);
 	return path;
 
+}
+
+static char *
+get_menu_OPENBOX()
+{
+	get_rcfile_OPENBOX();
+	return NULL;
 }
 
 static char *
@@ -285,7 +295,8 @@ WmOperations xde_wm_ops = {
 	&set_style_OPENBOX,
 	&reload_style_OPENBOX,
 	&list_dir_OPENBOX,
-	&list_styles_OPENBOX
+	&list_styles_OPENBOX,
+	&get_menu_OPENBOX
 };
 
 /** @} */

@@ -60,27 +60,14 @@ find_style_PEKWM()
 	return xde_find_style_simple("themes", "/theme", "");
 }
 
-/** @brief Get the pekwm style.
-  *
-  * pekwm places its theme specification in its primary configuration file (e.g.
-  * ~/.pekwm/config) in a section that looks like:
-  *
-  * Files {
-  *     Theme = "/usr/share/pekwm/themes/Airforce"
-  * }
-  *
-  * Note that is a path to a directory and not a file.
-  */
 static char *
-get_style_PEKWM()
+from_file_PEKWM(char *fname, char *field)
 {
 	FILE *f;
-	char *buf, *b, *e;
-	char *stylefile = NULL;
+	char *buf, *b, *e, *result = NULL;
 
-	get_rcfile_PEKWM();
-	if (!(f = fopen(wm->rcfile, "r"))) {
-		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+	if (!(f = fopen(fname, "r"))) {
+		DPRINTF("%s: %s\n", fname, strerror(errno));
 		return NULL;
 	}
 	buf = calloc(PATH_MAX + 1, sizeof(*buf));
@@ -89,12 +76,14 @@ get_style_PEKWM()
 		b += strspn(b, " \t");
 		if (*b == '#' || *b == '\n')
 			continue;
-		if (!(b = strstr(b, "Theme")))
+		if (!(b = strstr(b, field)))
 			continue;
-		b += strspn(b + 5, " \t") + 5;
+		b += strlen(field);
+		b += strspn(b, " \t");
 		if (*b != '=')
 			continue;
-		b += strspn(b + 1, " \t") + 1;
+		b += 1;
+		b += strspn(b, " \t");
 		if (*b != '"')
 			continue;
 		b += 1;
@@ -108,21 +97,112 @@ get_style_PEKWM()
 			continue;
 		*e = '\0';
 		memmove(buf, b, strlen(b) + 1);
-		stylefile = buf;
+		result = buf;
 		break;
 	}
 	fclose(f);
-	if (!stylefile) {
+	if (result) {
+		/* watch out for tilde expansion */
+		if (*result == '~') {
+			char *home = xde_get_proc_environ("HOME") ? : ".";
+
+			memmove(result + strlen(home), result + 1, strlen(result + 1) + 1);
+			memcpy(result, home, strlen(home));
+		}
+	} else
 		free(buf);
-		return NULL;
+	return result;
+}
+
+/** @brief Get the pekwm menu.
+  *
+  * pekwm places its menu specification in its primary configuration file (e.g.
+  * ~/.pekwm/config) in a section that looks like:
+  *
+  * Files {
+  *	Menu = "~/.pekwm/menu"
+  * }
+  *
+  * Note that the path is to a file.  Also, if this is not present in the
+  * primary configuration file (e.g. ~/.pekwm/config), the default from the
+  * system configuration file (normally /etc/pekwm/config_system) is used, which
+  * defaults to "~/.pekwm/menu".
+  *
+  * This function pretty much assumes that the standard pekwm(1) configuration
+  * is in place.
+  */
+static char *
+get_menu_PEKWM()
+{
+	char *menufile = NULL;
+
+	get_rcfile_PEKWM();
+	if (wm->edir && wm->edir[0]) {
+		int len;
+		char *file;
+
+		len = strlen(wm->edir) + strlen("/config_system") + 1;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, wm->edir);
+		strcat(file, "/config_system");
+		menufile = from_file_PEKWM(file, "Menu");
+		free(file);
 	}
-	free(wm->style);
-	wm->style = strdup(stylefile);
-	free(wm->stylename);
-	/* trim off path */
-	wm->stylename = (b = strrchr(stylefile, '/')) ?
-	    strdup(b + 1) : strdup(stylefile);
-	free(stylefile);
+	if (wm->rcfile) {
+		char *tmp;
+
+		if ((tmp = from_file_PEKWM(wm->rcfile, "Menu"))) {
+			free(menufile);
+			menufile = tmp;
+		}
+	}
+	if (menufile) {
+		free(wm->menu);
+		/* menufile is too big (PATH_MAX) */
+		wm->menu = strdup(menufile);
+		free(menufile);
+	}
+	return wm->menu;
+}
+
+/** @brief Get the pekwm style.
+  *
+  * pekwm places its theme specification in its primary configuration file (e.g.
+  * ~/.pekwm/config) in a section that looks like:
+  *
+  * Files {
+  *     Theme = "/usr/share/pekwm/themes/Airforce"
+  * }
+  *
+  * Note that is a path to a directory and not a file.  Also, if this is not
+  * present in the primary configuration file (e.g. ~/.pekwm/config), the
+  * default from the system configuration file (normally
+  * /etc/pekwm/config_system) is used.  That value is normally
+  * "$_PEKWM_THEME_PATH/default" where, _PEKWM_THEME_PATH translates to
+  * /usr/share/pekwm/themes.
+  *
+  * This function pretty much assumes that the standard pekwm(1) configuration
+  * is in place.
+  */
+static char *
+get_style_PEKWM()
+{
+	char *stylefile = NULL;
+
+	get_rcfile_PEKWM();
+	if (wm->rcfile)
+		stylefile = from_file_PEKWM(wm->rcfile, "Theme");
+	if (stylefile) {
+		char *pos;
+
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylename);
+		/* trim off path */
+		wm->stylename = (pos = strrchr(stylefile, '/')) ?
+		    strdup(pos + 1) : strdup(stylefile);
+		free(stylefile);
+	}
 	return wm->style;
 }
 
@@ -250,7 +330,8 @@ WmOperations xde_wm_ops = {
 	&set_style_PEKWM,
 	&reload_style_PEKWM,
 	&list_dir_PEKWM,
-	&list_styles_PEKWM
+	&list_styles_PEKWM,
+	&get_menu_PEKWM
 };
 
 /** @} */
