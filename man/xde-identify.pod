@@ -54,17 +54,17 @@ B<xde-style> accepts the following non-command options:
 =item B<-S>, B<--screen> I<SCREEN>
 
 Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
-on all screens unless the screen number is specified int he C<DISPLAY>
+on all screens unless the screen number is specified int he B<DISPLAY>
 environment variable, in which case the screen number defaults to the
 specified screen.  In general, a window manager with good multiple head
-support will add the screen number to the C<DISPLAY> environment
+support will add the screen number to the B<DISPLAY> environment
 variable for programs that it launches and the screen number does not
 need to be specified.
 
 =item B<-w>, B<--wmname> I<WMNAME>
 
 Do not detect the window manager, but assume that the window manager
-named, I<WMNAME> is to be used.  The B<--screen> option and C<DISPLAY>
+named, I<WMNAME> is to be used.  The B<--screen> option and B<DISPLAY>
 environment variable are ignored.
 
 =item B<-f>, B<--rcfile> I<RCFILE>
@@ -90,102 +90,170 @@ verbosity level is 1.  This option may be repeated.
 
 =over
 
-=item B<XDE_WM_NAME>
+=item I<XDE_WM_NETWM_SUPPORT>
 
-Set to the name of the window manager.
+When the window manager supports EWMH/NetWM, reports the check window
+id (B<_NET_SUPPORTING_WM_CHECK>).  Otherwise the field is not reported.
 
-=item B<XDE_WM_NETWM_SUPPORT>
+=item I<XDE_WM_WINWM_SUPPORT>
 
-Set to C<true> when the window manager claims support for EWMH/NewWM;
-C<false> otherwise.
+When the window manager supports GNOME/WinWM, reports the check window
+id (B<_WIN_SUPPORTING_WM_CHECK>).  Otherwise the field is not reported.
 
-=item B<XDE_WM_WINWM_SUPPORT>
+=item I<XDE_WM_MAKER_SUPPORT>
 
-Set to C<true> when the window manager claims support for GNOME/WinWM;
-C<false> otherwise.
+When the window manager supports WindowMaker, reports the check window
+id (B<_WINDOWMAKER_NOTICEBOARD>).  Otherwise the field is not reported.
 
-=item B<XDE_WM_MAKER_SUPPORT>
+=item I<XDE_WM_MOTIF_SUPPORT>
 
-Set to C<true> when the window manager claims support for WindowMaker;
-C<false> otherwise.
+When the window manager supports OSF/Motif, reports the check window id
+(B<_MOTIF_WM_INFO>).  Otherwise, the field is not reported.
 
-=item B<XDE_WM_MOTIF_SUPPORT>
+=item I<XDE_WM_ICCCM_SUPPORT>
 
-Set to C<true> when the window manager claims support for OSF/Motif;
-C<false> otherwise.
+When the window manager supports ICCCM 2.0, reports the check window id
+(B<WM_S%d> owner).  Otherwise, the field is not reported.
 
-=item B<XDE_WM_ICCCM_SUPPORT>
+=item I<XDE_WM_REDIR_SUPPORT>
 
-Set to C<true> when the window manager claims support for ICCCM 2.0;
-C<false> otherwise.
+When the window manager supports ICCCM (redirection), reports the root
+window id.  Otherwise, the field is not reported.  (Note that it is
+difficult to conceive of an X window manager that would not report this
+field.)
 
-=item B<XDE_WM_REDIR_SUPPORT>
+=item I<XDE_WM_NAME>
 
-Set to C<true> when the window manager has redirected mapping events;
-C<false> otherwise.
+Set to the name of the window manager.  The name of the window manager
+is obtained by checking the check windows and root window for the
+occurrence of a B<_NET_WM_NAME>, B<WM_NAME>, B<WM_CLASS> or
+B<WM_COMMAND> property.  When none of these exist on the check or root
+windows, and B<_WINDOWMAKER_NOTICEBOARD> is available and valid, it is
+assumed that the window manager is L<wmaker(1)> and is reported as
+C<wmaker>.  Otherwise, when B<_MOTIF_WM_INFO> is available and valid, it
+is assumed that the window manager is L<mwm(1)> and is reported as
+C<mwm>.  Note that when the name is C<workspacemanager>, it is assumed
+that it is an old version of L<ctwm(1)> that is running and is reported
+as C<ctwm>.  Otherwise, this field is not reported.
 
-=item B<XDE_WM_PID>
+=item I<XDE_WM_PID>
 
 Set to the numeric value of the process identifier of the window manager
-process.
+process.  The process identifier is obtained from the B<_NET_WM_PID>
+property on the check or root window.  However, when the window manager
+is C<fluxbox>, the B<_BLACKBOX_PID> property is used from the root
+window; when C<openbox>, the B<_OPENBOX_PID> property is used form the
+root window.  When the process identifier is not found in this way and
+there is sufficient information to find the process on the local
+machine (e.g. from the B<WM_COMMAND> or simply from the name), the
+process identifier is still reported.
 
-=item B<XDE_WM_HOST>
+=item I<XDE_WM_HOST>
 
 Set to the fully qualified domain name of the host on which the window
-manager is running.
+manager is running.  The host is found from the B<WM_CLIENT_MACHINE>
+property set on the check or root window, or, barring that, is
+determined from the process information when the process can be
+identified on the local machine.
 
-=item B<XDE_WM_RES_NAME>
+=item I<XDE_WM_RES_NAME>
 
-Set to the resource name of the window manager.
+Set to the resource name of the window manager.  Obtained from the
+B<WM_CLASS> property on the check or root window.  Not many window
+managers report this field.
 
-=item B<XDE_WM_RES_CLASS>
+=item I<XDE_WM_RES_CLASS>
 
-Set to the resource class of the window manager.
+Set to the resource class of the window manager.  Obtained from the
+B<WM_CLASS> property on the check or root window.  Not many window
+managers report this field.
 
-=item B<XDE_WM_CMDLINE>
+=item I<XDE_WM_CMDLINE>
 
 Set to the window manager process command line as reported by the
-F</proc> file system.
+F</proc> file system.  This field is reported when the window manager is
+running on the local machine and the process can be identified (i.e.
+from the window manager name and B<DISPLAY> environment variable).  This
+field is only reported when the window manager is running on the same
+host as B<xde-identify>.
 
-=item B<XDE_WM_COMMAND>
+=item I<XDE_WM_COMMAND>
 
 Set to the window manager process command as reported by the
-B<WM_COMMAND> property.
+B<WM_COMMAND> property from the check or root window.  Not many window
+managers report this field.  Even when reported, this field might be
+different from that reported by I<XDE_WM_CMDLINE>.
 
-=item B<XDE_WM_RCFILE>
+=item I<XDE_WM_RCFILE>
 
-Set the rc file being used by the window manager.
+Set the rc file being used by the window manager.  This is only reliable
+when either the window manager is running with the default configuration
+file, or when the command line is available in the I<XDE_WM_CMDLINE> or
+I<XDE_WM_COMMAND> fields.  When the window manager does not support
+specifying an alternate configuration file, and the default
+configuration file is a symbolic link to another file, the linked file
+is reported.  This field is only reported for supported window managers,
+see L</WINDOW MANAGERS>.
 
-=item B<XDE_WM_PRVDIR>
+=item I<XDE_WM_PRVDIR>
 
 Set to the private directory in which the window manager configuration
-data resides.
+data resides.  This is normally based off of the rc file and is the
+directory in which the ultimate rc file resides.  In some cases, this
+directory is otherwise specified (e.g. B<ICEWM_PRIVCFG> for L<icewm(1)>,
+B<GNUSTEP_USER_ROOT> for L<wmaker(1)>).
 
-=item B<XDE_WM_USRDIR>
+=item I<XDE_WM_USRDIR>
 
 Set to the user directory in which the window manager configuration data
-resides.
+resides.  This is the default configuration directory: that is, the user
+directory in which the default configuration resides.  It is the same as
+I<XDE_WM_PRVDIR> only when the default configuration file is used.  This
+field is only reported for known window managers and corresponds to
+default configuration of the window manager.
 
-=item B<XDE_WM_SYSDIR>
+=item I<XDE_WM_SYSDIR>
 
 Set to the system directory in which the default window manager
-configuration data resides.
+configuration data resides.  This field is only reported for known
+window managers.  Some assumptions are made about the file system (that
+window managers are installed with the normal parameters (e.g.
+C<--prefix=/usr --sysconfdir=/etc>).  Reported directories are normally
+subdirectories of F</usr/share>.
 
-=item B<XDE_WM_STYLEFILE>
+=item I<XDE_WM_ETCDIR>
 
-Set to the full path file name of the style file.
+Set to the system defaults directory in which window manager default
+configuration data resides.  This field is only reported for known
+window managers and when the window manager has such a directory.  Some
+assumptions are made about the installation (that window managers are
+installed with the normal parameters (e.g. C<--prefix=/usr
+--sysconfidr=/etc>).  Reported directories are normally subdirectories
+of F</etc>.
 
-=item B<XDE_WM_STYLE>
+=item I<XDE_WM_STYLEFILE>
 
-Set to the style.
+Set to the full path file name of the style file.  This field is only
+reported for known window managers that actually have a style file.
 
-=item B<XDE_WM_STYLENAME>
+=item I<XDE_WM_STYLE>
+
+Set to the style.  This field is only reported for known window managers
+that actually have a style file.
+
+=item I<XDE_WM_STYLENAME>
 
 Set to the style name.
 
-=item B<XDE_WM_MENUFILE>
+=item I<XDE_WM_MENUFILE>
 
-Set to the full path file name of the menu file.
+Set to the full path file name of the menu file.  This field is only
+reported for known window managers that actually have a menu file.
+Also, this is the file in a user directory to which should be written a
+root menu specification and not necessarily the menu file which is
+currently being used to display a root menu (which could have defaulted
+to a system directory: for example, L<wmaker(1)> defaults to
+F</etc/WindowMaker/WMRootMenu>).
 
 =back
 
@@ -199,21 +267,200 @@ window managers:
 
 =over
 
+=item L<adwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="adwm"
+ XDE_WM_NETWM_SUPPORT=0xa00001
+ XDE_WM_WINWM_SUPPORT=0xa00001
+ XDE_WM_MOTIF_SUPPORT=0xa00001
+ XDE_WM_ICCCM_SUPPORT=0xa00001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=26727
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'adwm'"
+ XDE_WM_COMMAND="'adwm'"
+ XDE_WM_RCFILE="/home/brian/.adwm/adwmrc"
+ XDE_WM_PRVDIR="/home/brian/.adwm"
+ XDE_WM_USRDIR="/home/brian/.adwm"
+ XDE_WM_SYSDIR="/usr/share/adwm"
+ XDE_WM_ETCDIR="/etc/adwm"
+
+=back
+
 =item L<fluxbox(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="fluxbox"
+ XDE_WM_NETWM_SUPPORT=0x10000b5
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=11457
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'fluxbox'"
+ XDE_WM_RCFILE="/home/brian/.fluxbox/init"
+ XDE_WM_PRVDIR="/home/brian/.fluxbox"
+ XDE_WM_USRDIR="/home/brian/.fluxbox"
+ XDE_WM_SYSDIR="/usr/share/fluxbox"
+ XDE_WM_ETCDIR="/etc/fluxbox"
+ XDE_WM_STYLE="/usr/share/fluxbox/styles/Penguins"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.fluxbox/menu"
+
+=back
 
 =item L<blackbox(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="blackbox"
+ XDE_WM_NETWM_SUPPORT=0x1000008
+ XDE_WM_ICCCM_SUPPORT=0x1000008
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=23312
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'blackbox', '-rc', '/home/brian/.blackbox/rc'"
+ XDE_WM_COMMAND="'blackbox', '-rc', '/home/brian/.blackbox/rc'"
+ XDE_WM_RCFILE="/home/brian/.blackbox/rc"
+ XDE_WM_PRVDIR="/home/brian/.blackbox"
+ XDE_WM_USRDIR="/home/brian/.blackbox"
+ XDE_WM_SYSDIR="/usr/share/blackbox"
+ XDE_WM_ETCDIR="/etc/blackbox"
+ XDE_WM_STYLE="/usr/share/blackbox/styles/Blackbirds"
+ XDE_WM_STYLENAME="Blackbirds"
+ XDE_WM_MENU="/home/brian/.blackbox/menu"
+
+=back
+
 =item L<openbox(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="openbox"
+ XDE_WM_NETWM_SUPPORT=0x100000e
+ XDE_WM_ICCCM_SUPPORT=0x100000e
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=24074
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'openbox', '--debug-xinerama', '--config-file', '/home/brian/.config/openbox/unx-rc.xml'"
+ XDE_WM_RCFILE="/home/brian/.config/openbox/unx-rc.xml"
+ XDE_WM_PRVDIR="/home/brian/.config/openbox"
+ XDE_WM_USRDIR="/home/brian/.config/openbox"
+ XDE_WM_SYSDIR="/usr/share/openbox"
+ XDE_WM_ETCDIR="/etc/xdg/openbox"
+ XDE_WM_STYLEFILE="/usr/share/themes/Airforce/openbox-3/themerc"
+ XDE_WM_STYLE="/usr/share/themes/Airforce/openbox-3/themerc"
+ XDE_WM_STYLENAME="Airforce"
+ XDE_WM_MENU="/home/brian/.config/openbox/menu.xml"
+
+=back
 
 =item L<icewm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="icewm"
+ XDE_WM_NETWM_SUPPORT=0x1000011
+ XDE_WM_WINWM_SUPPORT=0x1000011
+ XDE_WM_ICCCM_SUPPORT=0x1000011
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=14865
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'icewm'"
+ XDE_WM_COMMAND="'icewm'"
+ XDE_WM_RCFILE="/home/brian/.icewm/preferences"
+ XDE_WM_PRVDIR="/home/brian/.icewm"
+ XDE_WM_USRDIR="/home/brian/.icewm"
+ XDE_WM_SYSDIR="/usr/share/icewm"
+ XDE_WM_ETCDIR="/etc/icewm"
+ XDE_WM_STYLE="/home/brian/.icewm/themes/Penguins/default.theme"
+ XDE_WM_STYLENAME="Penguins/default.theme"
+ XDE_WM_MENU="/home/brian/.icewm/menu"
+
+=back
+
 =item L<jwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="jwm"
+ XDE_WM_NETWM_SUPPORT=0x1000001
+ XDE_WM_ICCCM_SUPPORT=0x1000001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=13007
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'jwm'"
+ XDE_WM_RCFILE="/home/brian/.jwm/rc"
+ XDE_WM_PRVDIR="/home/brian/.jwm"
+ XDE_WM_USRDIR="/home/brian/.jwm"
+ XDE_WM_SYSDIR="/usr/share/jwm"
+ XDE_WM_ETCDIR="/etc/jwm"
+ XDE_WM_STYLE="/usr/share/jwm/themes/Penguins/style"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.jwm/menu"
+
+=back
+
 =item L<pekwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="pekwm"
+ XDE_WM_NETWM_SUPPORT=0x1000001
+ XDE_WM_ICCCM_SUPPORT=0x1000001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=32632
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'pekwm'"
+ XDE_WM_RCFILE="/home/brian/.pekwm/config"
+ XDE_WM_PRVDIR="/home/brian/.pekwm"
+ XDE_WM_USRDIR="/home/brian/.pekwm"
+ XDE_WM_SYSDIR="/usr/share/pekwm"
+ XDE_WM_ETCDIR="/etc/pekwm"
+ XDE_WM_STYLE="/usr/share/pekwm/themes/Airforce"
+ XDE_WM_STYLENAME="Airforce"
+ XDE_WM_MENU="/home/brian/.pekwm/menu"
+
+=back
 
 =item L<fvwm(1)>
 
 =item L<wmaker(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wmaker"
+ XDE_WM_NETWM_SUPPORT=0x10000b9
+ XDE_WM_MAKER_SUPPORT=0x10000b9
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=9310
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wmaker', '--for-real='"
+ XDE_WM_RCFILE="/home/brian/GNUstep.petunia/Defaults/WindowMaker"
+ XDE_WM_PRVDIR="/home/brian/GNUstep.petunia"
+ XDE_WM_USRDIR="/home/brian/GNUstep"
+ XDE_WM_SYSDIR="/usr/share/WindowMaker"
+ XDE_WM_ETCDIR="/etc/WindowMaker"
+ XDE_WM_MENU="/home/brian/GNUstep.petunia/Defaults/WMRootMenu"
+
+=back
 
 =item L<afterstep(1)>
 
@@ -229,6 +476,25 @@ window managers:
 
 =item L<cwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="cwm"
+ XDE_WM_NETWM_SUPPORT=0x800008
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=12928
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'cwm'"
+ XDE_WM_RCFILE="/home/brian/.cwmrc"
+ XDE_WM_PRVDIR="/home/brian/.cwm"
+ XDE_WM_USRDIR="/home/brian/.cwm"
+ XDE_WM_SYSDIR="/usr/share/cwm"
+ XDE_WM_ETCDIR="/etc/cwm"
+ XDE_WM_MENU="/home/brian/.cwm/menu"
+
+=back
+
 =item L<echinus(1)>
 
 =item L<uwm(1)>
@@ -243,9 +509,39 @@ window managers:
 
 =item L<2bwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="2bwm"
+ XDE_WM_NETWM_SUPPORT=0xc00000
+ XDE_WM_REDIR_SUPPORT=0x2c0
+ XDE_WM_PID=23308
+ XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'2bwm'"
+
+=back
+
 =item L<wmx(1)>
 
 =item L<flwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="flwm"
+ XDE_WM_WINWM_SUPPORT=0x600004
+ XDE_WM_REDIR_SUPPORT=0x2c0
+ XDE_WM_PID=22022
+ XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'flwm'"
+ XDE_WM_COMMAND="'flwm'"
+ XDE_WM_PRVDIR="/home/brian/.wmx"
+ XDE_WM_USRDIR="/home/brian/.wmx"
+ XDE_WM_MENU="/home/brian/.wmx/"
+
+=back
 
 =item L<mwm(1)>
 
@@ -254,6 +550,20 @@ window managers:
 =item L<spectrwm(1)>
 
 =item L<yeahwm(1)>
+
+=item L<dwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="dwm"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=13692
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'dwm'"
+
+=back
 
 =back
 
