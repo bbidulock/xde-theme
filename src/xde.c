@@ -2390,6 +2390,40 @@ __xde_get_rcfile_XTWM(char *xtwm)
 		}
 	}
 	xde_get_simple_dirs(xtwm);
+	{
+		static const char *dirs[] = {
+			"/etc/X11/",
+			"/usr/share/X11/",
+			"/etc/",
+			"/usr/share/",
+			NULL
+		};
+		const char **dirp;
+
+		for (dirp = dirs; *dirp; dirp++) {
+			size_t plen;
+			struct stat st;
+			char *path;
+			
+			plen = strlen(*dirp) + strlen(xtwm) + strlen("/system.")
+				+ strlen(xtwm) + strlen("rc") + 1;
+			path = calloc(plen, sizeof(*path));
+			strcpy(path, *dirp);
+			strcat(path, xtwm);
+			strcat(path, "/system.");
+			strcat(path, xtwm);
+			strcat(path, "rc");
+			if (!stat(path, &st) && S_ISREG(st.st_mode)) {
+				*strrchr(path, '/') = '\0';
+				free(wm->edir);
+				wm->edir = strdup(path);
+				free(path);
+				return;
+
+			}
+
+		}
+	}
 }
 
 __asm__(".symver __xde_get_rcfile_XTWM,xde_get_rcfile_XTWM@@XDE_1.0");
