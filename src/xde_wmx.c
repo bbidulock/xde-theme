@@ -48,9 +48,25 @@
   */
 /** @{ */
 
+/** @brief Get the wmx(1) rc file.
+  *
+  * wmx(1) does not have an rc file; however, it does have a user directory:
+  * ~/.wmx where a directory based menu is provided.
+  */
 static void
 get_rcfile_WMX()
 {
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	static char *suffix = "/.wmx";
+	char *dir;
+
+	dir = calloc(strlen(home) + strlen(suffix) + 1, sizeof(*dir));
+	strcpy(dir, home);
+	strcat(dir, suffix);
+	free(wm->pdir);
+	wm->pdir = dir;
+	free(wm->udir);
+	wm->udir = strdup(dir);
 }
 
 static char *
@@ -60,11 +76,28 @@ find_style_WMX()
 	return NULL;
 }
 
+/** @brief Get the wmx(1) menu.
+  *
+  * wmx(1) uses a directory tree structure in ~/.wmx to provide a menu (as does
+  * flwm(1) and wm2(1)).  * The names of executable files in the directory are used
+  * as the name of entries in the menu.  The names of subdirectories are used as
+  * the names of submenus.  Therefore, this function always returns ~/.wmx
+  * (where ~ is the $HOME environment variable from the window manager).
+  */
 static char *
 get_menu_WMX()
 {
+	char *home = xde_get_proc_environ("HOME") ? : ".";
+	static char *suffix = "/.wmx/";
+	char *menu;
+
 	get_rcfile_WMX();
-	return NULL;
+	menu = calloc(strlen(home) + strlen(suffix) + 1, sizeof(*menu));
+	strcpy(menu, home);
+	strcat(menu, suffix);
+	free(wm->menu);
+	wm->menu = menu;
+	return menu;
 }
 
 static char *

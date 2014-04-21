@@ -136,6 +136,7 @@ init_xrm()
 Atom _XA_BB_THEME;
 Atom _XA_BLACKBOX_PID;
 Atom _XA_MOTIF_WM_INFO;
+Atom _XA_NET_SUPPORTED;
 Atom _XA_NET_SUPPORTING_WM_CHECK;
 Atom _XA_NET_WM_NAME;
 Atom _XA_NET_WM_PID;
@@ -143,6 +144,7 @@ Atom _XA_OB_THEME;
 Atom _XA_OPENBOX_PID;
 Atom _XA_WINDOWMAKER_NOTICEBOARD;
 Atom _XA_WIN_SUPPORTING_WM_CHECK;
+Atom _XA_WIN_PROTOCOLS;
 
 typedef struct {
 	char *name;
@@ -155,12 +157,14 @@ static Atoms atoms[] = {
 	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID		},
 	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO		},
 	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK	},
+	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED		},
 	{"_NET_WM_NAME",		&_XA_NET_WM_NAME		},
 	{"_NET_WM_PID",			&_XA_NET_WM_PID			},
 	{"_OB_THEME",			&_XA_OB_THEME			},
 	{"_OPENBOX_PID",		&_XA_OPENBOX_PID		},
 	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD	},
 	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK	},
+	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS		},
 	{NULL,				NULL				}
 	/* *INDENT-ON* */
 };
@@ -383,13 +387,72 @@ check_recursive(Atom atom, Atom type)
 	return check;
 }
 
+static Bool
+check_supported(Atom protocols, Atom supported)
+{
+	Atom real;
+	int format;
+	unsigned long nitems, after, num = 1;
+	unsigned long *data = NULL;
+	Bool result = False;
+
+	OPRINTF("check for non-compliant NetWM\n");
+
+      try_harder:
+	if (XGetWindowProperty(dpy, root, protocols, 0L, num, False,
+			       XA_ATOM, &real, &format, &nitems, &after,
+			       (unsigned char **) &data)
+	    == Success && format != 0) {
+		if (after) {
+			num += ((after + 1) >> 2);
+			XFree(data);
+			goto try_harder;
+		}
+		if (nitems > 0) {
+			unsigned long i;
+			Atom *atoms;
+
+			result = True;
+			atoms = (Atom *) data;
+			for (i = 0; i < nitems; i++) {
+				if (atoms[i] == supported) {
+					result = False;
+					break;
+				}
+			}
+		}
+		if (data)
+			XFree(data);
+	}
+	return result;
+}
+
 /** @} */
 
 /** @name Checks for window manager support.
   *
   * @{ */
 
+/** @brief Check for a non-compliant EWMH/NetWM window manager.
+  *
+  * There are quite a few window managers that implement part of the EWMH/NetWM
+  * specification but do not fill out _NET_SUPPORTING_WM_CHECK.  This is a big
+  * annoyance.  One way to test this is whether there is a _NET_SUPPORTED on the
+  * root window that does not include _NET_SUPPORTING_WM_CHECK in its atom list.
+  *
+  * The only window manager I know of that placed _NET_SUPPORTING_WM_CHECK in
+  * the list and did not set the property on the root window was 2bwm, but it
+  * has now been fixed.
+  */
+static Window
+check_netwm_supported()
+{
+	return check_supported(_XA_NET_SUPPORTED, _XA_NET_SUPPORTING_WM_CHECK)
+		? root : None;
+}
+
 /** @brief Check for a EWMH/NetWM compliant window manager.
+  *
   */
 static Window
 check_netwm()
@@ -404,8 +467,25 @@ check_netwm()
 		XSelectInput(dpy, wm->netwm_check,
 			     PropertyChangeMask | StructureNotifyMask);
 		XSaveContext(dpy, wm->netwm_check, ScreenContext, (XPointer) scr);
+	} else {
+		wm->netwm_check = check_netwm_supported();
 	}
 	return wm->netwm_check;
+}
+
+/** @brief Check for a non-compliant GNOME/WinWM window manager.
+  *
+  * There are quite a few window managers that implement part of the GNOME/WinWM
+  * specification but do not fill in the _WIN_SUPPORTING_WM_CHECK.  This is
+  * another big annoyance.  One way to test this is whether there is a
+  * _WIN_PROTOCOLS on the root window that does not include
+  * _WIN_SUPPORTING_WM_CHECK in its list of atoms.
+  */
+static Window
+check_winwm_supported()
+{
+	return check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_SUPPORTING_WM_CHECK)
+		? root : None;
 }
 
 /** @brief Check for a GNOME1/WMH/WinWM compliant window manager.
@@ -423,6 +503,8 @@ check_winwm()
 		XSelectInput(dpy, wm->winwm_check,
 			     PropertyChangeMask | StructureNotifyMask);
 		XSaveContext(dpy, wm->winwm_check, ScreenContext, (XPointer) scr);
+	} else {
+		wm->winwm_check = check_winwm_supported();
 	}
 	return wm->winwm_check;
 }
@@ -468,7 +550,7 @@ check_motif()
 	return wm->motif_check;
 }
 
-/** @brief Check for an ICCCM compliant window manager.
+/** @brief Check for an ICCCM 2.0 compliant window manager.
   */
 static Window
 check_icccm()
@@ -729,21 +811,23 @@ __xde_find_theme(char *name)
 	char **dir, *file;
 	int len, nlen;
 	struct stat st;
+	static char *suffix = "/xde/theme.ini";
+	static char *subdir = "/themes/";
 
 	if (!wm->xdg_dirs)
 		xde_get_xdg_dirs();
 	if (!wm->xdg_dirs)
 		return False;
 
-	nlen = strlen("/themes/") + strlen(name) + strlen("/xde/theme.ini");
+	nlen = strlen(subdir) + strlen(name) + strlen(suffix);
 
 	for (dir = wm->xdg_dirs; *dir; dir++) {
 		len = strlen(*dir) + nlen + 1;
 		file = calloc(len, sizeof(*file));
 		strcpy(file, *dir);
-		strcat(file, "/themes/");
+		strcat(file, subdir);
 		strcat(file, name);
-		strcat(file, "/xde/theme.ini");
+		strcat(file, suffix);
 		if (stat(file, &st)) {
 			DPRINTF("%s: %s\n", file, strerror(errno));
 			free(file);
@@ -856,10 +940,14 @@ find_wm_name()
 		else if (wm->motif_check)
 			wm->name = strdup("mwm");
 	} else {
-		/* CTWM with the old GNOME support uses the workspace manager window as a 
-		   check window. New CTWM is fully NewWM/EWMH compliant. */
+		/* CTWM with the old GNOME support uses the workspace manager window as a check
+		   window. New CTWM is fully NewWM/EWMH compliant. */
 		if (!strcmp(wm->name, "workspacemanager"))
 			strcpy(wm->name, "ctwm");
+		/* Some versions of wmx have an error in that they only set the _NET_WM_NAME to the 
+		   first letter of wmx. */
+		if (!strcmp(wm->name, "w"))
+			strcpy(wm->name, "wmx");
 	}
 	if (!wm->name)
 		OPRINTF("could not find wm name on screen %d\n", screen);
@@ -1020,11 +1108,13 @@ find_wm_comm()
 	return wm->cargv;
 }
 
-static char *wm_list[] = { "fluxbox", "blackbox", "openbox", "icewm", "jwm", "pekwm",
-	"fvwm", "wmaker", "afterstep", "metacity", "twm", "ctwm", "vtwm",
-	"etwm", "echinus", "uwm", "awesome", "matwm2", "waimea", "wind", "2bwm",
-	"wmx", "flwm", "mwm", "dtwm", "spectrwm", "yeahwm", "cwm", "dwm",
-	"perlwm", "aewm", "mutter", "xfwm", "kwm", NULL
+static char *wm_list[] = { "2bwm", "adwm", "aewm", "afterstep", "awesome",
+	"blackbox", "bspwm", "ctwm", "cwm", "dtwm", "dwm", "e16", "echinus",
+	"ede", "etwm", "evilwm", "failsafewm", "fluxbox", "flwm", "fvwm",
+	"herbstluftwm", "i3", "icewm", "jwm", "kwm", "matwm2", "mcwm",
+	"metacity", "mutter", "mwm", "openbox", "pawm", "pekwm", "perlwm",
+	"spectrwm", "twm", "twobwm", "uwm", "velox", "vtwm", "waimea", "wind",
+	"wmaker", "wmii", "wmx", "xdwm", "xfwm", "yeahwm", NULL
 };
 
 /** @brief Find the wm process without name or pid.
@@ -1250,6 +1340,15 @@ check_proc()
 		wm->noenv = True;
 		EPRINTF("could not get process environ for pid %ld", wm->pid);
 	}
+	/* fill out the host name */
+	if (!wm->host) {
+		wm->host = calloc(66, sizeof(*wm->host));
+		gethostname(wm->host, 64);
+	}
+	if ((buf = xde_get_proc_environ("HOSTNAME"))) {
+		free(wm->host);
+		wm->host = strdup(buf);
+	}
 	return have_proc;
 }
 
@@ -1342,12 +1441,18 @@ void
 __xde_identify_wm()
 {
 	fprintf(stdout, "XDE_WM_NAME=\"%s\"\n", wm->name);
-	fprintf(stdout, "XDE_WM_NETWM_SUPPORT=%s\n", wm->netwm_check ? "\"true\"" : "\"false\"");
-	fprintf(stdout, "XDE_WM_WINWM_SUPPORT=%s\n", wm->winwm_check ? "\"true\"" : "\"false\"");
-	fprintf(stdout, "XDE_WM_MAKER_SUPPORT=%s\n", wm->maker_check ? "\"true\"" : "\"false\"");
-	fprintf(stdout, "XDE_WM_MOTIF_SUPPORT=%s\n", wm->motif_check ? "\"true\"" : "\"false\"");
-	fprintf(stdout, "XDE_WM_ICCCM_SUPPORT=%s\n", wm->icccm_check ? "\"true\"" : "\"false\"");
-	fprintf(stdout, "XDE_WM_REDIR_SUPPORT=%s\n", wm->redir_check ? "\"true\"" : "\"false\"");
+	if (wm->netwm_check)
+		fprintf(stdout, "XDE_WM_NETWM_SUPPORT=0x%lx\n", wm->netwm_check);
+	if (wm->maker_check)
+		fprintf(stdout, "XDE_WM_MAKER_SUPPORT=0x%lx\n", wm->maker_check);
+	if (wm->winwm_check)
+		fprintf(stdout, "XDE_WM_WINWM_SUPPORT=0x%lx\n", wm->winwm_check);
+	if (wm->motif_check)
+		fprintf(stdout, "XDE_WM_MOTIF_SUPPORT=0x%lx\n", wm->motif_check);
+	if (wm->icccm_check)
+		fprintf(stdout, "XDE_WM_ICCCM_SUPPORT=0x%lx\n", wm->icccm_check);
+	if (wm->redir_check)
+		fprintf(stdout, "XDE_WM_REDIR_SUPPORT=0x%lx\n", wm->redir_check);
 	if (wm->pid)
 		fprintf(stdout, "XDE_WM_PID=%ld\n", wm->pid);
 	if (wm->host)
@@ -1577,8 +1682,10 @@ __xde_get_simple_dirs(char *wmname)
 {
 	char *home = xde_get_proc_environ("HOME") ? : ".";
 
+	DPRINTF("pdir = '%s'\n", wm->pdir);
 	free(wm->pdir);
 	wm->pdir = strdup(wm->rcfile);
+	DPRINTF("pdir = '%s'\n", wm->pdir);
 	if (strrchr(wm->pdir, '/'))
 		*strrchr(wm->pdir, '/') = '\0';
 	free(wm->udir);
@@ -1597,6 +1704,7 @@ __xde_get_simple_dirs(char *wmname)
 	if (!strcmp(wm->pdir, home)) {
 		free(wm->pdir);
 		wm->pdir = strdup(wm->udir);
+		DPRINTF("pdir = '%s'\n", wm->pdir);
 	}
 }
 

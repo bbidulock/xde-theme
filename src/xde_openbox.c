@@ -80,23 +80,27 @@ get_rcfile_OPENBOX()
 			strcat(wm->rcfile, "/");
 			strcat(wm->rcfile, file);
 		}
-		free(file);
 	} else {
+		static char *suffix = "/openbox/rc.xml";
+		static char *subdir = "/.config";
+
 		if (cnfg) {
-			len = strlen(cnfg) + strlen("/openbox/rc.xml") + 1;
+			len = strlen(cnfg) + strlen(suffix) + 1;
 			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, cnfg);
+			strcat(wm->rcfile, suffix);
 		} else {
-			len = strlen(home) + strlen("/.config") +
-			    strlen("/openbox/rc.xml") + 1;
+			len = strlen(home) + strlen(subdir) + strlen(suffix) + 1;
 			wm->rcfile = calloc(len, sizeof(*wm->rcfile));
 			strcpy(wm->rcfile, home);
-			strcat(wm->rcfile, "/.config");
+			strcat(wm->rcfile, subdir);
+			strcat(wm->rcfile, suffix);
 		}
-		strcat(wm->rcfile, "/openbox/rc.xml");
 	}
+	DPRINTF("pdir = '%s'\n", wm->pdir);
 	free(wm->pdir);
 	wm->pdir = strdup(wm->rcfile);
+	DPRINTF("pdir = '%s'\n", wm->pdir);
 	if (strrchr(wm->pdir, '/'))
 		*strrchr(wm->pdir, '/') = '\0';
 	free(wm->udir);
@@ -119,9 +123,9 @@ get_rcfile_OPENBOX()
 	return;
 }
 
-/** @brief Find an openbox style file.
+/** @brief Locate and openbox theme file.
   *
-  * Openbox sytle file are XDG organized: that is, the searched directories are
+  * Openbox style fiels are XDG organized: that is, the searched directories are
   * $XDG_DATA_HOME:$XDG_DATA_DIRS with appropriate defaults.  Subdirectories
   * under the themes directory (e.g. /usr/share/themes/STYLENAME) that contain
   * an openbox-3 subdirectory containing a themerc file.
@@ -130,69 +134,143 @@ get_rcfile_OPENBOX()
   * and user styles.
   */
 static char *
-find_style_OPENBOX()
+locate_theme_OPENBOX(char *theme)
 {
 	char *dirs, *path, *file;
 	char *pos, *end;
 
-	if (strchr(options.style, '/')) {
-		EPRINTF("path in openbox style name '%s'\n", wm->style);
-		return NULL;
-	}
-
-	get_rcfile_OPENBOX();
+	char *xdgh = xde_get_proc_environ("XDG_DATA_HOME");
+	char *xdgd = xde_get_proc_environ("XDG_DATA_DIRS");
+	char *home = xde_get_proc_environ("HOME") ? : ".";
 
 	dirs = calloc(PATH_MAX, sizeof(*dirs));
 	path = calloc(PATH_MAX, sizeof(*path));
-	file = calloc(PATH_MAX, sizeof(*path));
+	file = calloc(PATH_MAX, sizeof(*file));
 
 	strcpy(file, "/themes/");
-	strcat(file, wm->style);
+	strcat(file, theme);
 	strcat(file, "/openbox-3/themerc");
 
-	if (getenv("XDG_DATA_HOME"))
-		strcat(dirs, getenv("XDG_DATA_HOME"));
+	if (xdgh)
+		strcpy(dirs, xdgh);
 	else {
-		strcat(dirs, getenv("HOME") ? : ".");
+		strcpy(dirs, home);
 		strcat(dirs, "/.local/share");
 	}
 	strcat(dirs, ":");
-	if (getenv("XDG_DATA_DIRS"))
-		strcat(dirs, getenv("XDG_DATA_DIRS"));
+	if (xdgd)
+		strcat(dirs, xdgd);
 	else
 		strcat(dirs, "/usr/local/share:/usr/share");
 	for (pos = dirs, end = pos + strlen(dirs); pos < end;
 	     pos = strchrnul(pos, ':'), pos[0] = '\0', pos++) ;
 	for (pos = dirs; pos < end; pos += strlen(pos) + 1) {
+		struct stat st;
+
 		strcpy(path, pos);
 		strcat(path, file);
-		if (xde_test_file(path))
-			goto got_it;
+		if (stat(path, &st))
+			continue;
+		if (!S_ISREG(st.st_mode))
+			continue;
+		goto got_it;
 	}
 	free(path);
 	free(dirs);
 	free(file);
-	EPRINTF("could not find path for style '%s'\n", wm->style);
+	EPRINTF("could not find path for style '%s'\n", theme);
 	return NULL;
       got_it:
 	free(dirs);
 	free(file);
 	return path;
-
 }
 
+/** @brief Find an openbox style file.
+  */
+static char *
+find_style_OPENBOX()
+{
+	char *path;
+
+	if (strchr(options.style, '/')) {
+		EPRINTF("path in openbox style name '%s'\n", options.style);
+		return NULL;
+	}
+	if ((path = locate_theme_OPENBOX(options.style))) {
+		char *tmp = path;
+
+		path = strdup(path);
+		free(tmp);
+	}
+	return path;
+}
+
+/** @brief Get the path to the openbox menu.
+  *
+  * Openbox specifies its menu files by placing a <file>path_to_menu</file> line
+  * in a <menu></menu> section of the the rc.xml (primary configuraiton) file.
+  * We don't really want to parse the entire XML of the file, so we scan for a
+  * line containing <menu> and parse any <file>path_to_menu</file> lines after
+  * it and before a line continaing </menu>.  Care should be take because there
+  * are other <menu></menu> sections in the file (but none of the other contain
+  * a <file></file> subsection).
+  *
+  * The default when no <file></file> is present is the menu.xml file in the
+  * configuration directory.  It is questionable whether it will be loaded
+  * regardless of the existence of a <file></file> section.  The file that will
+  * be used for the root menu is the last one with a <menu id="root-menu" line
+  * in it.
+  *
+  * Well, it looks like <file>menu.xml</file> is implicit and always loaded
+  * last.
+  */
 static char *
 get_menu_OPENBOX()
 {
+	char *menu = NULL;
+
 	get_rcfile_OPENBOX();
-	return NULL;
+	if (wm->pdir && *wm->pdir) {
+		static char *suffix = "/menu.xml";
+		int len = strlen(wm->pdir) + strlen(suffix) + 1;
+
+		menu = calloc(len, sizeof(*menu));
+		strcpy(menu, wm->pdir);
+		strcat(menu, suffix);
+	}
+	if (menu) {
+		free(wm->menu);
+		wm->menu = menu;
+	}
+	return menu;
 }
 
 static char *
 get_style_OPENBOX()
 {
+	char *theme = NULL;
+	XTextProperty tp = { NULL, };
+
 	get_rcfile_OPENBOX();
-	return NULL;
+	XGetTextProperty(dpy, root, &tp, _XA_OB_THEME);
+	if (tp.value) {
+		theme = strndup((char *) tp.value, tp.nitems);
+		XFree(tp.value);
+	}
+	if (theme) {
+		free(wm->stylename);
+		wm->stylename = theme;
+		free(wm->style);
+		wm->style = strdup(theme);
+		if ((theme = locate_theme_OPENBOX(theme))) {
+			free(wm->style);
+			wm->style = theme;
+			free(wm->stylefile);
+			wm->stylefile = strdup(theme);
+		}
+	}
+	return theme;
 }
 
 #define OB_CONTROL_RECONFIGURE	    1	/* reconfigure */

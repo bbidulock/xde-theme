@@ -44,105 +44,75 @@
 
 #include "xde.h"
 
-/** @name FLWM
+/** @name DWM
+  *
+  * Note: dwm(1) has no configuration files, menus or other settings.
   */
 /** @{ */
 
-/** @brief Get the flwm(1) rc file.
-  *
-  * flwm(1) does not have an rc file; however, it does have a user directory:
-  * ~/.wmx where a directory based menu is provided.
-  */
 static void
-get_rcfile_FLWM()
+get_rcfile_DWM()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	static char *suffix = "/.wmx";
-	char *dir;
-
-	dir = calloc(strlen(home) + strlen(suffix) + 1, sizeof(*dir));
-	strcpy(dir, home);
-	strcat(dir, suffix);
-	free(wm->pdir);
-	wm->pdir = dir;
-	free(wm->udir);
-	wm->udir = strdup(dir);
 }
 
 static char *
-find_style_FLWM()
+find_style_DWM()
 {
-	get_rcfile_FLWM();
+	get_rcfile_DWM();
 	return NULL;
 }
 
-/** @brief Get the flwm(1) menu.
-  *
-  * flwm(1) uses a directory tree structure in ~/.wmx to provide a menu (as does
-  * wmx(1) and wm2(1)).  The names of executable files in the directory are used
-  * as the name of entries in the menu.  The names of subdirectories are used as
-  * the names of submenus.  Therefore, this function always returns ~/.wmx
-  * (where ~ is the $HOME environment variable from the window manager).
-  */
 static char *
-get_menu_FLWM()
+get_menu_DWM()
 {
-	char *home = xde_get_proc_environ("HOME") ? : ".";
-	static char *suffix = "/.wmx/";
-	char *menu;
-
-	get_rcfile_FLWM();
-	menu = calloc(strlen(home) + strlen(suffix) + 1, sizeof(*menu));
-	strcpy(menu, home);
-	strcat(menu, suffix);
-	free(wm->menu);
-	wm->menu = menu;
-	return menu;
+	/* NOTE: 2bwm(1) does not have a menu */
+	get_rcfile_DWM();
+	return NULL;
 }
 
 static char *
-get_style_FLWM()
+get_style_DWM()
 {
-	get_rcfile_FLWM();
+	get_rcfile_DWM();
 	return NULL;
 }
 
 static void
-set_style_FLWM()
+set_style_DWM()
 {
 	char *stylefile;
 
-	if (!(stylefile = find_style_FLWM())) {
+	if (!(stylefile = find_style_DWM())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
 		return;
 	}
 }
 
 static void
-reload_style_FLWM()
+reload_style_DWM()
 {
 }
 
 static void
-list_dir_FLWM(char *xdir, char *style)
+list_dir_DWM(char *xdir, char *style)
 {
 }
 
 static void
-list_styles_FLWM()
+list_styles_DWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"flwm",
-	&get_rcfile_FLWM,
-	&find_style_FLWM,
-	&get_style_FLWM,
-	&set_style_FLWM,
-	&reload_style_FLWM,
-	&list_dir_FLWM,
-	&list_styles_FLWM,
-	&get_menu_FLWM
+	"dwm",
+	&get_rcfile_DWM,
+	&find_style_DWM,
+	&get_style_DWM,
+	&set_style_DWM,
+	&reload_style_DWM,
+	&list_dir_DWM,
+	&list_styles_DWM,
+	&get_menu_DWM
 };
 
 /** @} */

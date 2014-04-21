@@ -307,10 +307,15 @@ main(int argc, char *argv[])
 		EPRINTF("%s\n", "no detected window manager");
 		exit(1);
 	}
-	if (wm->ops && wm->ops->get_style)
+	if (wm->ops && wm->ops->get_style) {
+		DPRINTF("getting style\n");
 		wm->ops->get_style();
-	if (wm->ops && wm->ops->get_menu)
+	}
+	if (wm->ops && wm->ops->get_menu) {
+		DPRINTF("getting menu\n");
 		wm->ops->get_menu();
+	}
+	DPRINTF("identifying window manager\n");
 	xde_identify_wm();
 	if (options.output > 1)
 		xde_show_wms();

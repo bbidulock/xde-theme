@@ -128,7 +128,7 @@ find_style_ICEWM()
 	int i, len, beg, end;
 
 	if (options.style[0] == '.' || options.style[0] == '/') {
-		EPRINTF("path in icewm style name '%s'\n", wm->style);
+		EPRINTF("path in icewm style name '%s'\n", options.style);
 		return NULL;
 	}
 	get_rcfile_ICEWM();

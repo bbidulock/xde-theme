@@ -36,12 +36,14 @@ xde_backdrop_LDFLAGS = -R $(xdemoddir) -ldl -dlpreopen xde-fluxbox.la
 
 xdemod_LTLIBRARIES = \
 	xde-2bwm.la \
+	xde-adwm.la \
 	xde-afterstep.la \
 	xde-awesome.la \
 	xde-blackbox.la \
 	xde-ctwm.la \
 	xde-cwm.la \
 	xde-dtwm.la \
+	xde-dwm.la \
 	xde-echinus.la \
 	xde-etwm.la \
 	xde-fluxbox.la \
@@ -69,6 +71,12 @@ xde_2bwm_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFL
 xde_2bwm_la_SOURCES = xde.h xde_2bwm.c
 xde_2bwm_la_LIBADD = libxde.la
 xde_2bwm_la_LDFLAGS = -module -export-dynamic -release $(VERSION) -shared -rpath ${xdemoddir} -avoid-version
+
+xde_adwm_la_CPPFLAGS = -DNAME=\"xde-adwm\"
+xde_adwm_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
+xde_adwm_la_SOURCES = xde.h xde_adwm.c
+xde_adwm_la_LIBADD = libxde.la
+xde_adwm_la_LDFLAGS = -module -export-dynamic -release $(VERSION) -shared -rpath ${xdemoddir} -avoid-version
 
 xde_afterstep_la_CPPFLAGS = -DNAME=\"xde-afterstep\"
 xde_afterstep_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
@@ -105,6 +113,12 @@ xde_dtwm_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFL
 xde_dtwm_la_SOURCES = xde.h xde_dtwm.c
 xde_dtwm_la_LIBADD = libxde.la
 xde_dtwm_la_LDFLAGS = -module -export-dynamic -release $(VERSION) -shared -rpath ${xdemoddir} -avoid-version
+
+xde_dwm_la_CPPFLAGS = -DNAME=\"xde-dwm\"
+xde_dwm_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
+xde_dwm_la_SOURCES = xde.h xde_dwm.c
+xde_dwm_la_LIBADD = libxde.la
+xde_dwm_la_LDFLAGS = -module -export-dynamic -release $(VERSION) -shared -rpath ${xdemoddir} -avoid-version
 
 xde_echinus_la_CPPFLAGS = -DNAME=\"xde-echinus\"
 xde_echinus_la_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)

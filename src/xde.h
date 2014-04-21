@@ -143,6 +143,8 @@ typedef struct {
 	char *stylefile;		/* Window manager style file */
 	char *style;			/* WM current style */
 	char *stylename;		/* WM current style name */
+	char *theme;			/* XDE theme name */
+	char *themefile;		/* XDE tehme file */
 	char *menu;			/* WM current menu */
 	Bool noenv;			/* Do we have an environment? */
 	char *env;			/* Window manager environment */
