@@ -466,6 +466,20 @@ window managers:
 
 =item L<metacity(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="metacity"
+ XDE_WM_NETWM_SUPPORT=0x1200003
+ XDE_WM_ICCCM_SUPPORT=0x1200005
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=21367
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'metacity'"
+
+=back
+
 =item L<twm(1)>
 
 =over
@@ -600,6 +614,22 @@ window managers:
 =back
 
 =item L<awesome(1)>
+
+B<TODO:> we could find the configuration file and assorted directories
+for awesome quite easy.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="awesome"
+ XDE_WM_NETWM_SUPPORT=0x1000002
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=11100
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'awesome'"
+
+=back
 
 =item L<matwm2(1)>
 
@@ -745,6 +775,22 @@ window managers:
 
 =item L<yeahwm(1)>
 
+It is amazing that B<xde-identify> can get this far.  L<yeahwm(1)> is
+barely ICCCM compliant and yet the basic information about this window
+manager can be identified.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="yeahwm"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=9280
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/yeahwm'"
+
+=back
+
 =item L<dwm(1)>
 
 =over
@@ -756,6 +802,127 @@ window managers:
  XDE_WM_PID=13692
  XDE_WM_HOST="petunia.pigworks.openss7.net"
  XDE_WM_CMDLINE="'dwm'"
+
+=back
+
+=item L<aewm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="aewm"
+ XDE_WM_NETWM_SUPPORT=0x7d
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=10718
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/aewm'"
+
+=back
+
+=item L<bspwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="bspwm"
+ XDE_WM_NETWM_SUPPORT=0x1000000
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=13613
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/bspwm'"
+
+=back
+
+=item L<failsafewm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="failsafewm"
+ XDE_WM_PID=15022
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'failsafewm'"
+
+=back
+
+=item L<herbstluftwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="herbstluftwm"
+ XDE_WM_NETWM_SUPPORT=0xa00001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=15438
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/herbstluftwm'"
+
+=back
+
+=item L<i3(1)>
+
+B<TODO:> there is more that we can identify about L<i3(1)>, such as the
+path to the configuration file and other things.  Note that L<i3(1)>
+sets some properties on the root window to help with this.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="i3"
+ XDE_WM_NETWM_SUPPORT=0x120000b
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=17336
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'i3'"
+
+=back
+
+=item L<wm2(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wm2"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=24928
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wm2'"
+
+=back
+
+=item L<wmii(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wmii"
+ XDE_WM_NETWM_SUPPORT=0xc00011
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=27685
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wmii'"
+
+=back
+
+=item L<xdwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="xdwm"
+ XDE_WM_NETWM_SUPPORT=0x7d
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=29841
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'xdwm'"
 
 =back
 

@@ -145,6 +145,10 @@ Atom _XA_OPENBOX_PID;
 Atom _XA_WINDOWMAKER_NOTICEBOARD;
 Atom _XA_WIN_SUPPORTING_WM_CHECK;
 Atom _XA_WIN_PROTOCOLS;
+Atom _XA_I3_CONFIG_PATH;
+Atom _XA_I3_PID;
+Atom _XA_I3_SHMLOG_PATH;
+Atom _XA_I3_SOCKET_PATH;
 
 typedef struct {
 	char *name;
@@ -165,6 +169,10 @@ static Atoms atoms[] = {
 	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD	},
 	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK	},
 	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS		},
+	{"I3_CONFIG_PATH",		&_XA_I3_CONFIG_PATH		},
+	{"I3_PID",			&_XA_I3_PID			},
+	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH		},
+	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH		},
 	{NULL,				NULL				}
 	/* *INDENT-ON* */
 };
@@ -1089,6 +1097,9 @@ check_pid(Window check)
 	if (wm->name && !strcasecmp(wm->name, "openbox"))
 		if (get_cardinal(check, _XA_OPENBOX_PID, XA_CARDINAL, &pid) && pid)
 			goto got_it;
+	if (wm->name && !strcasecmp(wm->name, "i3"))
+		if (get_cardinal(check, _XA_I3_PID, XA_CARDINAL, &pid) && pid)
+			goto got_it;
 	return 0;
       got_it:
 	wm->pid = pid;
@@ -1158,7 +1169,7 @@ static char *wm_list[] = { "2bwm", "adwm", "aewm", "afterstep", "awesome",
 	"herbstluftwm", "i3", "icewm", "jwm", "kwm", "matwm2", "mcwm",
 	"metacity", "mutter", "mwm", "openbox", "pawm", "pekwm", "perlwm",
 	"spectrwm", "twm", "twobwm", "uwm", "velox", "vtwm", "waimea", "wind",
-	"wmaker", "wmii", "wmx", "xdwm", "xfwm", "yeahwm", NULL
+	"wm2", "wmaker", "wmii", "wmx", "xdwm", "xfwm", "yeahwm", NULL
 };
 
 /** @brief Find the wm process without name or pid.
