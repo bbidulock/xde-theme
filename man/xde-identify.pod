@@ -468,9 +468,70 @@ window managers:
 
 =item L<twm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="twm"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=12157
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/twm', '-f', '/home/brian/.twm/rc'"
+ XDE_WM_RCFILE="/home/brian/.twm/rc"
+ XDE_WM_PRVDIR="/home/brian/.twm"
+ XDE_WM_USRDIR="/home/brian/.twm"
+ XDE_WM_SYSDIR="/usr/share/twm"
+ XDE_WM_ETCDIR="/etc/X11/twm"
+ XDE_WM_STYLE="/usr/share/twm/styles/Penguins/stylerc"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.twm/menu"
+
+=back
+
 =item L<ctwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="ctwm"
+ XDE_WM_WINWM_SUPPORT=0x1000068
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=18628
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/ctwm', '-n', '-f', '/home/brian/.ctwm/rc'"
+ XDE_WM_RCFILE="/home/brian/.ctwm/rc"
+ XDE_WM_PRVDIR="/home/brian/.ctwm"
+ XDE_WM_USRDIR="/home/brian/.ctwm"
+ XDE_WM_SYSDIR="/usr/share/ctwm"
+ XDE_WM_ETCDIR="/etc/X11/ctwm"
+ XDE_WM_STYLE="/usr/share/ctwm/styles/Penguins/stylerc"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.ctwm/menu"
+ 
+=back
+
 =item L<vtwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="vtwm"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=11222
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/vtwm', '-f', '/home/brian/.vtwm/rc.m4', '-m'"
+ XDE_WM_RCFILE="/home/brian/.vtwm/rc.m4"
+ XDE_WM_PRVDIR="/home/brian/.vtwm"
+ XDE_WM_USRDIR="/home/brian/.vtwm"
+ XDE_WM_SYSDIR="/usr/share/vtwm"
+ XDE_WM_ETCDIR="/etc/X11/vtwm"
+ XDE_WM_STYLE="/usr/share/vtwm/styles/Radar/stylerc"
+ XDE_WM_STYLENAME="Radar"
+ XDE_WM_MENU="/home/brian/.vtwm/menu"
+
+=back
 
 =item L<etwm(1)>
 
@@ -496,6 +557,26 @@ window managers:
 =back
 
 =item L<echinus(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="echinus"
+ XDE_WM_NETWM_SUPPORT=0x1000005
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=12973
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/echinus'"
+ XDE_WM_RCFILE="/home/brian/.echinus/echinusrc"
+ XDE_WM_PRVDIR="/home/brian/.echinus"
+ XDE_WM_USRDIR="/home/brian/.echinus"
+ XDE_WM_SYSDIR="/usr/share/echinus"
+ XDE_WM_ETCDIR="/etc/echinus"
+ XDE_WM_STYLE="/home/brian/.echinus/styles/Default/stylerc"
+ XDE_WM_STYLENAME="Default"
+
+=back
 
 =item L<uwm(1)>
 

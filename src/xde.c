@@ -387,6 +387,33 @@ check_recursive(Atom atom, Atom type)
 	return check;
 }
 
+Window
+check_nonrecursive(Atom atom, Atom type)
+{
+	Atom real;
+	int format;
+	unsigned long nitems, after;
+	unsigned long *data = NULL;
+	Window check = None;
+
+	OPRINTF("non-recursive check for atom 0x%lx\n", atom);
+
+	if (XGetWindowProperty(dpy, root, atom, 0L, 1L, False, type, &real,
+			       &format, &nitems, &after,
+			       (unsigned char **) &data) == Success && format != 0) {
+		if (nitems > 0) {
+			if ((check = data[0])) {
+				XSelectInput(dpy, check,
+					     PropertyChangeMask | StructureNotifyMask);
+				XSaveContext(dpy, check, ScreenContext, (XPointer) scr);
+			}
+		}
+		if (data)
+			XFree(data);
+	}
+	return check;
+}
+
 static Bool
 check_supported(Atom protocols, Atom supported)
 {
@@ -443,12 +470,18 @@ check_supported(Atom protocols, Atom supported)
   * The only window manager I know of that placed _NET_SUPPORTING_WM_CHECK in
   * the list and did not set the property on the root window was 2bwm, but it
   * has now been fixed.
+  *
+  * There are others that provide _NET_SUPPORTING_WM_CHECK on the root window
+  * but fail to set it recursively.  When _NET_SUPPORTING_WM_CHECK is reported
+  * as supported, relax the check to a non-recursive check.  (Case in point is
+  * echinus(1)).
   */
 static Window
 check_netwm_supported()
 {
-	return check_supported(_XA_NET_SUPPORTED, _XA_NET_SUPPORTING_WM_CHECK)
-		? root : None;
+	if (check_supported(_XA_NET_SUPPORTED, _XA_NET_SUPPORTING_WM_CHECK))
+		return root;
+	return check_nonrecursive(_XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW);
 }
 
 /** @brief Check for a EWMH/NetWM compliant window manager.
@@ -484,8 +517,9 @@ check_netwm()
 static Window
 check_winwm_supported()
 {
-	return check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_SUPPORTING_WM_CHECK)
-		? root : None;
+	if (check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_SUPPORTING_WM_CHECK))
+		return root;
+	return check_nonrecursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL);
 }
 
 /** @brief Check for a GNOME1/WMH/WinWM compliant window manager.
@@ -940,14 +974,24 @@ find_wm_name()
 		else if (wm->motif_check)
 			wm->name = strdup("mwm");
 	} else {
-		/* CTWM with the old GNOME support uses the workspace manager window as a check
-		   window. New CTWM is fully NewWM/EWMH compliant. */
-		if (!strcmp(wm->name, "workspacemanager"))
-			strcpy(wm->name, "ctwm");
-		/* Some versions of wmx have an error in that they only set the _NET_WM_NAME to the 
-		   first letter of wmx. */
-		if (!strcmp(wm->name, "w"))
-			strcpy(wm->name, "wmx");
+		/* CTWM with the old GNOME support uses the workspace manager window as a 
+		   check window. New CTWM is fully NewWM/EWMH compliant. */
+		if (!strcmp(wm->name, "workspacemanager")) {
+			free(wm->name);
+			wm->name = strdup("ctwm");
+		}
+		/* Some versions of wmx have an error in that they only set the
+		   _NET_WM_NAME to the first letter of wmx. */
+		if (!strcmp(wm->name, "w")) {
+			free(wm->name);
+			wm->name = strdup("wmx");
+		}
+		/* Ahhhh, the strange naming of μwm...  Unfortunately there are several
+		   ways to make a μ in utf-8!!! */
+		if (!strcmp(wm->name, "\xce\xbcwm") || !strcmp(wm->name, "\xc2\xb5wm")) {
+			free(wm->name);
+			wm->name = strdup("uwm");
+		}
 	}
 	if (!wm->name)
 		OPRINTF("could not find wm name on screen %d\n", screen);
