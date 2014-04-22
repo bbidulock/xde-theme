@@ -580,6 +580,25 @@ window managers:
 
 =item L<uwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="uwm"
+ XDE_WM_NETWM_SUPPORT=0x1000001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=805
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'uwm'"
+ XDE_WM_RCFILE="/home/brian/.uwm/uwmrc"
+ XDE_WM_PRVDIR="/home/brian/.uwm"
+ XDE_WM_USRDIR="/home/brian/.uwm"
+ XDE_WM_SYSDIR="/usr/share/uwm"
+ XDE_WM_ETCDIR="/etc/uwm"
+ XDE_WM_MENU="/home/brian/.uwm/menu"
+
+=back
+
 =item L<awesome(1)>
 
 =item L<matwm2(1)>
