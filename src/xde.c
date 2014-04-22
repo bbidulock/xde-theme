@@ -1179,7 +1179,7 @@ find_wm_proc_any()
 	size_t size;
 	int i;
 
-	if (wm->host || wm->name || wm->pid)
+	if (wm->host || wm->pid)
 		return False;
 
 	if (!(dir = opendir("/proc"))) {
@@ -1227,6 +1227,7 @@ find_wm_proc_any()
 		pos += strlen("DISPLAY=");
 		if (!strcmp(dsp, pos) || !strcmp(dspnum, pos)) {
 			free(buf);
+			free(wm->name);
 			wm->name = name;
 			wm->pid = pid;
 			break;
@@ -1415,8 +1416,24 @@ find_wm_proc()
 	} else if (wm->name && !wm->pid) {
 		/* have a name but no pid */
 		OPRINTF("%s\n", "need to find process by name");
-		have_proc = find_wm_proc_by_name();
-	} else if (!wm->name && wm->pid) {
+		if (!(have_proc = find_wm_proc_by_name())) {
+			/* Non-reparenting window managers often are set to mimic LG3D
+			   which is the non-reparenting window manager written by Sun in
+			   Java because the JVM only knows a fixed list of
+			   non-reparenting window managers. spectrwm(1) does this by
+			   default.  herbstluftwm(1) is often set to this.  The proper
+			   way to handle this is when looking for the process.
+			   Unfortunately, at least spectrwm(1) is not nice enough to set
+			   _NET_WM_PID for us.
+
+			   NOTE: this approach should also automagically handle some
+			   other crazyness in naming; however, it is slightly dangerous
+			   as window managers such as waimea(1) and wmaker(1) can hang
+			   around after the session has died and be identified first. */
+			OPRINTF("%s\n", "need to find process without name or pid");
+			have_proc = find_wm_proc_any();
+		}
+	} else if (wm->name && wm->pid) {
 		/* have a pid but no name */
 		OPRINTF("%s\n", "need to find process by pid");
 		have_proc = find_wm_proc_by_pid();

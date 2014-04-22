@@ -603,9 +603,61 @@ window managers:
 
 =item L<matwm2(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="matwm2"
+ XDE_WM_NETWM_SUPPORT=0x1000006
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=21616
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/matwm2'"
+ XDE_WM_RCFILE="/home/brian/.matwmrc"
+ XDE_WM_PRVDIR="/home/brian/.matwm2"
+ XDE_WM_USRDIR="/home/brian/.matwm2"
+ XDE_WM_SYSDIR="/usr/share/matwm2"
+ XDE_WM_ETCDIR="/etc/matwm2"
+
+=back
+
 =item L<waimea(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="waimea"
+ XDE_WM_NETWM_SUPPORT=0x1200006
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=21954
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/waimea'"
+ XDE_WM_RCFILE="/home/brian/.waimea/config"
+ XDE_WM_PRVDIR="/home/brian/.waimea"
+ XDE_WM_USRDIR="/home/brian/.waimea"
+ XDE_WM_SYSDIR="/usr/share/waimea"
+ XDE_WM_ETCDIR="/etc/waimea"
+ XDE_WM_STYLE="/home/brian/.waimea/styles/Squared-blue/stylerc"
+ XDE_WM_STYLENAME="stylerc"
+ XDE_WM_MENU="/home/brian/.waimea/menu"
+
+=back
+
 =item L<wind(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wind"
+ XDE_WM_NETWM_SUPPORT=0x1200005
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=22787
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/wind'"
+
+=back
 
 =item L<2bwm(1)>
 
@@ -623,6 +675,22 @@ window managers:
 =back
 
 =item L<wmx(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wmx"
+ XDE_WM_NETWM_SUPPORT=0x1200007
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=23146
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/wmx'"
+ XDE_WM_PRVDIR="/home/brian/.wmx"
+ XDE_WM_USRDIR="/home/brian/.wmx"
+ XDE_WM_MENU="/home/brian/.wmx/"
+
+=back
 
 =item L<flwm(1)>
 
@@ -645,9 +713,35 @@ window managers:
 
 =item L<mwm(1)>
 
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="mwm"
+ XDE_WM_MOTIF_SUPPORT=0x7d
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=23482
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'mwm'"
+
+=back
+
 =item L<dtwm(1)>
 
 =item L<spectrwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="spectrwm"
+ XDE_WM_NETWM_SUPPORT=0x80000c
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=23796
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'spectrwm'"
+
+=back
 
 =item L<yeahwm(1)>
 
