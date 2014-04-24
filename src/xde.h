@@ -158,6 +158,7 @@ typedef struct {
 	int x, y;			/* screen position */
 	unsigned int width, height;	/* screen dimensions */
 	Window root;			/* root window for this screen */
+	Window selwin;			/* MANAGER selection window for screen */
 	WindowManager *wm;		/* window manager managing this screen */
 } WmScreen;
 
