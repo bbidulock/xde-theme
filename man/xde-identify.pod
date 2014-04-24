@@ -263,9 +263,27 @@ F</etc/WindowMaker/WMRootMenu>).
 
 B<xde-identify> directly supports various window managers through the
 use of plug-ins.  Plug-ins are provided for the following lightweight
-window managers:
+window managers (in alphabetical order):
 
 =over
+
+=item L<2bwm(1)>
+
+L<2bwm(1)> does not provides style, key binding or menu files
+whatsoever.  All options are compiled into the program.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="2bwm"
+ XDE_WM_NETWM_SUPPORT=0xc00000
+ XDE_WM_REDIR_SUPPORT=0x2c0
+ XDE_WM_PID=23308
+ XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'2bwm'"
+
+=back
 
 =item L<adwm(1)>
 
@@ -291,26 +309,41 @@ window managers:
 
 =back
 
-=item L<fluxbox(1)>
+=item L<aewm(1)>
+
+B<TODO:> L<aewm(1)> does provide the option for a configuration file.
+The module for L<aewm(1)> does not yet provide the path to this file.
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="fluxbox"
- XDE_WM_NETWM_SUPPORT=0x10000b5
+ XDE_WM_NAME="aewm"
+ XDE_WM_NETWM_SUPPORT=0x7d
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=11457
+ XDE_WM_PID=10718
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'fluxbox'"
- XDE_WM_RCFILE="/home/brian/.fluxbox/init"
- XDE_WM_PRVDIR="/home/brian/.fluxbox"
- XDE_WM_USRDIR="/home/brian/.fluxbox"
- XDE_WM_SYSDIR="/usr/share/fluxbox"
- XDE_WM_ETCDIR="/etc/fluxbox"
- XDE_WM_STYLE="/usr/share/fluxbox/styles/Penguins"
- XDE_WM_STYLENAME="Penguins"
- XDE_WM_MENU="/home/brian/.fluxbox/menu"
+ XDE_WM_CMDLINE="'/usr/bin/aewm'"
+
+=back
+
+=item L<afterstep(1)>
+
+=item L<awesome(1)>
+
+B<TODO:> we could find the configuration file and assorted directories
+for awesome quite easy.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="awesome"
+ XDE_WM_NETWM_SUPPORT=0x1000002
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=11100
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'awesome'"
 
 =back
 
@@ -339,28 +372,201 @@ window managers:
 
 =back
 
-=item L<openbox(1)>
+=item L<bspwm(1)>
+
+B<TODO:> L<bspwm(1)> does provide a default configuration file and the
+path to this file can be changed with command line options.
+B<xde-identify> does not yet provide the path to this file.  The
+configuration file is actually an executable program that will be
+executed by L<bspwm(1)> on startup.  It is typically a shell script that
+uses L<bspc(1)> to execute a number of commands against the window
+manager after it starts up.
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="openbox"
- XDE_WM_NETWM_SUPPORT=0x100000e
- XDE_WM_ICCCM_SUPPORT=0x100000e
+ XDE_WM_NAME="bspwm"
+ XDE_WM_NETWM_SUPPORT=0x1000000
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=24074
+ XDE_WM_PID=13613
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'openbox', '--debug-xinerama', '--config-file', '/home/brian/.config/openbox/unx-rc.xml'"
- XDE_WM_RCFILE="/home/brian/.config/openbox/unx-rc.xml"
- XDE_WM_PRVDIR="/home/brian/.config/openbox"
- XDE_WM_USRDIR="/home/brian/.config/openbox"
- XDE_WM_SYSDIR="/usr/share/openbox"
- XDE_WM_ETCDIR="/etc/xdg/openbox"
- XDE_WM_STYLEFILE="/usr/share/themes/Airforce/openbox-3/themerc"
- XDE_WM_STYLE="/usr/share/themes/Airforce/openbox-3/themerc"
- XDE_WM_STYLENAME="Airforce"
- XDE_WM_MENU="/home/brian/.config/openbox/menu.xml"
+ XDE_WM_CMDLINE="'/usr/bin/bspwm'"
+
+=back
+
+=item L<ctwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="ctwm"
+ XDE_WM_WINWM_SUPPORT=0x1000068
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=18628
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/ctwm', '-n', '-f', '/home/brian/.ctwm/rc'"
+ XDE_WM_RCFILE="/home/brian/.ctwm/rc"
+ XDE_WM_PRVDIR="/home/brian/.ctwm"
+ XDE_WM_USRDIR="/home/brian/.ctwm"
+ XDE_WM_SYSDIR="/usr/share/ctwm"
+ XDE_WM_ETCDIR="/etc/X11/ctwm"
+ XDE_WM_STYLE="/usr/share/ctwm/styles/Penguins/stylerc"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.ctwm/menu"
+ 
+=back
+
+=item L<cwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="cwm"
+ XDE_WM_NETWM_SUPPORT=0x800008
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=12928
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'cwm'"
+ XDE_WM_RCFILE="/home/brian/.cwmrc"
+ XDE_WM_PRVDIR="/home/brian/.cwm"
+ XDE_WM_USRDIR="/home/brian/.cwm"
+ XDE_WM_SYSDIR="/usr/share/cwm"
+ XDE_WM_ETCDIR="/etc/cwm"
+ XDE_WM_MENU="/home/brian/.cwm/menu"
+
+=back
+
+=item L<dtwm(1)>
+
+=item L<dwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="dwm"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=13692
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'dwm'"
+
+=back
+
+=item L<echinus(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="echinus"
+ XDE_WM_NETWM_SUPPORT=0x1000005
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=12973
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/echinus'"
+ XDE_WM_RCFILE="/home/brian/.echinus/echinusrc"
+ XDE_WM_PRVDIR="/home/brian/.echinus"
+ XDE_WM_USRDIR="/home/brian/.echinus"
+ XDE_WM_SYSDIR="/usr/share/echinus"
+ XDE_WM_ETCDIR="/etc/echinus"
+ XDE_WM_STYLE="/home/brian/.echinus/styles/Default/stylerc"
+ XDE_WM_STYLENAME="Default"
+
+=back
+
+=item L<etwm(1)>
+
+=item L<failsafewm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="failsafewm"
+ XDE_WM_PID=15022
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'failsafewm'"
+
+=back
+
+=item L<fluxbox(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="fluxbox"
+ XDE_WM_NETWM_SUPPORT=0x10000b5
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=11457
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'fluxbox'"
+ XDE_WM_RCFILE="/home/brian/.fluxbox/init"
+ XDE_WM_PRVDIR="/home/brian/.fluxbox"
+ XDE_WM_USRDIR="/home/brian/.fluxbox"
+ XDE_WM_SYSDIR="/usr/share/fluxbox"
+ XDE_WM_ETCDIR="/etc/fluxbox"
+ XDE_WM_STYLE="/usr/share/fluxbox/styles/Penguins"
+ XDE_WM_STYLENAME="Penguins"
+ XDE_WM_MENU="/home/brian/.fluxbox/menu"
+
+=back
+
+=item L<flwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="flwm"
+ XDE_WM_WINWM_SUPPORT=0x600004
+ XDE_WM_REDIR_SUPPORT=0x2c0
+ XDE_WM_PID=22022
+ XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'flwm'"
+ XDE_WM_COMMAND="'flwm'"
+ XDE_WM_PRVDIR="/home/brian/.wmx"
+ XDE_WM_USRDIR="/home/brian/.wmx"
+ XDE_WM_MENU="/home/brian/.wmx/"
+
+=back
+
+=item L<fvwm(1)>
+
+=item L<herbstluftwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="herbstluftwm"
+ XDE_WM_NETWM_SUPPORT=0xa00001
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=15438
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/herbstluftwm'"
+
+=back
+
+=item L<i3(1)>
+
+B<TODO:> there is more that we can identify about L<i3(1)>, such as the
+path to the configuration file and other things.  Note that L<i3(1)>
+sets some properties on the root window to help with this.
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="i3"
+ XDE_WM_NETWM_SUPPORT=0x120000b
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=17336
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'i3'"
 
 =back
 
@@ -414,6 +620,82 @@ window managers:
 
 =back
 
+=item L<matwm2(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="matwm2"
+ XDE_WM_NETWM_SUPPORT=0x1000006
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=21616
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'/usr/bin/matwm2'"
+ XDE_WM_RCFILE="/home/brian/.matwmrc"
+ XDE_WM_PRVDIR="/home/brian/.matwm2"
+ XDE_WM_USRDIR="/home/brian/.matwm2"
+ XDE_WM_SYSDIR="/usr/share/matwm2"
+ XDE_WM_ETCDIR="/etc/matwm2"
+
+=back
+
+=item L<metacity(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="metacity"
+ XDE_WM_NETWM_SUPPORT=0x1200003
+ XDE_WM_ICCCM_SUPPORT=0x1200005
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=21367
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'metacity'"
+
+=back
+
+=item L<mwm(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="mwm"
+ XDE_WM_MOTIF_SUPPORT=0x7d
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=23482
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'mwm'"
+
+=back
+
+=item L<openbox(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="openbox"
+ XDE_WM_NETWM_SUPPORT=0x100000e
+ XDE_WM_ICCCM_SUPPORT=0x100000e
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=24074
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'openbox', '--debug-xinerama', '--config-file', '/home/brian/.config/openbox/unx-rc.xml'"
+ XDE_WM_RCFILE="/home/brian/.config/openbox/unx-rc.xml"
+ XDE_WM_PRVDIR="/home/brian/.config/openbox"
+ XDE_WM_USRDIR="/home/brian/.config/openbox"
+ XDE_WM_SYSDIR="/usr/share/openbox"
+ XDE_WM_ETCDIR="/etc/xdg/openbox"
+ XDE_WM_STYLEFILE="/usr/share/themes/Airforce/openbox-3/themerc"
+ XDE_WM_STYLE="/usr/share/themes/Airforce/openbox-3/themerc"
+ XDE_WM_STYLENAME="Airforce"
+ XDE_WM_MENU="/home/brian/.config/openbox/menu.xml"
+
+=back
+
 =item L<pekwm(1)>
 
 =over
@@ -438,45 +720,18 @@ window managers:
 
 =back
 
-=item L<fvwm(1)>
-
-=item L<wmaker(1)>
+=item L<spectrwm(1)>
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="wmaker"
- XDE_WM_NETWM_SUPPORT=0x10000b9
- XDE_WM_MAKER_SUPPORT=0x10000b9
+ XDE_WM_NAME="spectrwm"
+ XDE_WM_NETWM_SUPPORT=0x80000c
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=9310
+ XDE_WM_PID=23796
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wmaker', '--for-real='"
- XDE_WM_RCFILE="/home/brian/GNUstep.petunia/Defaults/WindowMaker"
- XDE_WM_PRVDIR="/home/brian/GNUstep.petunia"
- XDE_WM_USRDIR="/home/brian/GNUstep"
- XDE_WM_SYSDIR="/usr/share/WindowMaker"
- XDE_WM_ETCDIR="/etc/WindowMaker"
- XDE_WM_MENU="/home/brian/GNUstep.petunia/Defaults/WMRootMenu"
-
-=back
-
-=item L<afterstep(1)>
-
-=item L<metacity(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="metacity"
- XDE_WM_NETWM_SUPPORT=0x1200003
- XDE_WM_ICCCM_SUPPORT=0x1200005
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=21367
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'metacity'"
+ XDE_WM_CMDLINE="'spectrwm'"
 
 =back
 
@@ -502,96 +757,6 @@ window managers:
 
 =back
 
-=item L<ctwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="ctwm"
- XDE_WM_WINWM_SUPPORT=0x1000068
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=18628
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/ctwm', '-n', '-f', '/home/brian/.ctwm/rc'"
- XDE_WM_RCFILE="/home/brian/.ctwm/rc"
- XDE_WM_PRVDIR="/home/brian/.ctwm"
- XDE_WM_USRDIR="/home/brian/.ctwm"
- XDE_WM_SYSDIR="/usr/share/ctwm"
- XDE_WM_ETCDIR="/etc/X11/ctwm"
- XDE_WM_STYLE="/usr/share/ctwm/styles/Penguins/stylerc"
- XDE_WM_STYLENAME="Penguins"
- XDE_WM_MENU="/home/brian/.ctwm/menu"
- 
-=back
-
-=item L<vtwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="vtwm"
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=11222
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/vtwm', '-f', '/home/brian/.vtwm/rc.m4', '-m'"
- XDE_WM_RCFILE="/home/brian/.vtwm/rc.m4"
- XDE_WM_PRVDIR="/home/brian/.vtwm"
- XDE_WM_USRDIR="/home/brian/.vtwm"
- XDE_WM_SYSDIR="/usr/share/vtwm"
- XDE_WM_ETCDIR="/etc/X11/vtwm"
- XDE_WM_STYLE="/usr/share/vtwm/styles/Radar/stylerc"
- XDE_WM_STYLENAME="Radar"
- XDE_WM_MENU="/home/brian/.vtwm/menu"
-
-=back
-
-=item L<etwm(1)>
-
-=item L<cwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="cwm"
- XDE_WM_NETWM_SUPPORT=0x800008
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=12928
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'cwm'"
- XDE_WM_RCFILE="/home/brian/.cwmrc"
- XDE_WM_PRVDIR="/home/brian/.cwm"
- XDE_WM_USRDIR="/home/brian/.cwm"
- XDE_WM_SYSDIR="/usr/share/cwm"
- XDE_WM_ETCDIR="/etc/cwm"
- XDE_WM_MENU="/home/brian/.cwm/menu"
-
-=back
-
-=item L<echinus(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="echinus"
- XDE_WM_NETWM_SUPPORT=0x1000005
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=12973
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/echinus'"
- XDE_WM_RCFILE="/home/brian/.echinus/echinusrc"
- XDE_WM_PRVDIR="/home/brian/.echinus"
- XDE_WM_USRDIR="/home/brian/.echinus"
- XDE_WM_SYSDIR="/usr/share/echinus"
- XDE_WM_ETCDIR="/etc/echinus"
- XDE_WM_STYLE="/home/brian/.echinus/styles/Default/stylerc"
- XDE_WM_STYLENAME="Default"
-
-=back
-
 =item L<uwm(1)>
 
 =over
@@ -613,41 +778,25 @@ window managers:
 
 =back
 
-=item L<awesome(1)>
-
-B<TODO:> we could find the configuration file and assorted directories
-for awesome quite easy.
+=item L<vtwm(1)>
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="awesome"
- XDE_WM_NETWM_SUPPORT=0x1000002
+ XDE_WM_NAME="vtwm"
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=11100
+ XDE_WM_PID=11222
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'awesome'"
-
-=back
-
-=item L<matwm2(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="matwm2"
- XDE_WM_NETWM_SUPPORT=0x1000006
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=21616
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/matwm2'"
- XDE_WM_RCFILE="/home/brian/.matwmrc"
- XDE_WM_PRVDIR="/home/brian/.matwm2"
- XDE_WM_USRDIR="/home/brian/.matwm2"
- XDE_WM_SYSDIR="/usr/share/matwm2"
- XDE_WM_ETCDIR="/etc/matwm2"
+ XDE_WM_CMDLINE="'/usr/bin/vtwm', '-f', '/home/brian/.vtwm/rc.m4', '-m'"
+ XDE_WM_RCFILE="/home/brian/.vtwm/rc.m4"
+ XDE_WM_PRVDIR="/home/brian/.vtwm"
+ XDE_WM_USRDIR="/home/brian/.vtwm"
+ XDE_WM_SYSDIR="/usr/share/vtwm"
+ XDE_WM_ETCDIR="/etc/X11/vtwm"
+ XDE_WM_STYLE="/usr/share/vtwm/styles/Radar/stylerc"
+ XDE_WM_STYLENAME="Radar"
+ XDE_WM_MENU="/home/brian/.vtwm/menu"
 
 =back
 
@@ -689,18 +838,54 @@ for awesome quite easy.
 
 =back
 
-=item L<2bwm(1)>
+=item L<wm2(1)>
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="2bwm"
- XDE_WM_NETWM_SUPPORT=0xc00000
- XDE_WM_REDIR_SUPPORT=0x2c0
- XDE_WM_PID=23308
- XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
- XDE_WM_CMDLINE="'2bwm'"
+ XDE_WM_NAME="wm2"
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=24928
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wm2'"
+
+=back
+
+=item L<wmaker(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wmaker"
+ XDE_WM_NETWM_SUPPORT=0x10000b9
+ XDE_WM_MAKER_SUPPORT=0x10000b9
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=9310
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wmaker', '--for-real='"
+ XDE_WM_RCFILE="/home/brian/GNUstep.petunia/Defaults/WindowMaker"
+ XDE_WM_PRVDIR="/home/brian/GNUstep.petunia"
+ XDE_WM_USRDIR="/home/brian/GNUstep"
+ XDE_WM_SYSDIR="/usr/share/WindowMaker"
+ XDE_WM_ETCDIR="/etc/WindowMaker"
+ XDE_WM_MENU="/home/brian/GNUstep.petunia/Defaults/WMRootMenu"
+
+=back
+
+=item L<wmii(1)>
+
+=over
+
+=item I<Example:>
+
+ XDE_WM_NAME="wmii"
+ XDE_WM_NETWM_SUPPORT=0xc00011
+ XDE_WM_REDIR_SUPPORT=0x7d
+ XDE_WM_PID=27685
+ XDE_WM_HOST="petunia.pigworks.openss7.net"
+ XDE_WM_CMDLINE="'wmii'"
 
 =back
 
@@ -722,54 +907,18 @@ for awesome quite easy.
 
 =back
 
-=item L<flwm(1)>
+=item L<xdwm(1)>
 
 =over
 
 =item I<Example:>
 
- XDE_WM_NAME="flwm"
- XDE_WM_WINWM_SUPPORT=0x600004
- XDE_WM_REDIR_SUPPORT=0x2c0
- XDE_WM_PID=22022
- XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
- XDE_WM_CMDLINE="'flwm'"
- XDE_WM_COMMAND="'flwm'"
- XDE_WM_PRVDIR="/home/brian/.wmx"
- XDE_WM_USRDIR="/home/brian/.wmx"
- XDE_WM_MENU="/home/brian/.wmx/"
-
-=back
-
-=item L<mwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="mwm"
- XDE_WM_MOTIF_SUPPORT=0x7d
+ XDE_WM_NAME="xdwm"
+ XDE_WM_NETWM_SUPPORT=0x7d
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=23482
+ XDE_WM_PID=29841
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'mwm'"
-
-=back
-
-=item L<dtwm(1)>
-
-=item L<spectrwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="spectrwm"
- XDE_WM_NETWM_SUPPORT=0x80000c
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=23796
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'spectrwm'"
+ XDE_WM_CMDLINE="'xdwm'"
 
 =back
 
@@ -788,141 +937,6 @@ manager can be identified.
  XDE_WM_PID=9280
  XDE_WM_HOST="petunia.pigworks.openss7.net"
  XDE_WM_CMDLINE="'/usr/bin/yeahwm'"
-
-=back
-
-=item L<dwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="dwm"
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=13692
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'dwm'"
-
-=back
-
-=item L<aewm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="aewm"
- XDE_WM_NETWM_SUPPORT=0x7d
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=10718
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/aewm'"
-
-=back
-
-=item L<bspwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="bspwm"
- XDE_WM_NETWM_SUPPORT=0x1000000
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=13613
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/bspwm'"
-
-=back
-
-=item L<failsafewm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="failsafewm"
- XDE_WM_PID=15022
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'failsafewm'"
-
-=back
-
-=item L<herbstluftwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="herbstluftwm"
- XDE_WM_NETWM_SUPPORT=0xa00001
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=15438
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/herbstluftwm'"
-
-=back
-
-=item L<i3(1)>
-
-B<TODO:> there is more that we can identify about L<i3(1)>, such as the
-path to the configuration file and other things.  Note that L<i3(1)>
-sets some properties on the root window to help with this.
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="i3"
- XDE_WM_NETWM_SUPPORT=0x120000b
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=17336
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'i3'"
-
-=back
-
-=item L<wm2(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="wm2"
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=24928
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wm2'"
-
-=back
-
-=item L<wmii(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="wmii"
- XDE_WM_NETWM_SUPPORT=0xc00011
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=27685
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wmii'"
-
-=back
-
-=item L<xdwm(1)>
-
-=over
-
-=item I<Example:>
-
- XDE_WM_NAME="xdwm"
- XDE_WM_NETWM_SUPPORT=0x7d
- XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=29841
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'xdwm'"
 
 =back
 

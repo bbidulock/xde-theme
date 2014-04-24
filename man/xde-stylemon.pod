@@ -1,0 +1,138 @@
+=head1 NAME
+
+xde-stylemon - monitor style changes for lightweight window managers
+
+=head1 SYNOPSIS
+
+ xde-stylemon [OPTIONS]
+
+=head1 DESCRIPTION
+
+B<xde-stylemon> is a C-language application that can be use to manage
+the style settings for lightweight window managers.  It can use X
+Session Management and will apply the correct style to a window manager
+when it starts according to a saved session.  In the absence of session
+management, it can still restore the correct style using saved files.
+
+=head1 OPTIONS
+
+B<xde-stylemon> uses GNU C<get_options_long_only()> to parse options, so
+long options with a single dash are accepted; however, short options
+cannot be concatenated.  B<xde-stylemon> accepts the following options:
+
+=head2 COMMAND OPTIONS
+
+=over
+
+=back
+
+=head2 GENERAL OPTIONS
+
+=over
+
+=back
+
+=head1 USAGE
+
+=head1 BEHAVIOUR
+
+=head1 THEME SUPPORT
+
+=head1 WINDOW MANAGERS
+
+Following are the window managers supported by B<xde-stylemon>, in
+alphabetical order.
+
+=over
+
+=item L<2bwm(1)>
+
+=item L<adwm(1)>
+
+=item L<aewm(1)>
+
+=item L<afterstep(1)>
+
+=item L<awesome(1)>
+
+=item L<blackbox(1)>
+
+=item L<bspwm(1)>
+
+=item L<ctwm(1)>
+
+=item L<cwm(1)>
+
+=item L<dtwm(1)>
+
+=item L<dwm(1)>
+
+=item L<echinus(1)>
+
+=item L<etwm(1)>
+
+=item L<failsafewm(1)>
+
+=item L<fluxbox(1)>
+
+=item L<flwm(1)>
+
+=item L<fvwm(1)>
+
+=item L<herbstluftwm(1)>
+
+=item L<i3(1)>
+
+=item L<icewm(1)>
+
+=item L<jwm(1)>
+
+=item L<matwm2(1)>
+
+=item L<metacity(1)>
+
+=item L<mwm(1)>
+
+=item L<openbox(1)>
+
+=item L<pekwm(1)>
+
+=item L<spectrwm(1)>
+
+=item L<twm(1)>
+
+=item L<uwm(1)>
+
+=item L<vtwm(1)>
+
+=item L<waimea(1)>
+
+=item L<wind(1)>
+
+=item L<wm2(1)>
+
+=item L<wmaker(1)>
+
+=item L<wmii(1)>
+
+=item L<wmx(1)>
+
+=item L<xdwm(1)>
+
+=item L<yeahwm(1)>
+
+=back
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@cpan.org>
+
+=head1 SEE ALSO
+
+L<hsetroot(1)>,
+L<XDE::Setbg(3pm)>,
+L<X11::Protocol(3pm)>.
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin
