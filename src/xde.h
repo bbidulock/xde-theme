@@ -98,6 +98,7 @@
 
 typedef struct {
 	char *name;
+	char *version;
 	void (*get_rcfile) (void);
 	char *(*find_style) (void);
 	char *(*get_style) (void);
@@ -158,7 +159,9 @@ typedef struct {
 	int x, y;			/* screen position */
 	unsigned int width, height;	/* screen dimensions */
 	Window root;			/* root window for this screen */
+	Atom selection;			/* MANAGER selection atom for screen */
 	Window selwin;			/* MANAGER selection window for screen */
+	Window owner;			/* MANAGER selection owner */
 	WindowManager *wm;		/* window manager managing this screen */
 } WmScreen;
 
@@ -186,6 +189,7 @@ extern Window root;
 extern WindowManager *wm;
 extern WmScreen *screens;
 extern WmScreen *scr;
+extern WmScreen *event_scr;
 extern unsigned int nscr;
 
 #define OPRINTF(args...) do { if (options.output > 1) { \

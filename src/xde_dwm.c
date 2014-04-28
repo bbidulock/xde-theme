@@ -105,6 +105,7 @@ list_styles_DWM()
 
 WmOperations xde_wm_ops = {
 	"dwm",
+	VERSION,
 	&get_rcfile_DWM,
 	&find_style_DWM,
 	&get_style_DWM,

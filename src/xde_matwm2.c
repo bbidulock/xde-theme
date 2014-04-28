@@ -114,6 +114,7 @@ list_styles_MATWM2()
 
 WmOperations xde_wm_ops = {
 	"matwm2",
+	VERSION,
 	&get_rcfile_MATWM2,
 	&find_style_MATWM2,
 	&get_style_MATWM2,

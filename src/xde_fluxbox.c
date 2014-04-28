@@ -178,6 +178,7 @@ list_styles_FLUXBOX()
 
 WmOperations xde_wm_ops = {
 	"fluxbox",
+	VERSION,
 	&get_rcfile_FLUXBOX,
 	&find_style_FLUXBOX,
 	&get_style_FLUXBOX,

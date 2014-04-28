@@ -103,6 +103,7 @@ list_styles_SPECTRWM()
 
 WmOperations xde_wm_ops = {
 	"spectrwm",
+	VERSION,
 	&get_rcfile_SPECTRWM,
 	&find_style_SPECTRWM,
 	&get_style_SPECTRWM,

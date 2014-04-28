@@ -50,38 +50,378 @@
 
 const char *program = NAME;
 
-Window selwin;
-
-static void
-startup()
+static Bool
+selectionreleased(Display *display, XEvent *event, XPointer arg)
 {
-	char name[32];
-	Atom select, manager, owner;
+	if (event->type == DestroyNotify && event->xdestroywindow.window == (Window) arg)
+		return True;
+	return False;
+}
 
-	snprintf(name, 32, "_XDE_STYLE_S%d", scr->screen);
-	select = XInternAtom(dpy, name, False);
-	manager = XInternAtom(dpy, "MANAGER", False);
+enum {
+	CMD_MODE_RUN = 0,
+	CMD_MODE_REPLACE = 1,
+	CMD_MODE_QUIT = 2,
+	CMD_MODE_SET = 3,
+	CMD_MODE_HELP = 4,
+	CMD_MODE_VERSION = 5,
+	CMD_MODE_COPYING = 6
+} command;
 
-	scr->selwin = XCreateSimpleWindow(dpy, scr->root,
-					  DisplayWidth(dpy, scr->screen),
-					  DisplayHeight(dpy, scr->screen), 1, 1, 0, 0L, 0L);
+SmcConn smcconn;
+IceConn iceconn;
+
+char *client_id;
+
+int running;
+Atom _XA_MANAGER;
+
+WmScreen *
+getscreen(Window win)
+{
+	Window *wins = NULL, wroot = None, parent = None;
+	unsigned int num = 0;
+	WmScreen *s = NULL;
+
+	if (!win)
+		return (s);
+	if (!XFindContext(dpy, win, ScreenContext, (XPointer *) &s))
+		return (s);
+	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
+		XFindContext(dpy, wroot, ScreenContext, (XPointer *) &s);
+	if (wins)
+		XFree(wins);
+	return (s);
+}
+
+WmScreen *
+geteventscr(XEvent *ev)
+{
+	return (event_scr = getscreen(ev->xany.window) ? : scr);
+}
+
+static Bool
+IGNOREEVENT(XEvent *e)
+{
+	DPRINTF("Got ignore event %d\n", e->type);
+	return False;
+}
+
+static Bool
+selectionclear(XEvent *e)
+{
+	if (e->xselectionclear.selection == scr->selection && scr->selwin) {
+		int n;
+		WmScreen *s;
+
+		XDestroyWindow(dpy, scr->selwin);
+		XDeleteContext(dpy, scr->selwin, ScreenContext);
+		scr->selwin = None;
+		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
+			XSelectInput(dpy, scr->owner, StructureNotifyMask);
+			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+			XSync(dpy, False);
+		}
+		return True;
+	}
+	return False;
+}
+
+static Bool
+clientmessage(XEvent *e)
+{
+	if (e->xclient.message_type != _XA_MANAGER)
+		return False;
+	if (e->xclient.data.l[1] != scr->selection)
+		return False;
+	if (!scr->owner || scr->owner != e->xclient.data.l[2]) {
+		if (scr->owner) {
+			XDeleteContext(dpy, scr->owner, ScreenContext);
+			scr->owner = None;
+		}
+		if (scr->owner != e->xclient.data.l[2]
+		    && (scr->owner = e->xclient.data.l[2])) {
+			XSelectInput(dpy, scr->owner, StructureNotifyMask);
+			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+			XSync(dpy, False);
+		}
+	}
+	if (scr->selwin) {
+		XDestroyWindow(dpy, scr->selwin);
+		XDeleteContext(dpy, scr->selwin, ScreenContext);
+		scr->selwin = None;
+	}
+	return True;
+}
+
+static Bool
+destroynotify(XEvent *e)
+{
+	int n;
+	XClientMessageEvent mev;
+
+	if (!e->xany.window || scr->owner != e->xany.window)
+		return False;
+	XDeleteContext(dpy, scr->owner, ScreenContext);
 
 	XGrabServer(dpy);
-	owner = XGetSelectionOnwer(dpy, select);
-	if (owner != None) {
-		XSelectInput(dpy, owner, StructureNotifyMask);
+	if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
+		XSelectInput(dpy, scr->owner, StructureNotifyMask);
+		XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
 		XSync(dpy, False);
 	}
 	XUngrabServer(dpy);
 
-	XSetSelectionOwner(dpy, select, scr->selwin, CurrentTime);
-	if (owner != None) {
-		XEvent ev;
-
-		XIfEvent(dpy, &ev, &selectionreleased, (XPointer) owner);
-		owner = None;
+	if (!scr->selwin) {
+		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
+						  DisplayWidth(dpy, scr->screen),
+						  DisplayHeight(dpy, scr->screen),
+						  1, 1, 0, 0L, 0L);
+		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
 	}
 
+	XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+	if (scr->owner) {
+		XEvent ev;
+
+		XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
+		XDeleteContext(dpy, scr->owner, ScreenContext);
+		scr->owner = None;
+	}
+	mev.display = dpy;
+	mev.type = ClientMessage;
+	mev.window = scr->root;
+	mev.message_type = _XA_MANAGER;
+	mev.format = 32;
+	mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
+	mev.data.l[1] = scr->selection;
+	mev.data.l[2] = scr->selwin;
+	mev.data.l[3] = 2;
+	mev.data.l[4] = 0;
+	XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
+	XSync(dpy, False);
+	return True;
+}
+
+Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
+	/* *INDENT-OFF* */
+	[KeyPress]		= IGNOREEVENT,
+	[KeyRelease]		= IGNOREEVENT,
+	[ButtonPress]		= IGNOREEVENT,
+	[ButtonRelease]		= IGNOREEVENT,
+	[MotionNotify]		= IGNOREEVENT,
+	[EnterNotify]		= IGNOREEVENT,
+	[LeaveNotify]		= IGNOREEVENT,
+	[FocusIn]		= IGNOREEVENT,
+	[FocusOut]		= IGNOREEVENT,
+	[KeymapNotify]		= IGNOREEVENT,
+	[Expose]		= IGNOREEVENT,
+	[GraphicsExpose]	= IGNOREEVENT,
+	[NoExpose]		= IGNOREEVENT,
+	[VisibilityNotify]	= IGNOREEVENT,
+	[CreateNotify]		= IGNOREEVENT,
+	[DestroyNotify]		= IGNOREEVENT,
+	[UnmapNotify]		= IGNOREEVENT,
+	[MapNotify]		= IGNOREEVENT,
+	[MapRequest]		= IGNOREEVENT,
+	[ReparentNotify]	= IGNOREEVENT,
+	[ConfigureNotify]	= IGNOREEVENT,
+	[ConfigureRequest]	= IGNOREEVENT,
+	[GravityNotify]		= IGNOREEVENT,
+	[ResizeRequest]		= IGNOREEVENT,
+	[CirculateNotify]	= IGNOREEVENT,
+	[CirculateRequest]	= IGNOREEVENT,
+	[PropertyNotify]	= IGNOREEVENT,
+	[SelectionClear]	= IGNOREEVENT,
+	[SelectionRequest]	= IGNOREEVENT,
+	[SelectionNotify]	= IGNOREEVENT,
+	[ColormapNotify]	= IGNOREEVENT,
+	[ClientMessage]		= IGNOREEVENT,
+	[MappingNotify]		= IGNOREEVENT,
+	/* *INDENT-ON* */
+};
+
+Bool
+handle_event(XEvent *ev)
+{
+	if (ev->type <= LASTEvent && handler[ev->type]) {
+		geteventscr(ev);
+		return (handler[ev->type]) (ev);
+	}
+	DPRINTF("WARNING: No handler for event type %d\n", ev->type);
+	return False;
+}
+
+int signum;
+
+void
+sighandler(int sig)
+{
+	if (sig)
+		signum = sig;
+}
+
+static void
+startup(char *previous_id)
+{
+	char name[32];
+	XClientMessageEvent mev;
+	unsigned long procs = 0;
+	SmcCallbacks cbs;
+	char errmsg[256];
+	int n;
+
+	_XA_MANAGER = XInternAtom(dpy, "MANAGER", False);
+
+	signal(SIGHUP, sighandler);
+	signal(SIGINT, sighandler);
+	signal(SIGTERM, sighandler);
+	signal(SIGQUIT, sighandler);
+
+
+	for (scr = screens, n = 0; n < nscr; n++, scr++) {
+	snprintf(name, 32, "_XDE_STYLE_S%d", scr->screen);
+	scr->selection = XInternAtom(dpy, name, False);
+
+	scr->selwin = XCreateSimpleWindow(dpy, scr->root,
+					  DisplayWidth(dpy, scr->screen),
+					  DisplayHeight(dpy, scr->screen), 1, 1, 0, 0L,
+					  0L);
+	XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
+
+	XGrabServer(dpy);
+	if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
+		XSelectInput(dpy, scr->owner, StructureNotifyMask);
+		XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+		XSync(dpy, False);
+	}
+	XUngrabServer(dpy);
+
+	switch (command) {
+	case CMD_MODE_RUN:
+	default:
+		if (scr->owner) {
+			fprintf(stderr,
+				"another instance of %s already running -- exiting\n",
+				NAME);
+			exit(0);
+		}
+		break;
+	case CMD_MODE_REPLACE:
+		if (scr->owner)
+			fprintf(stderr,
+				"another instance of %s already running -- replacing\n",
+				NAME);
+		break;
+	case CMD_MODE_QUIT:
+		if (scr->owner)
+			fprint(stderr,
+			       "another instance of %s already running -- quitting\n",
+			       NAME);
+		break;
+	}
+
+	XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+	if (scr->owner != None) {
+		XEvent ev;
+
+		XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
+		XDeleteContext(dpy, scr->owner, ScreenContext);
+		scr->owner = None;
+	}
+	mev.display = dpy;
+	mev.type = ClientMessage;
+	mev.window = scr->root;
+	mev.message_type = _XA_MANAGER;
+	mev.format = 32;
+	mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
+	mev.data.l[1] = scr->selection;
+	mev.data.l[2] = scr->selwin;
+	mev.data.l[3] = 2;
+	mev.data.l[4] = 0;
+	XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
+	XSync(dpy, False);
+
+	if (command == CMD_MODE_QUIT)
+		exit(0);
+
+	/* try to connect to session manager */
+	procs =
+	    SmcSaveYourselfProcMask | SmcDieProcMask | SmcSaveCompleteProcMask |
+	    SmcShutdownCancelledProcMask;
+	cbs.save_yourself.callback = xde_save_yourself_cb;
+	cbs.save_yourself.client_data = (SmPointer) NULL;
+	cbs.die.callback = xde_die_cb;
+	cbs.die.client_data = (SmPointer) NULL;
+	cbs.save_complete.callback = xde_save_complete;
+	cbs.save_complete.client_data = (SmPointer) NULL;
+	cbs.shutdown_cancelled.callback = xde_shutdown_cacnelled;
+	cbs.shutdown_cancalled.client_data = (SmPointer) NULL;
+
+	smcconn =
+	    SmcOpenConnection(NULL, (SmPointer) scr, SmProtoMajor, SmProtoMinor, procs,
+			      &cbs, previous_id, &client_id, sizeof(client_id), errmsg);
+	if (smcconn == NULL) {
+		/* darn, no sesssion manager */
+		return;
+	}
+	iceconn = SmcGetIceConnection(smcconn);
+
+}
+
+static void
+event_loop()
+{
+	int ifd, xfd = 0, num = 1;
+	XEvent ev;
+
+	xfd = ConnectionNumber(dpy);
+	if (iceconn) {
+		ifd = IceConnectionNumber(iceconn);
+		num++;
+	}
+	while (running) {
+		struct pollfd pfd[2] = {
+			{xfd, POLLIN | POLLERR | POLLHUP, 0}
+			{ifd, POLLIN | POLLERR | POLLHUP, 0},
+		};
+
+		if (signum) {
+			if (signum == SIGHUP) {
+				fprintf(stderr, "Exiting on SIGHUP\n");
+				running = 0;
+				break;
+			}
+			signum = 0;
+		}
+		if (poll(pfd, num, -1) == -1) {
+			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
+				continue;
+			fprintf(stderr, "poll failed: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		} else {
+			if (pfd[0].revents & (POLLNVAL | POLLHUP | POLLERR)) {
+				fprintf(stderr, "poll error on ICE connection\n");
+				exit(EXIT_FAILURE);
+			}
+			if (pfd[1].revents & (POLLNVAL | POLLHUP | POLLERR)) {
+				fprintf(stderr, "poll error on X connection\n");
+				exit(EXIT_FAILURE);
+			}
+			if (pfd[0].revents & POLLIN) {
+				IceProcessMessages(iceconn, NULL, NULL);
+			}
+			if (pfd[1].revents & POLLIN) {
+				while (XPending(dpy) && running) {
+					XNextEvent(dpy, &ev);
+					if (!handle_event(&ev))
+						fprintf(stderr,
+							"WARNING: X Event %d not handled\n",
+							ev.type);
+				}
+			}
+		}
+	}
 }
 
 static void
@@ -217,6 +557,14 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
+			{"run",		no_argument,		NULL, 'r'},
+			{"replace",	no_argument,		NULL, 'R'},
+			{"quit",	no_argument,		NULL, 'q'},
+			{"set",		required_argument,	NULL, 's'},
+			{"help",	no_argument,		NULL, 'h'},
+			{"version",	no_argument,		NULL, 'V'},
+			{"copying",	no_argument,		NULL, 'C'},
+
 			{"current",	no_argument,		NULL, 'c'},
 			{"list",	no_argument,		NULL, 'l'},
 			{"set",		no_argument,		NULL, 's'},

@@ -161,6 +161,7 @@ list_styles_WAIMEA()
 
 WmOperations xde_wm_ops = {
 	"waimea",
+	VERSION,
 	&get_rcfile_WAIMEA,
 	&find_style_WAIMEA,
 	&get_style_WAIMEA,

@@ -259,15 +259,18 @@ get_style_OPENBOX()
 		XFree(tp.value);
 	}
 	if (theme) {
+		char *path;
+
 		free(wm->stylename);
 		wm->stylename = theme;
 		free(wm->style);
 		wm->style = strdup(theme);
-		if ((theme = locate_theme_OPENBOX(theme))) {
+		if ((path = locate_theme_OPENBOX(theme))) {
 			free(wm->style);
-			wm->style = theme;
+			wm->style = strdup(path);
 			free(wm->stylefile);
-			wm->stylefile = strdup(theme);
+			wm->stylefile = strdup(path);
+			free(path);
 		}
 	}
 	return theme;
@@ -342,9 +345,16 @@ set_style_OPENBOX()
 
 	if (options.dryrun) {
 	} else {
+		free(wm->stylename);
+		wm->stylename = strdup(options.style);
+		free(wm->style);
+		wm->style = strdup(stylefile);
+		free(wm->stylefile);
+		wm->stylefile = strdup(stylefile);
 		if (options.reload)
 			reload_style_OPENBOX();
 	}
+	free(stylefile);
 	return;
 }
 
@@ -367,6 +377,7 @@ list_styles_OPENBOX()
 
 WmOperations xde_wm_ops = {
 	"openbox",
+	VERSION,
 	&get_rcfile_OPENBOX,
 	&find_style_OPENBOX,
 	&get_style_OPENBOX,

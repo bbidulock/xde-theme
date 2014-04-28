@@ -212,6 +212,7 @@ list_styles_JWM()
 
 WmOperations xde_wm_ops = {
 	"jwm",
+	VERSION,
 	&get_rcfile_JWM,
 	&find_style_JWM,
 	&get_style_JWM,

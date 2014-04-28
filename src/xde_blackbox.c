@@ -147,6 +147,7 @@ list_styles_BLACKBOX()
 
 WmOperations xde_wm_ops = {
 	"blackbox",
+	VERSION,
 	&get_rcfile_BLACKBOX,
 	&find_style_BLACKBOX,
 	&get_style_BLACKBOX,

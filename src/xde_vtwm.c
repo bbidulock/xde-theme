@@ -105,6 +105,7 @@ list_styles_VTWM()
 
 WmOperations xde_wm_ops = {
 	"vtwm",
+	VERSION,
 	&get_rcfile_VTWM,
 	&find_style_VTWM,
 	&get_style_VTWM,

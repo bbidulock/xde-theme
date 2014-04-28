@@ -530,6 +530,7 @@ list_styles_ICEWM()
 
 WmOperations xde_wm_ops = {
 	"icewm",
+	VERSION,
 	&get_rcfile_ICEWM,
 	&find_style_ICEWM,
 	&get_style_ICEWM,

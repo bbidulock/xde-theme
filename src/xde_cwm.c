@@ -242,6 +242,7 @@ list_styles_CWM()
 
 WmOperations xde_wm_ops = {
 	"cwm",
+	VERSION,
 	&get_rcfile_CWM,
 	&find_style_CWM,
 	&get_style_CWM,

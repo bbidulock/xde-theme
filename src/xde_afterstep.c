@@ -102,6 +102,7 @@ list_styles_AFTERSTEP()
 
 WmOperations xde_wm_ops = {
 	"afterstep",
+	VERSION,
 	&get_rcfile_AFTERSTEP,
 	&find_style_AFTERSTEP,
 	&get_style_AFTERSTEP,

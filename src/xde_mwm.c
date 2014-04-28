@@ -102,6 +102,7 @@ list_styles_MWM()
 
 WmOperations xde_wm_ops = {
 	"mwm",
+	VERSION,
 	&get_rcfile_MWM,
 	&find_style_MWM,
 	&get_style_MWM,

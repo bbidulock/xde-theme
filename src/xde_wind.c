@@ -104,6 +104,7 @@ list_styles_WIND()
 
 WmOperations xde_wm_ops = {
 	"wind",
+	VERSION,
 	&get_rcfile_WIND,
 	&find_style_WIND,
 	&get_style_WIND,

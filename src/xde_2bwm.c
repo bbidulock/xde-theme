@@ -103,6 +103,7 @@ list_styles_2BWM()
 
 WmOperations xde_wm_ops = {
 	"2bwm",
+	VERSION,
 	&get_rcfile_2BWM,
 	&find_style_2BWM,
 	&get_style_2BWM,

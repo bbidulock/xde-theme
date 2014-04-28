@@ -324,6 +324,7 @@ list_styles_PEKWM()
 
 WmOperations xde_wm_ops = {
 	"pekwm",
+	VERSION,
 	&get_rcfile_PEKWM,
 	&find_style_PEKWM,
 	&get_style_PEKWM,

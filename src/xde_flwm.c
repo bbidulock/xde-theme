@@ -135,6 +135,7 @@ list_styles_FLWM()
 
 WmOperations xde_wm_ops = {
 	"flwm",
+	VERSION,
 	&get_rcfile_FLWM,
 	&find_style_FLWM,
 	&get_style_FLWM,

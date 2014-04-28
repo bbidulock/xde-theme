@@ -102,6 +102,7 @@ list_styles_YEAHWM()
 
 WmOperations xde_wm_ops = {
 	"yeahwm",
+	VERSION,
 	&get_rcfile_YEAHWM,
 	&find_style_YEAHWM,
 	&get_style_YEAHWM,

@@ -53,6 +53,7 @@ Window root;
 WindowManager *wm;
 WmScreen *screens;
 WmScreen *scr;
+WmScreen *event_scr;
 unsigned int nscr;
 
 Options options = {
@@ -2560,6 +2561,7 @@ get_menu_NONE()
 
 static WmOperations wm_ops_NONE = {
 	"none",
+	VERSION,
 	&get_rcfile_NONE,
 	&find_style_NONE,
 	&get_style_NONE,
@@ -2630,6 +2632,7 @@ list_styles_UNKNOWN()
 
 static WmOperations wm_ops_UNKNOWN = {
 	"unknown",
+	VERSION,
 	&get_rcfile_UNKNOWN,
 	&find_style_UNKNOWN,
 	&get_style_UNKNOWN,
@@ -2651,7 +2654,7 @@ WmOperations *wm_ops[] = {
 static WmOperations *
 get_wm_ops()
 {
-	WmOperations **ops;
+	WmOperations **ops, *loaded;
 	char dlfile[256];
 	void *handle;
 
@@ -2666,7 +2669,9 @@ get_wm_ops()
 	DPRINTF("attempting to dlopen %s\n", dlfile);
 	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
 		DPRINTF("dlopen of %s succeeded\n", dlfile);
-		return dlsym(handle, "xde_wm_ops");
+		if ((loaded = dlsym(handle, "xde_wm_ops")))
+			DPRINTF("module version is %s\n", loaded->version);
+		return loaded;
 	} else
 		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
 

@@ -105,6 +105,7 @@ list_styles_ETWM()
 
 WmOperations xde_wm_ops = {
 	"etwm",
+	VERSION,
 	&get_rcfile_ETWM,
 	&find_style_ETWM,
 	&get_style_ETWM,

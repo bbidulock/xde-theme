@@ -124,6 +124,7 @@ list_styles_TWM()
 
 WmOperations xde_wm_ops = {
 	"twm",
+	VERSION,
 	&get_rcfile_TWM,
 	&find_style_TWM,
 	&get_style_TWM,

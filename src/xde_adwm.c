@@ -191,6 +191,7 @@ list_styles_ADWM()
 
 WmOperations xde_wm_ops = {
 	"adwm",
+	VERSION,
 	&get_rcfile_ADWM,
 	&find_style_ADWM,
 	&get_style_ADWM,

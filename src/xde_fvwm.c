@@ -104,6 +104,7 @@ list_styles_FVWM()
 
 WmOperations xde_wm_ops = {
 	"fvwm",
+	VERSION,
 	&get_rcfile_FVWM,
 	&find_style_FVWM,
 	&get_style_FVWM,

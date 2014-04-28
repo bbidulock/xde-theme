@@ -102,6 +102,7 @@ list_styles_DTWM()
 
 WmOperations xde_wm_ops = {
 	"dtwm",
+	VERSION,
 	&get_rcfile_DTWM,
 	&find_style_DTWM,
 	&get_style_DTWM,

@@ -251,6 +251,7 @@ list_styles_WMAKER()
 
 WmOperations xde_wm_ops = {
 	"wmaker",
+	VERSION,
 	&get_rcfile_WMAKER,
 	&find_style_WMAKER,
 	&get_style_WMAKER,

@@ -135,6 +135,7 @@ list_styles_WMX()
 
 WmOperations xde_wm_ops = {
 	"wmx",
+	VERSION,
 	&get_rcfile_WMX,
 	&find_style_WMX,
 	&get_style_WMX,

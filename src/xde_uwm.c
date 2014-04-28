@@ -187,6 +187,7 @@ list_styles_UWM()
 
 WmOperations xde_wm_ops = {
 	"uwm",
+	VERSION,
 	&get_rcfile_UWM,
 	&find_style_UWM,
 	&get_style_UWM,

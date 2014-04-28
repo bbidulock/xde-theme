@@ -102,6 +102,7 @@ list_styles_AWESOME()
 
 WmOperations xde_wm_ops = {
 	"awesome",
+	VERSION,
 	&get_rcfile_AWESOME,
 	&find_style_AWESOME,
 	&get_style_AWESOME,

@@ -105,6 +105,7 @@ list_styles_CTWM()
 
 WmOperations xde_wm_ops = {
 	"ctwm",
+	VERSION,
 	&get_rcfile_CTWM,
 	&find_style_CTWM,
 	&get_style_CTWM,

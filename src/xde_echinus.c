@@ -186,6 +186,7 @@ list_styles_ECHINUS()
 
 WmOperations xde_wm_ops = {
 	"echinus",
+	VERSION,
 	&get_rcfile_ECHINUS,
 	&find_style_ECHINUS,
 	&get_style_ECHINUS,
