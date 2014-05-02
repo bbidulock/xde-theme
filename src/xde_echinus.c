@@ -173,9 +173,9 @@ set_style_ECHINUS()
 }
 
 static void
-list_dir_ECHINUS(char *xdir, char *style)
+list_dir_ECHINUS(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void

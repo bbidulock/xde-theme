@@ -163,9 +163,9 @@ set_style_FLUXBOX()
 }
 
 static void
-list_dir_FLUXBOX(char *xdir, char *style)
+list_dir_FLUXBOX(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", "", style, type);
 }
 
 /** @brief List fluxbox styles.

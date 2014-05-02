@@ -93,7 +93,7 @@ reload_style_WIND()
 }
 
 static void
-list_dir_WIND(char *xdir, char *style)
+list_dir_WIND(char *xdir, char *style, enum ListType type)
 {
 }
 

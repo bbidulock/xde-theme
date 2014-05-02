@@ -91,7 +91,7 @@ reload_style_YEAHWM()
 }
 
 static void
-list_dir_YEAHWM(char *xdir, char *style)
+list_dir_YEAHWM(char *xdir, char *style, enum ListType type)
 {
 }
 

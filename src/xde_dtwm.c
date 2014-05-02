@@ -91,7 +91,7 @@ reload_style_DTWM()
 }
 
 static void
-list_dir_DTWM(char *xdir, char *style)
+list_dir_DTWM(char *xdir, char *style, enum ListType type)
 {
 }
 

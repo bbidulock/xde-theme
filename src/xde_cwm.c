@@ -229,9 +229,9 @@ set_style_CWM()
 }
 
 static void
-list_dir_CWM(char *xdir, char *style)
+list_dir_CWM(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void

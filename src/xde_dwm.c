@@ -94,7 +94,7 @@ reload_style_DWM()
 }
 
 static void
-list_dir_DWM(char *xdir, char *style)
+list_dir_DWM(char *xdir, char *style, enum ListType type)
 {
 }
 

@@ -174,9 +174,9 @@ reload_style_UWM()
 }
 
 static void
-list_dir_UWM(char *xdir, char *style)
+list_dir_UWM(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/style", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/style", "", style, type);
 }
 
 static void

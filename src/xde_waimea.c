@@ -148,9 +148,9 @@ set_style_WAIMEA()
   * %s.style, where %s is the style name and no subdirectories will do.
   */
 static void
-list_dir_WAIMEA(char *xdir, char *style)
+list_dir_WAIMEA(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", ".style", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", ".style", style, type);
 }
 
 static void

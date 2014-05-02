@@ -91,7 +91,7 @@ reload_style_AFTERSTEP()
 }
 
 static void
-list_dir_AFTERSTEP(char *xdir, char *style)
+list_dir_AFTERSTEP(char *xdir, char *style, enum ListType type)
 {
 }
 

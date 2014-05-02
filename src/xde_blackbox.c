@@ -134,9 +134,9 @@ set_style_BLACKBOX()
 }
 
 static void
-list_dir_BLACKBOX(char *xdir, char *style)
+list_dir_BLACKBOX(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void

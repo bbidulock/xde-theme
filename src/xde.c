@@ -1510,8 +1510,80 @@ check_wm()
 	return False;
 }
 
-void
-__xde_identify_wm()
+static void
+xde_identify_wm_human()
+{
+	fprintf(stdout, "Name: %s\n", wm->name);
+	if (wm->netwm_check)
+		fprintf(stdout, "Supports EWMH/NetWM\n");
+	if (wm->maker_check)
+		fprintf(stdout, "Supports WindowMaker\n");
+	if (wm->winwm_check)
+		fprintf(stdout, "Supports GNOME/WinWM\n");
+	if (wm->motif_check)
+		fprintf(stdout, "Supports OSF/Motif\n");
+	if (wm->icccm_check)
+		fprintf(stdout, "Supports ICCCM 2.0\n");
+	if (wm->redir_check)
+		fprintf(stdout, "Supports ICCCM\n");
+	if (wm->pid)
+		fprintf(stdout, "Process Id: %ld\n", wm->pid);
+	if (wm->host)
+		fprintf(stdout, "Hostname: %s\n", wm->host);
+	if (wm->ch.res_class)
+		fprintf(stdout, "Resource class: %s\n", wm->ch.res_class);
+	if (wm->ch.res_name)
+		fprintf(stdout, "Resource name:  %s\n", wm->ch.res_name);
+	if (wm->argv && wm->argc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->argc; i++)
+			len += strlen(wm->argv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->argc; i++) {
+			strcat(cmd, i ? " '" : "'");
+			strcat(cmd, wm->argv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "Process command line: %s\n", cmd);
+	}
+	if (wm->cargv && wm->cargc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->cargc; i++)
+			len += strlen(wm->cargv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->cargc; i++) {
+			strcat(cmd, i ? " '" : "'");
+			strcat(cmd, wm->cargv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "Session command: %s\n", cmd);
+	}
+	if (wm->rcfile)
+		fprintf(stdout, "Runtime config file: %s\n", wm->rcfile);
+	if (wm->pdir)
+		fprintf(stdout, "Private directory: %s\n", wm->pdir);
+	if (wm->udir)
+		fprintf(stdout, "User directory: %s\n", wm->udir);
+	if (wm->sdir)
+		fprintf(stdout, "System directory: %s\n", wm->sdir);
+	if (wm->edir)
+		fprintf(stdout, "Config directory: %s\n", wm->edir);
+	if (wm->stylefile)
+		fprintf(stdout, "Style file: %s\n", wm->stylefile);
+	if (wm->style)
+		fprintf(stdout, "Style: %s\n", wm->style);
+	if (wm->stylename)
+		fprintf(stdout, "Style name: %s\n", wm->stylename);
+	if (wm->menu)
+		fprintf(stdout, "Menu file: %s\n", wm->menu);
+}
+
+static void
+xde_identify_wm_shell()
 {
 	fprintf(stdout, "XDE_WM_NAME=\"%s\"\n", wm->name);
 	if (wm->netwm_check)
@@ -1542,11 +1614,11 @@ __xde_identify_wm()
 			len += strlen(wm->argv[i]) + 5;
 		cmd = calloc(len, sizeof(*cmd));
 		for (i = 0; i < wm->argc; i++) {
-			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, i ? " '" : "'");
 			strcat(cmd, wm->argv[i]);
 			strcat(cmd, "'");
 		}
-		fprintf(stdout, "XDE_WM_CMDLINE=\"%s\"\n", cmd);
+		fprintf(stdout, "XDE_WM_CMDLINE=(%s)\n", cmd);
 	}
 	if (wm->cargv && wm->cargc) {
 		int i, len;
@@ -1556,11 +1628,11 @@ __xde_identify_wm()
 			len += strlen(wm->cargv[i]) + 5;
 		cmd = calloc(len, sizeof(*cmd));
 		for (i = 0; i < wm->cargc; i++) {
-			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, i ? " '" : "'");
 			strcat(cmd, wm->cargv[i]);
 			strcat(cmd, "'");
 		}
-		fprintf(stdout, "XDE_WM_COMMAND=\"%s\"\n", cmd);
+		fprintf(stdout, "XDE_WM_COMMAND=(%s)\n", cmd);
 	}
 	if (wm->rcfile)
 		fprintf(stdout, "XDE_WM_RCFILE=\"%s\"\n", wm->rcfile);
@@ -1580,6 +1652,96 @@ __xde_identify_wm()
 		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
 	if (wm->menu)
 		fprintf(stdout, "XDE_WM_MENU=\"%s\"\n", wm->menu);
+}
+
+static void
+xde_identify_wm_perl()
+{
+	fprintf(stdout, "{\n");
+	fprintf(stdout, "\tXDE_WM_NAME =>'%s',\n", wm->name);
+	if (wm->netwm_check)
+		fprintf(stdout, "\tXDE_WM_NETWM_SUPPORT => 0x%lx,\n", wm->netwm_check);
+	if (wm->maker_check)
+		fprintf(stdout, "\tXDE_WM_MAKER_SUPPORT => 0x%lx,\n", wm->maker_check);
+	if (wm->winwm_check)
+		fprintf(stdout, "\tXDE_WM_WINWM_SUPPORT => 0x%lx,\n", wm->winwm_check);
+	if (wm->motif_check)
+		fprintf(stdout, "\tXDE_WM_MOTIF_SUPPORT => 0x%lx,\n", wm->motif_check);
+	if (wm->icccm_check)
+		fprintf(stdout, "\tXDE_WM_ICCCM_SUPPORT => 0x%lx,\n", wm->icccm_check);
+	if (wm->redir_check)
+		fprintf(stdout, "\tXDE_WM_REDIR_SUPPORT => 0x%lx,\n", wm->redir_check);
+	if (wm->pid)
+		fprintf(stdout, "\tXDE_WM_PID => %ld,\n", wm->pid);
+	if (wm->host)
+		fprintf(stdout, "\tXDE_WM_HOST => '%s',\n", wm->host);
+	if (wm->ch.res_name)
+		fprintf(stdout, "\tXDE_WM_RES_NAME => '%s',\n", wm->ch.res_name);
+	if (wm->ch.res_class)
+		fprintf(stdout, "\tXDE_WM_RES_CLASS => '%s',\n", wm->ch.res_class);
+	if (wm->argv && wm->argc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->argc; i++)
+			len += strlen(wm->argv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->argc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->argv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "\tXDE_WM_CMDLINE => [ %s ],\n", cmd);
+	}
+	if (wm->cargv && wm->cargc) {
+		int i, len;
+		char *cmd;
+
+		for (len = 0, i = 0; i < wm->cargc; i++)
+			len += strlen(wm->cargv[i]) + 5;
+		cmd = calloc(len, sizeof(*cmd));
+		for (i = 0; i < wm->cargc; i++) {
+			strcat(cmd, i ? ", '" : "'");
+			strcat(cmd, wm->cargv[i]);
+			strcat(cmd, "'");
+		}
+		fprintf(stdout, "\tXDE_WM_COMMAND => [ %s ],\n", cmd);
+	}
+	if (wm->rcfile)
+		fprintf(stdout, "\tXDE_WM_RCFILE => '%s',\n", wm->rcfile);
+	if (wm->pdir)
+		fprintf(stdout, "\tXDE_WM_PRVDIR => '%s',\n", wm->pdir);
+	if (wm->udir)
+		fprintf(stdout, "\tXDE_WM_USRDIR => '%s',\n", wm->udir);
+	if (wm->sdir)
+		fprintf(stdout, "\tXDE_WM_SYSDIR => '%s',\n", wm->sdir);
+	if (wm->edir)
+		fprintf(stdout, "\tXDE_WM_ETCDIR => '%s',\n", wm->edir);
+	if (wm->stylefile)
+		fprintf(stdout, "\tXDE_WM_STYLEFILE => '%s',\n", wm->stylefile);
+	if (wm->style)
+		fprintf(stdout, "\tXDE_WM_STYLE => '%s',\n", wm->style);
+	if (wm->stylename)
+		fprintf(stdout, "\tXDE_WM_STYLENAME => '%s',\n", wm->stylename);
+	if (wm->menu)
+		fprintf(stdout, "\tXDE_WM_MENU => '%s',\n", wm->menu);
+	fprintf(stdout, "}\n");
+}
+
+void
+__xde_identify_wm()
+{
+	switch (options.format) {
+	case XDE_OUTPUT_HUMAN:
+		xde_identify_wm_human();
+		break;
+	case XDE_OUTPUT_SHELL:
+		xde_identify_wm_shell();
+		break;
+	case XDE_OUTPUT_PERL:
+		xde_identify_wm_perl();
+		break;
+	}
 }
 
 __asm__(".symver __xde_identify_wm,xde_identify_wm@@XDE_1.0");
@@ -1832,7 +1994,7 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 __asm__(".symver __xde_get_rcfile_simple,xde_get_rcfile_simple@@XDE_1.0");
 
 void
-__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style)
+__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type)
 {
 	DIR *dir;
 	char *dirname, *file, *stylename, *p;
@@ -1894,9 +2056,23 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
 			*p = '\0';
-		if (!options.theme || xde_find_theme(stylename))
-			fprintf(stdout, "%s %s%s\n", stylename, file,
-				(style && !strcmp(style, file)) ? " *" : "");
+		if (!options.theme || xde_find_theme(stylename)) {
+			switch (options.format) {
+			case XDE_OUTPUT_HUMAN:
+				fprintf(stdout, "%s %s%s\n", stylename, file,
+					(style && !strcmp(style, file)) ? " *" : "");
+				break;
+			case XDE_OUTPUT_SHELL:
+				fprintf(stdout, "\t\'%s\t%s\t%s\'\n", stylename, file,
+						(style && !strcmp(style, file)) ? "*" : "");
+				break;
+			case XDE_OUTPUT_PERL:
+				fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n",
+						stylename, file,
+						(style && !strcmp(style, file)) ? 1 : 0);
+				break;
+			}
+		}
 		free(stylename);
 		free(file);
 	}
@@ -1911,17 +2087,73 @@ __xde_list_styles_simple()
 {
 	char *style = wm->ops->get_style();
 
+	switch (options.format) {
+	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_SHELL:
+		break;
+	case XDE_OUTPUT_PERL:
+		fprintf(stdout, "{\n");
+		break;
+	}
 	if (options.user) {
+		switch (options.format) {
+		case XDE_OUTPUT_HUMAN:
+			break;
+		case XDE_OUTPUT_SHELL:
+			fprintf(stdout, "XDE_WM_STYLES_USR=(\n");
+			break;
+		case XDE_OUTPUT_PERL:
+			fprintf(stdout, "\tuser => {\n");
+			break;
+		}
 		if (wm->pdir)
-			wm->ops->list_dir(wm->pdir, style);
+			wm->ops->list_dir(wm->pdir, style, XDE_LIST_PRIVATE);
 		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
-			wm->ops->list_dir(wm->udir, style);
+			wm->ops->list_dir(wm->udir, style, XDE_LIST_USER);
+		switch (options.format) {
+		case XDE_OUTPUT_HUMAN:
+			break;
+		case XDE_OUTPUT_SHELL:
+			fprintf(stdout, ")\n");
+			break;
+		case XDE_OUTPUT_PERL:
+			fprintf(stdout, "\t},\n");
+			break;
+		}
 	}
 	if (options.system) {
+		switch (options.format) {
+		case XDE_OUTPUT_HUMAN:
+			break;
+		case XDE_OUTPUT_SHELL:
+			fprintf(stdout, "XDE_WM_STYLES_SYS=(\n");
+			break;
+		case XDE_OUTPUT_PERL:
+			fprintf(stdout, "\tsystem => {\n");
+			break;
+		}
 		if (wm->sdir)
-			wm->ops->list_dir(wm->sdir, style);
+			wm->ops->list_dir(wm->sdir, style, XDE_LIST_SYSTEM);
 		if (wm->edir)
-			wm->ops->list_dir(wm->edir, style);
+			wm->ops->list_dir(wm->edir, style, XDE_LIST_GLOBAL);
+		switch (options.format) {
+		case XDE_OUTPUT_HUMAN:
+			break;
+		case XDE_OUTPUT_SHELL:
+			fprintf(stdout, ")\n");
+			break;
+		case XDE_OUTPUT_PERL:
+			fprintf(stdout, "\t},\n");
+			break;
+		}
+	}
+	switch (options.format) {
+	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_SHELL:
+		break;
+	case XDE_OUTPUT_PERL:
+		fprintf(stdout, "}\n");
+		break;
 	}
 }
 
@@ -2543,7 +2775,7 @@ reload_style_NONE()
 }
 
 static void
-list_dir_NONE(char *xdir, char *style)
+list_dir_NONE(char *xdir, char *style, enum ListType type)
 {
 }
 
@@ -2621,7 +2853,7 @@ reload_style_UNKNOWN()
 }
 
 static void
-list_dir_UNKNOWN(char *xdir, char *style)
+list_dir_UNKNOWN(char *xdir, char *style, enum ListType type)
 {
 }
 

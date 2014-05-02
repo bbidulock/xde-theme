@@ -276,6 +276,10 @@ Command options:\n\
     -C, --copying\n\
         print copying permission and exit\n\
 Options:\n\
+    -e, --shell\n\
+        output suitable for shell evaluation or source [default: human]\n\
+    -p, --perl\n\
+        output suitable for perl evaluation [default: human]\n\
     -y, --system\n\
         set or list system styles\n\
     -u, --user\n\
@@ -303,6 +307,8 @@ Options:\n\
 int
 main(int argc, char *argv[])
 {
+	options.format = XDE_OUTPUT_HUMAN;
+
 	while (1) {
 		int c, val;
 
@@ -321,6 +327,8 @@ main(int argc, char *argv[])
 			{"wmname",	required_argument,	NULL, 'w'},
 			{"rcfile",	required_argument,	NULL, 'f'},
 			{"reload",	no_argument,		NULL, 'r'},
+			{"shell",	no_argument,		NULL, 'e'},
+			{"perl",	no_argument,		NULL, 'p'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -333,10 +341,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:rnD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:repnD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:Ltw:f:rnDvhVC?");
+		c = getopt(argc, argv, "clsyuS:Ltw:f:repnDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -393,6 +401,12 @@ main(int argc, char *argv[])
 			break;
 		case 'r':	/* -r, --reload */
 			options.reload = True;
+			break;
+		case 'e':	/* -e, --shell */
+			options.format = XDE_OUTPUT_SHELL;
+			break;
+		case 'p':	/* -p, --perl */
+			options.format = XDE_OUTPUT_PERL;
 			break;
 		case 'n':	/* -n, --dry-run */
 			options.dryrun = True;

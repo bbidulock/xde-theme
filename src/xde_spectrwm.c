@@ -92,7 +92,7 @@ reload_style_SPECTRWM()
 }
 
 static void
-list_dir_SPECTRWM(char *xdir, char *style)
+list_dir_SPECTRWM(char *xdir, char *style, enum ListType type)
 {
 }
 

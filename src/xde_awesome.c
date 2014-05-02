@@ -91,7 +91,7 @@ reload_style_AWESOME()
 }
 
 static void
-list_dir_AWESOME(char *xdir, char *style)
+list_dir_AWESOME(char *xdir, char *style, enum ListType type)
 {
 }
 

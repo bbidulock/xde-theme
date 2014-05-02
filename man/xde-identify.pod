@@ -51,6 +51,19 @@ B<xde-style> accepts the following non-command options:
 
 =over
 
+=item B<-e>, B<--shell>
+
+Output information in a format suitable to be sourced or evaluated by a
+shell script.  The default is to provide output in a human-readable
+format.  See L</WINDOW MANAGERS> for example output.
+
+=item B<-p>, B<--perl>
+
+Output information in a format suitable to be evaluated by a perl
+script (L<Data::Dumper(3pm)> terse format).   The default is to provide
+output in a human-readable format.  See L</WINDOW MANAGERS> for example
+output.
+
 =item B<-S>, B<--screen> I<SCREEN>
 
 Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
@@ -281,7 +294,7 @@ whatsoever.  All options are compiled into the program.
  XDE_WM_REDIR_SUPPORT=0x2c0
  XDE_WM_PID=23308
  XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
- XDE_WM_CMDLINE="'2bwm'"
+ XDE_WM_CMDLINE=('2bwm')
 
 =back
 
@@ -289,23 +302,61 @@ whatsoever.  All options are compiled into the program.
 
 =over
 
-=item I<Example:>
+=item I<Example:> shell output
 
  XDE_WM_NAME="adwm"
- XDE_WM_NETWM_SUPPORT=0xa00001
- XDE_WM_WINWM_SUPPORT=0xa00001
- XDE_WM_MOTIF_SUPPORT=0xa00001
- XDE_WM_ICCCM_SUPPORT=0xa00001
+ XDE_WM_NETWM_SUPPORT=0x800001
+ XDE_WM_WINWM_SUPPORT=0x800001
+ XDE_WM_MOTIF_SUPPORT=0x800001
+ XDE_WM_ICCCM_SUPPORT=0x800001
  XDE_WM_REDIR_SUPPORT=0x7d
- XDE_WM_PID=26727
- XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'adwm'"
- XDE_WM_COMMAND="'adwm'"
+ XDE_WM_PID=2389
+ XDE_WM_HOST="napoleon.pigworks.openss7.net"
+ XDE_WM_CMDLINE=('adwm')
+ XDE_WM_COMMAND=('adwm')
  XDE_WM_RCFILE="/home/brian/.adwm/adwmrc"
  XDE_WM_PRVDIR="/home/brian/.adwm"
  XDE_WM_USRDIR="/home/brian/.adwm"
  XDE_WM_SYSDIR="/usr/share/adwm"
  XDE_WM_ETCDIR="/etc/adwm"
+
+=item I<Example:> perl output
+
+ {
+ 	XDE_WM_NAME =>'adwm',
+ 	XDE_WM_NETWM_SUPPORT => 0x800001,
+ 	XDE_WM_WINWM_SUPPORT => 0x800001,
+ 	XDE_WM_MOTIF_SUPPORT => 0x800001,
+ 	XDE_WM_ICCCM_SUPPORT => 0x800001,
+ 	XDE_WM_REDIR_SUPPORT => 0x7d,
+ 	XDE_WM_PID => 2389,
+ 	XDE_WM_HOST => 'napoleon.pigworks.openss7.net',
+ 	XDE_WM_CMDLINE => [ 'adwm' ],
+ 	XDE_WM_COMMAND => [ 'adwm' ],
+ 	XDE_WM_RCFILE => '/home/brian/.adwm/adwmrc',
+ 	XDE_WM_PRVDIR => '/home/brian/.adwm',
+ 	XDE_WM_USRDIR => '/home/brian/.adwm',
+ 	XDE_WM_SYSDIR => '/usr/share/adwm',
+ 	XDE_WM_ETCDIR => '/etc/adwm',
+ }
+
+=item I<Example:> human output
+
+ Name: adwm
+ Supports EWMH/NetWM
+ Supports GNOME/WinWM
+ Supports OSF/Motif
+ Supports ICCCM 2.0
+ Supports ICCCM
+ Process Id: 2389
+ Hostname: napoleon.pigworks.openss7.net
+ Process command line: 'adwm'
+ Session command: 'adwm'
+ Runtime config file: /home/brian/.adwm/adwmrc
+ Private directory: /home/brian/.adwm
+ User directory: /home/brian/.adwm
+ System directory: /usr/share/adwm
+ Config directory: /etc/adwm
 
 =back
 
@@ -323,7 +374,7 @@ The module for L<aewm(1)> does not yet provide the path to this file.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=10718
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/aewm'"
+ XDE_WM_CMDLINE=('/usr/bin/aewm')
 
 =back
 
@@ -343,7 +394,7 @@ for awesome quite easy.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=11100
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'awesome'"
+ XDE_WM_CMDLINE=('awesome')
 
 =back
 
@@ -359,8 +410,8 @@ for awesome quite easy.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=23312
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'blackbox', '-rc', '/home/brian/.blackbox/rc'"
- XDE_WM_COMMAND="'blackbox', '-rc', '/home/brian/.blackbox/rc'"
+ XDE_WM_CMDLINE=('blackbox' '-rc' '/home/brian/.blackbox/rc')
+ XDE_WM_COMMAND=('blackbox' '-rc' '/home/brian/.blackbox/rc')
  XDE_WM_RCFILE="/home/brian/.blackbox/rc"
  XDE_WM_PRVDIR="/home/brian/.blackbox"
  XDE_WM_USRDIR="/home/brian/.blackbox"
@@ -391,7 +442,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=13613
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/bspwm'"
+ XDE_WM_CMDLINE=('/usr/bin/bspwm')
 
 =back
 
@@ -406,7 +457,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=18628
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/ctwm', '-n', '-f', '/home/brian/.ctwm/rc'"
+ XDE_WM_CMDLINE=('/usr/bin/ctwm' '-n' '-f' '/home/brian/.ctwm/rc')
  XDE_WM_RCFILE="/home/brian/.ctwm/rc"
  XDE_WM_PRVDIR="/home/brian/.ctwm"
  XDE_WM_USRDIR="/home/brian/.ctwm"
@@ -429,7 +480,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=12928
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'cwm'"
+ XDE_WM_CMDLINE=('cwm')
  XDE_WM_RCFILE="/home/brian/.cwmrc"
  XDE_WM_PRVDIR="/home/brian/.cwm"
  XDE_WM_USRDIR="/home/brian/.cwm"
@@ -451,7 +502,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=13692
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'dwm'"
+ XDE_WM_CMDLINE=('dwm')
 
 =back
 
@@ -466,7 +517,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=12973
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/echinus'"
+ XDE_WM_CMDLINE=('/usr/bin/echinus')
  XDE_WM_RCFILE="/home/brian/.echinus/echinusrc"
  XDE_WM_PRVDIR="/home/brian/.echinus"
  XDE_WM_USRDIR="/home/brian/.echinus"
@@ -488,7 +539,7 @@ manager after it starts up.
  XDE_WM_NAME="failsafewm"
  XDE_WM_PID=15022
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'failsafewm'"
+ XDE_WM_CMDLINE=('failsafewm')
 
 =back
 
@@ -503,7 +554,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=11457
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'fluxbox'"
+ XDE_WM_CMDLINE=('fluxbox')
  XDE_WM_RCFILE="/home/brian/.fluxbox/init"
  XDE_WM_PRVDIR="/home/brian/.fluxbox"
  XDE_WM_USRDIR="/home/brian/.fluxbox"
@@ -526,8 +577,8 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x2c0
  XDE_WM_PID=22022
  XDE_WM_HOST="habeascorpus.pigworks.openss7.net"
- XDE_WM_CMDLINE="'flwm'"
- XDE_WM_COMMAND="'flwm'"
+ XDE_WM_CMDLINE=('flwm')
+ XDE_WM_COMMAND=('flwm')
  XDE_WM_PRVDIR="/home/brian/.wmx"
  XDE_WM_USRDIR="/home/brian/.wmx"
  XDE_WM_MENU="/home/brian/.wmx/"
@@ -547,7 +598,7 @@ manager after it starts up.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=15438
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/herbstluftwm'"
+ XDE_WM_CMDLINE=('/usr/bin/herbstluftwm')
 
 =back
 
@@ -566,7 +617,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=17336
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'i3'"
+ XDE_WM_CMDLINE=('i3')
 
 =back
 
@@ -583,8 +634,8 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=14865
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'icewm'"
- XDE_WM_COMMAND="'icewm'"
+ XDE_WM_CMDLINE=('icewm')
+ XDE_WM_COMMAND=('icewm')
  XDE_WM_RCFILE="/home/brian/.icewm/preferences"
  XDE_WM_PRVDIR="/home/brian/.icewm"
  XDE_WM_USRDIR="/home/brian/.icewm"
@@ -608,7 +659,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=13007
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'jwm'"
+ XDE_WM_CMDLINE=('jwm')
  XDE_WM_RCFILE="/home/brian/.jwm/rc"
  XDE_WM_PRVDIR="/home/brian/.jwm"
  XDE_WM_USRDIR="/home/brian/.jwm"
@@ -631,7 +682,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=21616
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/matwm2'"
+ XDE_WM_CMDLINE=('/usr/bin/matwm2')
  XDE_WM_RCFILE="/home/brian/.matwmrc"
  XDE_WM_PRVDIR="/home/brian/.matwm2"
  XDE_WM_USRDIR="/home/brian/.matwm2"
@@ -652,7 +703,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=21367
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'metacity'"
+ XDE_WM_CMDLINE=('metacity')
 
 =back
 
@@ -667,7 +718,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=23482
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'mwm'"
+ XDE_WM_CMDLINE=('mwm')
 
 =back
 
@@ -683,7 +734,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=24074
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'openbox', '--debug-xinerama', '--config-file', '/home/brian/.config/openbox/unx-rc.xml'"
+ XDE_WM_CMDLINE=('openbox' '--debug-xinerama' '--config-file' '/home/brian/.config/openbox/unx-rc.xml')
  XDE_WM_RCFILE="/home/brian/.config/openbox/unx-rc.xml"
  XDE_WM_PRVDIR="/home/brian/.config/openbox"
  XDE_WM_USRDIR="/home/brian/.config/openbox"
@@ -708,7 +759,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=32632
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'pekwm'"
+ XDE_WM_CMDLINE=('pekwm')
  XDE_WM_RCFILE="/home/brian/.pekwm/config"
  XDE_WM_PRVDIR="/home/brian/.pekwm"
  XDE_WM_USRDIR="/home/brian/.pekwm"
@@ -731,7 +782,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=23796
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'spectrwm'"
+ XDE_WM_CMDLINE=('spectrwm')
 
 =back
 
@@ -745,7 +796,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=12157
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/twm', '-f', '/home/brian/.twm/rc'"
+ XDE_WM_CMDLINE=('/usr/bin/twm' '-f' '/home/brian/.twm/rc')
  XDE_WM_RCFILE="/home/brian/.twm/rc"
  XDE_WM_PRVDIR="/home/brian/.twm"
  XDE_WM_USRDIR="/home/brian/.twm"
@@ -768,7 +819,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=805
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'uwm'"
+ XDE_WM_CMDLINE=('uwm')
  XDE_WM_RCFILE="/home/brian/.uwm/uwmrc"
  XDE_WM_PRVDIR="/home/brian/.uwm"
  XDE_WM_USRDIR="/home/brian/.uwm"
@@ -788,7 +839,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=11222
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/vtwm', '-f', '/home/brian/.vtwm/rc.m4', '-m'"
+ XDE_WM_CMDLINE=('/usr/bin/vtwm' '-f' '/home/brian/.vtwm/rc.m4' '-m')
  XDE_WM_RCFILE="/home/brian/.vtwm/rc.m4"
  XDE_WM_PRVDIR="/home/brian/.vtwm"
  XDE_WM_USRDIR="/home/brian/.vtwm"
@@ -811,7 +862,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=21954
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/waimea'"
+ XDE_WM_CMDLINE=('/usr/bin/waimea')
  XDE_WM_RCFILE="/home/brian/.waimea/config"
  XDE_WM_PRVDIR="/home/brian/.waimea"
  XDE_WM_USRDIR="/home/brian/.waimea"
@@ -834,7 +885,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=22787
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/wind'"
+ XDE_WM_CMDLINE=('/usr/bin/wind')
 
 =back
 
@@ -848,7 +899,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=24928
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wm2'"
+ XDE_WM_CMDLINE=('wm2')
 
 =back
 
@@ -864,7 +915,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=9310
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wmaker', '--for-real='"
+ XDE_WM_CMDLINE=('wmaker' '--for-real=')
  XDE_WM_RCFILE="/home/brian/GNUstep.petunia/Defaults/WindowMaker"
  XDE_WM_PRVDIR="/home/brian/GNUstep.petunia"
  XDE_WM_USRDIR="/home/brian/GNUstep"
@@ -885,7 +936,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=27685
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'wmii'"
+ XDE_WM_CMDLINE=('wmii')
 
 =back
 
@@ -900,7 +951,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=23146
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/wmx'"
+ XDE_WM_CMDLINE=('/usr/bin/wmx')
  XDE_WM_PRVDIR="/home/brian/.wmx"
  XDE_WM_USRDIR="/home/brian/.wmx"
  XDE_WM_MENU="/home/brian/.wmx/"
@@ -918,7 +969,7 @@ sets some properties on the root window to help with this.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=29841
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'xdwm'"
+ XDE_WM_CMDLINE=('xdwm')
 
 =back
 
@@ -936,7 +987,7 @@ manager can be identified.
  XDE_WM_REDIR_SUPPORT=0x7d
  XDE_WM_PID=9280
  XDE_WM_HOST="petunia.pigworks.openss7.net"
- XDE_WM_CMDLINE="'/usr/bin/yeahwm'"
+ XDE_WM_CMDLINE=('/usr/bin/yeahwm')
 
 =back
 

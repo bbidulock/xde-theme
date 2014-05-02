@@ -137,23 +137,11 @@ help(int argc, char *argv[])
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
-    %1$s [{-c|--current}] [options]\n\
-    %1$s {-l|--list} [options] [STYLE]\n\
-    %1$s {-s|--set} [options] STYLE\n\
+    %1$s [options]\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
-Arguments:\n\
-    STYLE\n\
-        style name or full path to style file\n\
-        name of the style to list or set\n\
 Command options:\n\
-    -c, --current\n\
-        list current style [default when no other command specified]\n\
-    -l, --list [STYLE]\n\
-        list styles\n\
-    -s, --set STYLE\n\
-        set the style\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -161,22 +149,12 @@ Command options:\n\
     -C, --copying\n\
         print copying permission and exit\n\
 Options:\n\
-    -y, --system\n\
-        set or list system styles\n\
-    -u, --user\n\
-        set or list user styles\n\
+    -e, --shell\n\
+        output suitable for shell evaluation or source [default: human]\n\
+    -p, --perl\n\
+        output suitable for perl evaluation [default: human]\n\
     -S, --screen SCREEN\n\
         only act on screen number SCREEN [default: all(-1)]\n\
-    -L, --link\n\
-        link style files where possible\n\
-    -t, --theme\n\
-        only list styles that are also XDE themes\n\
-    -w, --wmname WMNAME\n\
-        don't detect window manager, use WMNAME\n\
-    -f, --rcfile FILE\n\
-        assume window manager uses rc file FILE, needs -w\n\
-    -r, --reload\n\
-        when setting the style, ask wm to reload\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -188,6 +166,8 @@ Options:\n\
 int
 main(int argc, char *argv[])
 {
+	options.format = XDE_OUTPUT_HUMAN;
+
 	while (1) {
 		int c, val;
 
@@ -195,6 +175,8 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
+			{"shell",	no_argument,		NULL, 'e'},
+			{"perl",	no_argument,		NULL, 'p'},
 			{"screen",	required_argument,	NULL, 'S'},
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -207,10 +189,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "S:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "epS:nD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "S:nDvhVC?");
+		c = getopt(argc, argv, "epS:nDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -220,6 +202,12 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 0:
 			goto bad_usage;
+		case 'e':	/* -e, --shell */
+			options.format = XDE_OUTPUT_SHELL;
+			break;
+		case 'p':	/* -p, --perl */
+			options.format = XDE_OUTPUT_PERL;
+			break;
 		case 'S':	/* -S, --screen */
 			options.screen = atoi(optarg);
 			break;

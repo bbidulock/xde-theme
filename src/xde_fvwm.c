@@ -93,7 +93,7 @@ set_style_FVWM()
 }
 
 static void
-list_dir_FVWM(char *xdir, char *style)
+list_dir_FVWM(char *xdir, char *style, enum ListType type)
 {
 }
 

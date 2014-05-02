@@ -91,7 +91,7 @@ reload_style_MWM()
 }
 
 static void
-list_dir_MWM(char *xdir, char *style)
+list_dir_MWM(char *xdir, char *style, enum ListType type)
 {
 }
 

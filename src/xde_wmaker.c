@@ -240,7 +240,7 @@ reload_style_WMAKER()
 }
 
 static void
-list_dir_WMAKER(char *xdir, char *style)
+list_dir_WMAKER(char *xdir, char *style, enum ListType type)
 {
 }
 

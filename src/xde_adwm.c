@@ -178,9 +178,9 @@ set_style_ADWM()
 }
 
 static void
-list_dir_ADWM(char *xdir, char *style)
+list_dir_ADWM(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void

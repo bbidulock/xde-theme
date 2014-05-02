@@ -92,7 +92,7 @@ reload_style_2BWM()
 }
 
 static void
-list_dir_2BWM(char *xdir, char *style)
+list_dir_2BWM(char *xdir, char *style, enum ListType type)
 {
 }
 

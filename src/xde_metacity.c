@@ -273,9 +273,9 @@ set_style_METACITY()
 }
 
 static void
-list_dir_METACITY(char *xdir, char *style)
+list_dir_METACITY(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "themes", "/metacity-1/metacity-theme-2.xml", "", style);
+	return xde_list_dir_simple(xdir, "themes", "/metacity-1/metacity-theme-2.xml", "", style, type);
 }
 
 static void
@@ -285,8 +285,30 @@ list_styles_METACITY()
 
 	xde_get_xdg_dirs();
 
+	switch (options.format) {
+	case XDE_OUTPUT_HUMAN:
+		break;
+	case XDE_OUTPUT_SHELL:
+		fprintf(stdout, "XDE_WM_STYLES=(\n");
+		break;
+	case XDE_OUTPUT_PERL:
+		fprintf(stdout, "{\n");
+		fprintf(stdout, "\tstyles => {\n");
+		break;
+	}
 	for (dir = wm->xdg_dirs; *dir; dir++)
-		list_dir_METACITY(*dir, style);
+		list_dir_METACITY(*dir, style, XDE_LIST_MIXED);
+	switch (options.format) {
+	case XDE_OUTPUT_HUMAN:
+		break;
+	case XDE_OUTPUT_SHELL:
+		fprintf(stdout, ")\n");
+		break;
+	case XDE_OUTPUT_PERL:
+		fprintf(stdout, "\t},\n");
+		fprintf(stdout, "}\n");
+		break;
+	}
 }
 
 WmOperations xde_wm_ops = {

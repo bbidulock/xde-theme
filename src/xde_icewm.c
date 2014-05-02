@@ -439,7 +439,7 @@ set_style_ICEWM()
 }
 
 static void
-list_dir_ICEWM(char *xdir, char *style)
+list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 {
 	DIR *dir, *sub;
 	char *dirname, *subdir, *file, *pos, *name;
@@ -508,9 +508,22 @@ list_dir_ICEWM(char *xdir, char *style)
 			strcpy(name, d->d_name);
 			strcat(name, "/");
 			strcat(name, e->d_name);
-			if (!options.theme || xde_find_theme(name))
-				fprintf(stdout, "%s %s%s\n", name, file,
-					(style && !strcmp(style, file)) ? " *" : "");
+			if (!options.theme || xde_find_theme(name)) {
+				switch (options.format) {
+				case XDE_OUTPUT_HUMAN:
+					fprintf(stdout, "%s %s%s\n", name, file,
+						(style && !strcmp(style, file)) ? " *" : "");
+					break;
+				case XDE_OUTPUT_SHELL:
+					fprintf(stdout, "\t'%s\t%s\t%s'\n", name, file,
+						(style && !strcmp(style, file)) ? "*" : "");
+					break;
+				case XDE_OUTPUT_PERL:
+					fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n", name, file,
+						(style && !strcmp(style, file)) ? 1 : 0);
+					break;
+				}
+			}
 			*pos = '.';
 			free(name);
 			free(file);

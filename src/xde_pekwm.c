@@ -311,9 +311,9 @@ set_style_PEKWM()
 }
 
 static void
-list_dir_PEKWM(char *xdir, char *style)
+list_dir_PEKWM(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "themes", "/theme", "", style);
+	return xde_list_dir_simple(xdir, "themes", "/theme", "", style, type);
 }
 
 static void

@@ -278,69 +278,69 @@ startup(char *previous_id)
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 
-
 	for (scr = screens, n = 0; n < nscr; n++, scr++) {
-	snprintf(name, 32, "_XDE_STYLE_S%d", scr->screen);
-	scr->selection = XInternAtom(dpy, name, False);
+		snprintf(name, 32, "_XDE_STYLE_S%d", scr->screen);
+		scr->selection = XInternAtom(dpy, name, False);
 
-	scr->selwin = XCreateSimpleWindow(dpy, scr->root,
-					  DisplayWidth(dpy, scr->screen),
-					  DisplayHeight(dpy, scr->screen), 1, 1, 0, 0L,
-					  0L);
-	XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
+		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
+						  DisplayWidth(dpy, scr->screen),
+						  DisplayHeight(dpy, scr->screen), 1, 1,
+						  0, 0L, 0L);
+		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
 
-	XGrabServer(dpy);
-	if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-		XSelectInput(dpy, scr->owner, StructureNotifyMask);
-		XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+		XGrabServer(dpy);
+		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
+			XSelectInput(dpy, scr->owner, StructureNotifyMask);
+			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+			XSync(dpy, False);
+		}
+		XUngrabServer(dpy);
+
+		switch (command) {
+		case CMD_MODE_RUN:
+		default:
+			if (scr->owner) {
+				fprintf(stderr,
+					"another instance of %s already running -- exiting\n",
+					NAME);
+				exit(0);
+			}
+			break;
+		case CMD_MODE_REPLACE:
+			if (scr->owner)
+				fprintf(stderr,
+					"another instance of %s already running -- replacing\n",
+					NAME);
+			break;
+		case CMD_MODE_QUIT:
+			if (scr->owner)
+				fprint(stderr,
+				       "another instance of %s already running -- quitting\n",
+				       NAME);
+			break;
+		}
+
+		XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+		if (scr->owner != None) {
+			XEvent ev;
+
+			XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
+			XDeleteContext(dpy, scr->owner, ScreenContext);
+			scr->owner = None;
+		}
+		mev.display = dpy;
+		mev.type = ClientMessage;
+		mev.window = scr->root;
+		mev.message_type = _XA_MANAGER;
+		mev.format = 32;
+		mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
+		mev.data.l[1] = scr->selection;
+		mev.data.l[2] = scr->selwin;
+		mev.data.l[3] = 2;
+		mev.data.l[4] = 0;
+		XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
 		XSync(dpy, False);
 	}
-	XUngrabServer(dpy);
-
-	switch (command) {
-	case CMD_MODE_RUN:
-	default:
-		if (scr->owner) {
-			fprintf(stderr,
-				"another instance of %s already running -- exiting\n",
-				NAME);
-			exit(0);
-		}
-		break;
-	case CMD_MODE_REPLACE:
-		if (scr->owner)
-			fprintf(stderr,
-				"another instance of %s already running -- replacing\n",
-				NAME);
-		break;
-	case CMD_MODE_QUIT:
-		if (scr->owner)
-			fprint(stderr,
-			       "another instance of %s already running -- quitting\n",
-			       NAME);
-		break;
-	}
-
-	XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
-	if (scr->owner != None) {
-		XEvent ev;
-
-		XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
-		XDeleteContext(dpy, scr->owner, ScreenContext);
-		scr->owner = None;
-	}
-	mev.display = dpy;
-	mev.type = ClientMessage;
-	mev.window = scr->root;
-	mev.message_type = _XA_MANAGER;
-	mev.format = 32;
-	mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
-	mev.data.l[1] = scr->selection;
-	mev.data.l[2] = scr->selwin;
-	mev.data.l[3] = 2;
-	mev.data.l[4] = 0;
-	XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
-	XSync(dpy, False);
 
 	if (command == CMD_MODE_QUIT)
 		exit(0);

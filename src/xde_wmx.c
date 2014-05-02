@@ -124,7 +124,7 @@ reload_style_WMX()
 }
 
 static void
-list_dir_WMX(char *xdir, char *style)
+list_dir_WMX(char *xdir, char *style, enum ListType type)
 {
 }
 

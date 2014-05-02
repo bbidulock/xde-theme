@@ -96,6 +96,14 @@
 #define CHECK_DIRS 4
 #define CHECK_WINS 6
 
+enum ListType {
+	XDE_LIST_PRIVATE,
+	XDE_LIST_USER,
+	XDE_LIST_SYSTEM,
+	XDE_LIST_GLOBAL,
+	XDE_LIST_MIXED
+};
+
 typedef struct {
 	char *name;
 	char *version;
@@ -104,7 +112,7 @@ typedef struct {
 	char *(*get_style) (void);
 	void (*set_style) (void);
 	void (*reload_style) (void);
-	void (*list_dir) (char *, char *);
+	void (*list_dir) (char *, char *, enum ListType);
 	void (*list_styles) (void);
 	char *(*get_menu) (void);
 } WmOperations;
@@ -165,6 +173,12 @@ typedef struct {
 	WindowManager *wm;		/* window manager managing this screen */
 } WmScreen;
 
+enum OutputFormat {
+	XDE_OUTPUT_HUMAN,
+	XDE_OUTPUT_SHELL,
+	XDE_OUTPUT_PERL
+};
+
 typedef struct {
 	int debug;
 	int output;
@@ -181,6 +195,7 @@ typedef struct {
 	char *style;
 	char *wmname;
 	char *rcfile;
+	enum OutputFormat format;
 } Options;
 
 extern Display *dpy;
@@ -233,7 +248,7 @@ extern char *xde_get_rcfile_optarg(char *optname);
 extern void xde_get_simple_dirs(char *wmname);
 extern char *xde_find_style_simple(char *dname, char *fname, char *suffix);
 extern Bool xde_test_file(char *path);
-extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style);
+extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
 extern void xde_list_styles_simple(void);
 extern void xde_get_rcfile_simple(char *wmname, char *rcname, char *option);
 extern char *xde_get_menu_simple(char *fname, char *(*from_file) (char *));

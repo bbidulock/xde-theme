@@ -124,7 +124,7 @@ reload_style_FLWM()
 }
 
 static void
-list_dir_FLWM(char *xdir, char *style)
+list_dir_FLWM(char *xdir, char *style, enum ListType type)
 {
 }
 

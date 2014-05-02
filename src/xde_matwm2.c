@@ -101,9 +101,9 @@ reload_style_MATWM2()
 }
 
 static void
-list_dir_MATWM2(char *xdir, char *style)
+list_dir_MATWM2(char *xdir, char *style, enum ListType type)
 {
-	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style);
+	return xde_list_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void

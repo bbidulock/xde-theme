@@ -198,10 +198,10 @@ set_style_JWM()
 }
 
 static void
-list_dir_JWM(char *xdir, char *style)
+list_dir_JWM(char *xdir, char *style, enum ListType type)
 {
-	xde_list_dir_simple(xdir, "styles", "/style", "", style);
-	xde_list_dir_simple(xdir, "themes", "/style", "", style);
+	xde_list_dir_simple(xdir, "styles", "/style", "", style, type);
+	xde_list_dir_simple(xdir, "themes", "/style", "", style, type);
 }
 
 static void
