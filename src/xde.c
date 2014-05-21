@@ -2235,7 +2235,8 @@ __xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *s
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
 			*p = '\0';
-		wm->ops->gen_item(style, type, stylename, file);
+		if (!options.theme || xde_find_theme(stylename, NULL))
+			wm->ops->gen_item(style, type, stylename, file);
 		free(stylename);
 		free(file);
 	}
