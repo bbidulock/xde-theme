@@ -2006,14 +2006,29 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 
 __asm__(".symver __xde_get_rcfile_simple,xde_get_rcfile_simple@@XDE_1.0");
 
+struct sortentry {
+	char *stylename;
+	char *filename;
+};
+
+static int
+entry_compare(const void *a, const void *b)
+{
+	struct sortentry *A = (typeof(A)) a;
+	struct sortentry *B = (typeof(B)) b;
+	return strcmp(A->stylename, B->stylename);
+}
+
 void
-__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type)
+__xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style,
+		      enum ListType type)
 {
 	DIR *dir;
 	char *dirname, *file, *stylename, *p;
 	struct dirent *d;
 	struct stat st;
-	int len;
+	struct sortentry *entries = NULL;
+	int len, numb = 0;
 
 	if (!xdir || !*xdir)
 		return;
@@ -2070,27 +2085,48 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 		    && !p[strlen(suffix)])
 			*p = '\0';
 		if (!options.theme || xde_find_theme(stylename, NULL)) {
-			switch (options.format) {
-			case XDE_OUTPUT_HUMAN:
-				fprintf(stdout, "%s %s%s\n", stylename, file,
-					(style && !strcmp(style, file)) ? " *" : "");
-				break;
-			case XDE_OUTPUT_SHELL:
-				fprintf(stdout, "\t\'%s\t%s\t%s\'\n", stylename, file,
-						(style && !strcmp(style, file)) ? "*" : "");
-				break;
-			case XDE_OUTPUT_PERL:
-				fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n",
-						stylename, file,
-						(style && !strcmp(style, file)) ? 1 : 0);
-				break;
-			}
+			entries = realloc(entries, (numb + 1) * sizeof(*entries));
+			entries[numb].stylename = stylename;
+			entries[numb].filename = file;
+			numb++;
+		} else {
+			free(stylename);
+			free(file);
 		}
-		free(stylename);
-		free(file);
 	}
 	closedir(dir);
 	free(dirname);
+	if (numb && entries) {
+		int i;
+		struct sortentry *entry;
+
+		qsort(entries, numb, sizeof(*entries), &entry_compare);
+		for (i = 0, entry = entries; i < numb; i++, entry++) {
+			switch (options.format) {
+			case XDE_OUTPUT_HUMAN:
+				fprintf(stdout, "%s %s%s\n",
+					entry->stylename, entry->filename,
+					(style
+					 && !strcmp(style, entry->filename)) ? " *" : "");
+				break;
+			case XDE_OUTPUT_SHELL:
+				fprintf(stdout, "\t\'%s\t%s\t%s\'\n",
+					entry->stylename, entry->filename,
+					(style
+					 && !strcmp(style, entry->filename)) ? "*" : "");
+				break;
+			case XDE_OUTPUT_PERL:
+				fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n",
+					entry->stylename, entry->filename,
+					(style
+					 && !strcmp(style, entry->filename)) ? 1 : 0);
+				break;
+			}
+			free(entry->stylename);
+			free(entry->filename);
+		}
+		free(entries);
+	}
 }
 
 __asm__(".symver __xde_list_dir_simple,xde_list_dir_simple@@XDE_1.0");
@@ -2173,13 +2209,15 @@ __xde_list_styles_simple()
 __asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
 
 void
-__xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type)
+__xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style,
+		     enum ListType type)
 {
 	DIR *dir;
 	char *dirname, *file, *stylename, *p;
 	struct dirent *d;
 	struct stat st;
-	int len;
+	struct sortentry *entries = NULL;
+	int len, numb = 0;
 
 	if (!xdir || !*xdir)
 		return;
@@ -2235,13 +2273,30 @@ __xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *s
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
 			*p = '\0';
-		if (!options.theme || xde_find_theme(stylename, NULL))
-			wm->ops->gen_item(style, type, stylename, file);
-		free(stylename);
-		free(file);
+		if (!options.theme || xde_find_theme(stylename, NULL)) {
+			entries = realloc(entries, (numb + 1) * sizeof(*entries));
+			entries[numb].stylename = stylename;
+			entries[numb].filename = file;
+			numb++;
+		} else {
+			free(stylename);
+			free(file);
+		}
 	}
 	closedir(dir);
 	free(dirname);
+	if (numb && entries) {
+		int i;
+		struct sortentry *entry;
+
+		qsort(entries, numb, sizeof(*entries), &entry_compare);
+		for (i = 0, entry = entries; i < numb; i++, entry++) {
+			wm->ops->gen_item(style, type, entry->stylename, entry->filename);
+			free(entry->stylename);
+			free(entry->filename);
+		}
+		free(entries);
+	}
 }
 
 __asm__(".symver __xde_gen_dir_simple,xde_gen_dir_simple@@XDE_1.0");
