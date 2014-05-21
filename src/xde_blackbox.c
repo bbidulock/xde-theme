@@ -175,14 +175,23 @@ gen_dir_BLACKBOX(char *xdir, char *style, enum ListType type)
 static void
 gen_menu_BLACKBOX()
 {
-	if (options.theme) {
-		fprintf(stdout, "%s\n", "[submenu] (Themes) {Choose a theme...}");
-		xde_gen_menu_simple();
-		fprintf(stdout, "%s\n", "[end]");
+	const char *which;
+
+	if (options.system && !options.user) {
+		which = "System ";
+	} else if (!options.system && options.user) {
+		which = "User ";
 	} else {
-		fprintf(stdout, "%s\n", "[submenu] (Styles) {Choose a style...}");
+		which = "";
+	}
+	if (options.theme) {
+		fprintf(stdout, "[submenu] (%sThemes) {Choose a theme...}\n", which);
 		xde_gen_menu_simple();
-		fprintf(stdout, "%s\n", "[end]");
+		fprintf(stdout, "[end]\n");
+	} else {
+		fprintf(stdout, "[submenu] (%sStyles) {Choose a style...}\n", which);
+		xde_gen_menu_simple();
+		fprintf(stdout, "[end]\n");
 	}
 }
 

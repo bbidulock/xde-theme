@@ -283,7 +283,8 @@ usage(int argc, char *argv[])
 Usage:\n\
     %1$s [{-c|--current}] [options]\n\
     %1$s {-l|--list} [options] [STYLE]\n\
-    %1$s {-s|--set} [options] STYLE\n\
+    %1$s {-s|--set}  [options]  STYLE\n\
+    %1$s {-m|--menu} [options]\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
@@ -299,7 +300,8 @@ help(int argc, char *argv[])
 Usage:\n\
     %1$s [{-c|--current}] [options]\n\
     %1$s {-l|--list} [options] [STYLE]\n\
-    %1$s {-s|--set} [options] STYLE\n\
+    %1$s {-s|--set}  [options]  STYLE\n\
+    %1$s {-m|--menu} [options]\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
@@ -314,6 +316,8 @@ Command options:\n\
         list styles\n\
     -s, --set STYLE\n\
         set the style\n\
+    -m, --menu\n\
+        generate a style or theme menu\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -365,6 +369,7 @@ main(int argc, char *argv[])
 			{"current",	no_argument,		NULL, 'c'},
 			{"list",	no_argument,		NULL, 'l'},
 			{"set",		no_argument,		NULL, 's'},
+			{"menu",	no_argument,		NULL, 'm'},
 			{"system",	no_argument,		NULL, 'y'},
 			{"user",	no_argument,		NULL, 'u'},
 			{"screen",	required_argument,	NULL, 'S'},
@@ -387,10 +392,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:repnD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "clsmyuS:Ltw:f:repnD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:Ltw:f:repnDvhVC?");
+		c = getopt(argc, argv, "clsmyuS:Ltw:f:repnDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)

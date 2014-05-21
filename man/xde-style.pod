@@ -7,6 +7,7 @@ xde-style - query or set styles for lightweight window managers
  xde-style [{-c|--current}] [options]
  xde-style {-l|--list} [options] [STYLE]
  xde-style {-s|--set}  [options]  STYLE
+ xde-style {-m|--menu} [options]
  xde-style [options] {-h|--help}
  xde-style {-V|--version}
  xde-style {-C|--copying}
@@ -52,17 +53,17 @@ is specified.
 List available styles or the specified I<STYLE>.  General (non-command)
 options can precede a specified I<STYLE>.
 
+=item B<-s>, B<--set> [I<OPTIONS>] I<STYLE>
+
+Set the style specified by I<STYLE>.  General (non-command) options can
+precede the specified I<STYLE>.
+
 =item B<-m>, B<--menu> [I<OPTIONS>] [I<STYLE>]
 
 List available styles or the specified I<STYLE>.  General (non-command)
 options can precede a specified I<STYLE>.  This differs from B<--list>
 in that the output is in the format of a sub-menu for the specified or
 detected window manager.
-
-=item B<-s>, B<--set> [I<OPTIONS>] I<STYLE>
-
-Set the style specified by I<STYLE>.  General (non-command) options can
-precede the specified I<STYLE>.
 
 =item B<-h>, B<--help>, B<-?>, B<--?>
 
