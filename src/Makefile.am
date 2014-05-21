@@ -74,7 +74,7 @@ xdemod_LTLIBRARIES = \
 	xde-wmx.la \
 	xde-yeahwm.la
 
-module_ldflags = -module -export-dynamic -release $(VERSION) $(runtime_path) -avoid-version
+module_ldflags = -module -export-dynamic -release $(VERSION) -shared $(runtime_path) -avoid-version
 #module_ldflags = -module -export-dynamic -release $(VERSION) -shared -rpath ${xdemoddir} -avoid-version
 
 xde_2bwm_la_CPPFLAGS = -DNAME=\"xde-2bwm\"
