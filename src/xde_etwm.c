@@ -104,22 +104,28 @@ list_styles_ETWM()
 }
 
 static void
+gen_dir_ETWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_ETWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"etwm",
-	VERSION,
-	&get_rcfile_ETWM,
-	&find_style_ETWM,
-	&get_style_ETWM,
-	&set_style_ETWM,
-	&reload_style_ETWM,
-	&list_dir_ETWM,
-	&list_styles_ETWM,
-	&get_menu_ETWM,
-	&gen_menu_ETWM
+	.name = "etwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_ETWM,
+	.find_style = &find_style_ETWM,
+	.get_style = &get_style_ETWM,
+	.set_style = &set_style_ETWM,
+	.reload_style = &reload_style_ETWM,
+	.list_dir = &list_dir_ETWM,
+	.list_styles = &list_styles_ETWM,
+	.get_menu = &get_menu_ETWM,
+	.gen_dir = &gen_dir_ETWM,
+	.gen_menu = &gen_menu_ETWM
 };
 
 /** @} */

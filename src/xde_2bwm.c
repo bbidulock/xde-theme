@@ -102,22 +102,28 @@ list_styles_2BWM()
 }
 
 static void
+gen_dir_2BWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_2BWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"2bwm",
-	VERSION,
-	&get_rcfile_2BWM,
-	&find_style_2BWM,
-	&get_style_2BWM,
-	&set_style_2BWM,
-	&reload_style_2BWM,
-	&list_dir_2BWM,
-	&list_styles_2BWM,
-	&get_menu_2BWM,
-	&gen_menu_2BWM
+	.name = "2bwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_2BWM,
+	.find_style = &find_style_2BWM,
+	.get_style = &get_style_2BWM,
+	.set_style = &set_style_2BWM,
+	.reload_style = &reload_style_2BWM,
+	.list_dir = &list_dir_2BWM,
+	.list_styles = &list_styles_2BWM,
+	.get_menu = &get_menu_2BWM,
+	.gen_dir = &gen_dir_2BWM,
+	.gen_menu = &gen_menu_2BWM
 };
 
 /** @} */

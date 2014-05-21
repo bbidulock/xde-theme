@@ -398,22 +398,28 @@ list_styles_OPENBOX()
 }
 
 static void
+gen_dir_OPENBOX(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_OPENBOX()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"openbox",
-	VERSION,
-	&get_rcfile_OPENBOX,
-	&find_style_OPENBOX,
-	&get_style_OPENBOX,
-	&set_style_OPENBOX,
-	&reload_style_OPENBOX,
-	&list_dir_OPENBOX,
-	&list_styles_OPENBOX,
-	&get_menu_OPENBOX,
-	&gen_menu_OPENBOX
+	.name = "openbox",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_OPENBOX,
+	.find_style = &find_style_OPENBOX,
+	.get_style = &get_style_OPENBOX,
+	.set_style = &set_style_OPENBOX,
+	.reload_style = &reload_style_OPENBOX,
+	.list_dir = &list_dir_OPENBOX,
+	.list_styles = &list_styles_OPENBOX,
+	.get_menu = &get_menu_OPENBOX,
+	.gen_dir = &gen_dir_OPENBOX,
+	.gen_menu = &gen_menu_OPENBOX
 };
 
 /** @} */

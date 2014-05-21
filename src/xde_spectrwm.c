@@ -102,22 +102,28 @@ list_styles_SPECTRWM()
 }
 
 static void
+gen_dir_SPECTRWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_SPECTRWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"spectrwm",
-	VERSION,
-	&get_rcfile_SPECTRWM,
-	&find_style_SPECTRWM,
-	&get_style_SPECTRWM,
-	&set_style_SPECTRWM,
-	&reload_style_SPECTRWM,
-	&list_dir_SPECTRWM,
-	&list_styles_SPECTRWM,
-	&get_menu_SPECTRWM,
-	&gen_menu_SPECTRWM
+	.name = "spectrwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_SPECTRWM,
+	.find_style = &find_style_SPECTRWM,
+	.get_style = &get_style_SPECTRWM,
+	.set_style = &set_style_SPECTRWM,
+	.reload_style = &reload_style_SPECTRWM,
+	.list_dir = &list_dir_SPECTRWM,
+	.list_styles = &list_styles_SPECTRWM,
+	.get_menu = &get_menu_SPECTRWM,
+	.gen_dir = &gen_dir_SPECTRWM,
+	.gen_menu = &gen_menu_SPECTRWM
 };
 
 /** @} */

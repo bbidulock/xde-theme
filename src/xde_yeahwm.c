@@ -101,22 +101,28 @@ list_styles_YEAHWM()
 }
 
 static void
+gen_dir_YEAHWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_YEAHWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"yeahwm",
-	VERSION,
-	&get_rcfile_YEAHWM,
-	&find_style_YEAHWM,
-	&get_style_YEAHWM,
-	&set_style_YEAHWM,
-	&reload_style_YEAHWM,
-	&list_dir_YEAHWM,
-	&list_styles_YEAHWM,
-	&get_menu_YEAHWM,
-	&gen_menu_YEAHWM
+	.name = "yeahwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_YEAHWM,
+	.find_style = &find_style_YEAHWM,
+	.get_style = &get_style_YEAHWM,
+	.set_style = &set_style_YEAHWM,
+	.reload_style = &reload_style_YEAHWM,
+	.list_dir = &list_dir_YEAHWM,
+	.list_styles = &list_styles_YEAHWM,
+	.get_menu = &get_menu_YEAHWM,
+	.gen_dir = &gen_dir_YEAHWM,
+	.gen_menu = &gen_menu_YEAHWM
 };
 
 /** @} */

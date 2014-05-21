@@ -104,22 +104,28 @@ list_styles_CTWM()
 }
 
 static void
+gen_dir_CTWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_CTWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"ctwm",
-	VERSION,
-	&get_rcfile_CTWM,
-	&find_style_CTWM,
-	&get_style_CTWM,
-	&set_style_CTWM,
-	&reload_style_CTWM,
-	&list_dir_CTWM,
-	&list_styles_CTWM,
-	&get_menu_CTWM,
-	&gen_menu_CTWM
+	.name = "ctwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_CTWM,
+	.find_style = &find_style_CTWM,
+	.get_style = &get_style_CTWM,
+	.set_style = &set_style_CTWM,
+	.reload_style = &reload_style_CTWM,
+	.list_dir = &list_dir_CTWM,
+	.list_styles = &list_styles_CTWM,
+	.get_menu = &get_menu_CTWM,
+	.gen_dir = &gen_dir_CTWM,
+	.gen_menu = &gen_menu_CTWM
 };
 
 /** @} */

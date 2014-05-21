@@ -134,22 +134,28 @@ list_styles_WMX()
 }
 
 static void
+gen_dir_WMX(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_WMX()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"wmx",
-	VERSION,
-	&get_rcfile_WMX,
-	&find_style_WMX,
-	&get_style_WMX,
-	&set_style_WMX,
-	&reload_style_WMX,
-	&list_dir_WMX,
-	&list_styles_WMX,
-	&get_menu_WMX,
-	&gen_menu_WMX
+	.name = "wmx",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_WMX,
+	.find_style = &find_style_WMX,
+	.get_style = &get_style_WMX,
+	.set_style = &set_style_WMX,
+	.reload_style = &reload_style_WMX,
+	.list_dir = &list_dir_WMX,
+	.list_styles = &list_styles_WMX,
+	.get_menu = &get_menu_WMX,
+	.gen_dir = &gen_dir_WMX,
+	.gen_menu = &gen_menu_WMX
 };
 
 /** @} */

@@ -104,22 +104,28 @@ list_styles_VTWM()
 }
 
 static void
+gen_dir_VTWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_VTWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"vtwm",
-	VERSION,
-	&get_rcfile_VTWM,
-	&find_style_VTWM,
-	&get_style_VTWM,
-	&set_style_VTWM,
-	&reload_style_VTWM,
-	&list_dir_VTWM,
-	&list_styles_VTWM,
-	&get_menu_VTWM,
-	&gen_menu_VTWM
+	.name = "vtwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_VTWM,
+	.find_style = &find_style_VTWM,
+	.get_style = &get_style_VTWM,
+	.set_style = &set_style_VTWM,
+	.reload_style = &reload_style_VTWM,
+	.list_dir = &list_dir_VTWM,
+	.list_styles = &list_styles_VTWM,
+	.get_menu = &get_menu_VTWM,
+	.gen_dir = &gen_dir_VTWM,
+	.gen_menu = &gen_menu_VTWM
 };
 
 /** @} */

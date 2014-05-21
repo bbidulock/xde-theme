@@ -323,22 +323,28 @@ list_styles_PEKWM()
 }
 
 static void
+gen_dir_PEKWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_PEKWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"pekwm",
-	VERSION,
-	&get_rcfile_PEKWM,
-	&find_style_PEKWM,
-	&get_style_PEKWM,
-	&set_style_PEKWM,
-	&reload_style_PEKWM,
-	&list_dir_PEKWM,
-	&list_styles_PEKWM,
-	&get_menu_PEKWM,
-	&gen_menu_PEKWM
+	.name = "pekwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_PEKWM,
+	.find_style = &find_style_PEKWM,
+	.get_style = &get_style_PEKWM,
+	.set_style = &set_style_PEKWM,
+	.reload_style = &reload_style_PEKWM,
+	.list_dir = &list_dir_PEKWM,
+	.list_styles = &list_styles_PEKWM,
+	.get_menu = &get_menu_PEKWM,
+	.gen_dir = &gen_dir_PEKWM,
+	.gen_menu = &gen_menu_PEKWM
 };
 
 /** @} */

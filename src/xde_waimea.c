@@ -160,22 +160,28 @@ list_styles_WAIMEA()
 }
 
 static void
+gen_dir_WAIMEA(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_WAIMEA()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"waimea",
-	VERSION,
-	&get_rcfile_WAIMEA,
-	&find_style_WAIMEA,
-	&get_style_WAIMEA,
-	&set_style_WAIMEA,
-	&reload_style_WAIMEA,
-	&list_dir_WAIMEA,
-	&list_styles_WAIMEA,
-	&get_menu_WAIMEA,
-	&gen_menu_WAIMEA
+	.name = "waimea",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_WAIMEA,
+	.find_style = &find_style_WAIMEA,
+	.get_style = &get_style_WAIMEA,
+	.set_style = &set_style_WAIMEA,
+	.reload_style = &reload_style_WAIMEA,
+	.list_dir = &list_dir_WAIMEA,
+	.list_styles = &list_styles_WAIMEA,
+	.get_menu = &get_menu_WAIMEA,
+	.gen_dir = &gen_dir_WAIMEA,
+	.gen_menu = &gen_menu_WAIMEA
 };
 
 /** @} */

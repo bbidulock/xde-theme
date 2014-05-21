@@ -115,6 +115,7 @@ typedef struct {
 	void (*list_dir) (char *, char *, enum ListType);
 	void (*list_styles) (void);
 	char *(*get_menu) (void);
+	void (*gen_dir) (char *, char *, enum ListType);
 	void (*gen_menu) (void);
 } WmOperations;
 

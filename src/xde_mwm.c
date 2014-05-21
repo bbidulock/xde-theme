@@ -101,22 +101,28 @@ list_styles_MWM()
 }
 
 static void
+gen_dir_MWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_MWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"mwm",
-	VERSION,
-	&get_rcfile_MWM,
-	&find_style_MWM,
-	&get_style_MWM,
-	&set_style_MWM,
-	&reload_style_MWM,
-	&list_dir_MWM,
-	&list_styles_MWM,
-	&get_menu_MWM,
-	&gen_menu_MWM
+	.name = "mwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_MWM,
+	.find_style = &find_style_MWM,
+	.get_style = &get_style_MWM,
+	.set_style = &set_style_MWM,
+	.reload_style = &reload_style_MWM,
+	.list_dir = &list_dir_MWM,
+	.list_styles = &list_styles_MWM,
+	.get_menu = &get_menu_MWM,
+	.gen_dir = &gen_dir_MWM,
+	.gen_menu = &gen_menu_MWM
 };
 
 /** @} */

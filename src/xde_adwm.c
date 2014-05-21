@@ -190,22 +190,28 @@ list_styles_ADWM()
 }
 
 static void
+gen_dir_ADWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_ADWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"adwm",
-	VERSION,
-	&get_rcfile_ADWM,
-	&find_style_ADWM,
-	&get_style_ADWM,
-	&set_style_ADWM,
-	&reload_style_ADWM,
-	&list_dir_ADWM,
-	&list_styles_ADWM,
-	&get_menu_ADWM,
-	&gen_menu_ADWM
+	.name = "adwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_ADWM,
+	.find_style = &find_style_ADWM,
+	.get_style = &get_style_ADWM,
+	.set_style = &set_style_ADWM,
+	.reload_style = &reload_style_ADWM,
+	.list_dir = &list_dir_ADWM,
+	.list_styles = &list_styles_ADWM,
+	.get_menu = &get_menu_ADWM,
+	.gen_dir = &gen_dir_ADWM,
+	.gen_menu = &gen_menu_ADWM
 };
 
 

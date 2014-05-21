@@ -123,22 +123,28 @@ list_styles_TWM()
 }
 
 static void
+gen_dir_TWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_TWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"twm",
-	VERSION,
-	&get_rcfile_TWM,
-	&find_style_TWM,
-	&get_style_TWM,
-	&set_style_TWM,
-	&reload_style_TWM,
-	&list_dir_TWM,
-	&list_styles_TWM,
-	&get_menu_TWM,
-	&gen_menu_TWM
+	.name = "twm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_TWM,
+	.find_style = &find_style_TWM,
+	.get_style = &get_style_TWM,
+	.set_style = &set_style_TWM,
+	.reload_style = &reload_style_TWM,
+	.list_dir = &list_dir_TWM,
+	.list_styles = &list_styles_TWM,
+	.get_menu = &get_menu_TWM,
+	.gen_dir = &gen_dir_TWM,
+	.gen_menu = &gen_menu_TWM
 };
 
 /** @} */

@@ -113,22 +113,28 @@ list_styles_MATWM2()
 }
 
 static void
+gen_dir_MATWM2(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_MATWM2()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"matwm2",
-	VERSION,
-	&get_rcfile_MATWM2,
-	&find_style_MATWM2,
-	&get_style_MATWM2,
-	&set_style_MATWM2,
-	&reload_style_MATWM2,
-	&list_dir_MATWM2,
-	&list_styles_MATWM2,
-	&get_menu_MATWM2,
-	&gen_menu_MATWM2
+	.name = "matwm2",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_MATWM2,
+	.find_style = &find_style_MATWM2,
+	.get_style = &get_style_MATWM2,
+	.set_style = &set_style_MATWM2,
+	.reload_style = &reload_style_MATWM2,
+	.list_dir = &list_dir_MATWM2,
+	.list_styles = &list_styles_MATWM2,
+	.get_menu = &get_menu_MATWM2,
+	.gen_dir = &gen_dir_MATWM2,
+	.gen_menu = &gen_menu_MATWM2
 };
 
 /** @} */

@@ -103,22 +103,28 @@ list_styles_WIND()
 }
 
 static void
+gen_dir_WIND(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_WIND()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"wind",
-	VERSION,
-	&get_rcfile_WIND,
-	&find_style_WIND,
-	&get_style_WIND,
-	&set_style_WIND,
-	&reload_style_WIND,
-	&list_dir_WIND,
-	&list_styles_WIND,
-	&get_menu_WIND,
-	&gen_menu_WIND
+	.name = "wind",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_WIND,
+	.find_style = &find_style_WIND,
+	.get_style = &get_style_WIND,
+	.set_style = &set_style_WIND,
+	.reload_style = &reload_style_WIND,
+	.list_dir = &list_dir_WIND,
+	.list_styles = &list_styles_WIND,
+	.get_menu = &get_menu_WIND,
+	.gen_dir = &gen_dir_WIND,
+	.gen_menu = &gen_menu_WIND
 };
 
 /** @} */

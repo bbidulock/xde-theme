@@ -241,22 +241,28 @@ list_styles_CWM()
 }
 
 static void
+gen_dir_CWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_CWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"cwm",
-	VERSION,
-	&get_rcfile_CWM,
-	&find_style_CWM,
-	&get_style_CWM,
-	&set_style_CWM,
-	&reload_style_CWM,
-	&list_dir_CWM,
-	&list_styles_CWM,
-	&get_menu_CWM,
-	&gen_menu_CWM
+	.name = "cwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_CWM,
+	.find_style = &find_style_CWM,
+	.get_style = &get_style_CWM,
+	.set_style = &set_style_CWM,
+	.reload_style = &reload_style_CWM,
+	.list_dir = &list_dir_CWM,
+	.list_styles = &list_styles_CWM,
+	.get_menu = &get_menu_CWM,
+	.gen_dir = &gen_dir_CWM,
+	.gen_menu = &gen_menu_CWM
 };
 
 /** @} */

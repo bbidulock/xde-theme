@@ -101,22 +101,28 @@ list_styles_AWESOME()
 }
 
 static void
+gen_dir_AWESOME(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_AWESOME()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"awesome",
-	VERSION,
-	&get_rcfile_AWESOME,
-	&find_style_AWESOME,
-	&get_style_AWESOME,
-	&set_style_AWESOME,
-	&reload_style_AWESOME,
-	&list_dir_AWESOME,
-	&list_styles_AWESOME,
-	&get_menu_AWESOME,
-	&gen_menu_AWESOME
+	.name = "awesome",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_AWESOME,
+	.find_style = &find_style_AWESOME,
+	.get_style = &get_style_AWESOME,
+	.set_style = &set_style_AWESOME,
+	.reload_style = &reload_style_AWESOME,
+	.list_dir = &list_dir_AWESOME,
+	.list_styles = &list_styles_AWESOME,
+	.get_menu = &get_menu_AWESOME,
+	.gen_dir = &gen_dir_AWESOME,
+	.gen_menu = &gen_menu_AWESOME
 };
 
 /** @} */

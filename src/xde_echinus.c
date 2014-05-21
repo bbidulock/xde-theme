@@ -185,22 +185,28 @@ list_styles_ECHINUS()
 }
 
 static void
+gen_dir_ECHINUS(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_ECHINUS()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"echinus",
-	VERSION,
-	&get_rcfile_ECHINUS,
-	&find_style_ECHINUS,
-	&get_style_ECHINUS,
-	&set_style_ECHINUS,
-	&reload_style_ECHINUS,
-	&list_dir_ECHINUS,
-	&list_styles_ECHINUS,
-	&get_menu_ECHINUS,
-	&gen_menu_ECHINUS
+	.name = "echinus",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_ECHINUS,
+	.find_style = &find_style_ECHINUS,
+	.get_style = &get_style_ECHINUS,
+	.set_style = &set_style_ECHINUS,
+	.reload_style = &reload_style_ECHINUS,
+	.list_dir = &list_dir_ECHINUS,
+	.list_styles = &list_styles_ECHINUS,
+	.get_menu = &get_menu_ECHINUS,
+	.gen_dir = &gen_dir_ECHINUS,
+	.gen_menu = &gen_menu_ECHINUS
 };
 
 /** @} */

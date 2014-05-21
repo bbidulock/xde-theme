@@ -104,22 +104,28 @@ list_styles_DWM()
 }
 
 static void
+gen_dir_DWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_DWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"dwm",
-	VERSION,
-	&get_rcfile_DWM,
-	&find_style_DWM,
-	&get_style_DWM,
-	&set_style_DWM,
-	&reload_style_DWM,
-	&list_dir_DWM,
-	&list_styles_DWM,
-	&get_menu_DWM,
-	&gen_menu_DWM
+	.name = "dwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_DWM,
+	.find_style = &find_style_DWM,
+	.get_style = &get_style_DWM,
+	.set_style = &set_style_DWM,
+	.reload_style = &reload_style_DWM,
+	.list_dir = &list_dir_DWM,
+	.list_styles = &list_styles_DWM,
+	.get_menu = &get_menu_DWM,
+	.gen_dir = &gen_dir_DWM,
+	.gen_menu = &gen_menu_DWM
 };
 
 /** @} */

@@ -146,22 +146,28 @@ list_styles_BLACKBOX()
 }
 
 static void
+gen_dir_BLACKBOX(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_BLACKBOX()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"blackbox",
-	VERSION,
-	&get_rcfile_BLACKBOX,
-	&find_style_BLACKBOX,
-	&get_style_BLACKBOX,
-	&set_style_BLACKBOX,
-	&reload_style_BLACKBOX,
-	&list_dir_BLACKBOX,
-	&list_styles_BLACKBOX,
-	&get_menu_BLACKBOX,
-	&gen_menu_BLACKBOX
+	.name = "blackbox",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_BLACKBOX,
+	.find_style = &find_style_BLACKBOX,
+	.get_style = &get_style_BLACKBOX,
+	.set_style = &set_style_BLACKBOX,
+	.reload_style = &reload_style_BLACKBOX,
+	.list_dir = &list_dir_BLACKBOX,
+	.list_styles = &list_styles_BLACKBOX,
+	.get_menu = &get_menu_BLACKBOX,
+	.gen_dir = &gen_dir_BLACKBOX,
+	.gen_menu = &gen_menu_BLACKBOX
 };
 
 /** @} */

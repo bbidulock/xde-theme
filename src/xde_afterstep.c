@@ -101,22 +101,28 @@ list_styles_AFTERSTEP()
 }
 
 static void
+gen_dir_AFTERSTEP(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_AFTERSTEP()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"afterstep",
-	VERSION,
-	&get_rcfile_AFTERSTEP,
-	&find_style_AFTERSTEP,
-	&get_style_AFTERSTEP,
-	&set_style_AFTERSTEP,
-	&reload_style_AFTERSTEP,
-	&list_dir_AFTERSTEP,
-	&list_styles_AFTERSTEP,
-	&get_menu_AFTERSTEP,
-	&gen_menu_AFTERSTEP
+	.name = "afterstep",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_AFTERSTEP,
+	.find_style = &find_style_AFTERSTEP,
+	.get_style = &get_style_AFTERSTEP,
+	.set_style = &set_style_AFTERSTEP,
+	.reload_style = &reload_style_AFTERSTEP,
+	.list_dir = &list_dir_AFTERSTEP,
+	.list_styles = &list_styles_AFTERSTEP,
+	.get_menu = &get_menu_AFTERSTEP,
+	.gen_dir = &gen_dir_AFTERSTEP,
+	.gen_menu = &gen_menu_AFTERSTEP
 };
 
 /** @} */

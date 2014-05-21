@@ -542,22 +542,28 @@ list_styles_ICEWM()
 }
 
 static void
+gen_dir_ICEWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_ICEWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"icewm",
-	VERSION,
-	&get_rcfile_ICEWM,
-	&find_style_ICEWM,
-	&get_style_ICEWM,
-	&set_style_ICEWM,
-	&reload_style_ICEWM,
-	&list_dir_ICEWM,
-	&list_styles_ICEWM,
-	&get_menu_ICEWM,
-	&gen_menu_ICEWM
+	.name = "icewm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_ICEWM,
+	.find_style = &find_style_ICEWM,
+	.get_style = &get_style_ICEWM,
+	.set_style = &set_style_ICEWM,
+	.reload_style = &reload_style_ICEWM,
+	.list_dir = &list_dir_ICEWM,
+	.list_styles = &list_styles_ICEWM,
+	.get_menu = &get_menu_ICEWM,
+	.gen_dir = &gen_dir_ICEWM,
+	.gen_menu = &gen_menu_ICEWM
 };
 
 /** @} */

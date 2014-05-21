@@ -211,22 +211,28 @@ list_styles_JWM()
 }
 
 static void
+gen_dir_JWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_JWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"jwm",
-	VERSION,
-	&get_rcfile_JWM,
-	&find_style_JWM,
-	&get_style_JWM,
-	&set_style_JWM,
-	&reload_style_JWM,
-	&list_dir_JWM,
-	&list_styles_JWM,
-	&get_menu_JWM,
-	&gen_menu_JWM
+	.name = "jwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_JWM,
+	.find_style = &find_style_JWM,
+	.get_style = &get_style_JWM,
+	.set_style = &set_style_JWM,
+	.reload_style = &reload_style_JWM,
+	.list_dir = &list_dir_JWM,
+	.list_styles = &list_styles_JWM,
+	.get_menu = &get_menu_JWM,
+	.gen_dir = &gen_dir_JWM,
+	.gen_menu = &gen_menu_JWM
 };
 
 /** @} */

@@ -186,22 +186,28 @@ list_styles_UWM()
 }
 
 static void
+gen_dir_UWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_UWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"uwm",
-	VERSION,
-	&get_rcfile_UWM,
-	&find_style_UWM,
-	&get_style_UWM,
-	&set_style_UWM,
-	&reload_style_UWM,
-	&list_dir_UWM,
-	&list_styles_UWM,
-	&get_menu_UWM,
-	&gen_menu_UWM
+	.name = "uwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_UWM,
+	.find_style = &find_style_UWM,
+	.get_style = &get_style_UWM,
+	.set_style = &set_style_UWM,
+	.reload_style = &reload_style_UWM,
+	.list_dir = &list_dir_UWM,
+	.list_styles = &list_styles_UWM,
+	.get_menu = &get_menu_UWM,
+	.gen_dir = &gen_dir_UWM,
+	.gen_menu = &gen_menu_UWM
 };
 
 /** @} */

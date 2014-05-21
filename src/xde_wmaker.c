@@ -250,22 +250,28 @@ list_styles_WMAKER()
 }
 
 static void
+gen_dir_WMAKER(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_WMAKER()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"wmaker",
-	VERSION,
-	&get_rcfile_WMAKER,
-	&find_style_WMAKER,
-	&get_style_WMAKER,
-	&set_style_WMAKER,
-	&reload_style_WMAKER,
-	&list_dir_WMAKER,
-	&list_styles_WMAKER,
-	&get_menu_WMAKER,
-	&gen_menu_WMAKER
+	.name = "wmaker",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_WMAKER,
+	.find_style = &find_style_WMAKER,
+	.get_style = &get_style_WMAKER,
+	.set_style = &set_style_WMAKER,
+	.reload_style = &reload_style_WMAKER,
+	.list_dir = &list_dir_WMAKER,
+	.list_styles = &list_styles_WMAKER,
+	.get_menu = &get_menu_WMAKER,
+	.gen_dir = &gen_dir_WMAKER,
+	.gen_menu = &gen_menu_WMAKER
 };
 
 /** @} */

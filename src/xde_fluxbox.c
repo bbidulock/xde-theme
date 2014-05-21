@@ -177,22 +177,28 @@ list_styles_FLUXBOX()
 }
 
 static void
+gen_dir_FLUXBOX(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_FLUXBOX()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"fluxbox",
-	VERSION,
-	&get_rcfile_FLUXBOX,
-	&find_style_FLUXBOX,
-	&get_style_FLUXBOX,
-	&set_style_FLUXBOX,
-	&reload_style_FLUXBOX,
-	&list_dir_FLUXBOX,
-	&list_styles_FLUXBOX,
-	&get_menu_FLUXBOX,
-	&gen_menu_FLUXBOX
+	.name = "fluxbox",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_FLUXBOX,
+	.find_style = &find_style_FLUXBOX,
+	.get_style = &get_style_FLUXBOX,
+	.set_style = &set_style_FLUXBOX,
+	.reload_style = &reload_style_FLUXBOX,
+	.list_dir = &list_dir_FLUXBOX,
+	.list_styles = &list_styles_FLUXBOX,
+	.get_menu = &get_menu_FLUXBOX,
+	.gen_dir = &gen_dir_FLUXBOX,
+	.gen_menu = &gen_menu_FLUXBOX
 };
 
 /** @} */

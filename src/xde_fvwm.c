@@ -103,22 +103,28 @@ list_styles_FVWM()
 }
 
 static void
+gen_dir_FVWM(char *xdir, char *style, enum ListType type)
+{
+}
+
+static void
 gen_menu_FVWM()
 {
 }
 
 WmOperations xde_wm_ops = {
-	"fvwm",
-	VERSION,
-	&get_rcfile_FVWM,
-	&find_style_FVWM,
-	&get_style_FVWM,
-	&set_style_FVWM,
-	&reload_style_FVWM,
-	&list_dir_FVWM,
-	&list_styles_FVWM,
-	&get_menu_FVWM,
-	&gen_menu_FVWM
+	.name = "fvwm",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_FVWM,
+	.find_style = &find_style_FVWM,
+	.get_style = &get_style_FVWM,
+	.set_style = &set_style_FVWM,
+	.reload_style = &reload_style_FVWM,
+	.list_dir = &list_dir_FVWM,
+	.list_styles = &list_styles_FVWM,
+	.get_menu = &get_menu_FVWM,
+	.gen_dir = &gen_dir_FVWM,
+	.gen_menu = &gen_menu_FVWM
 };
 
 /** @} */
