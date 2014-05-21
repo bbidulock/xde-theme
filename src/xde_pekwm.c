@@ -273,13 +273,19 @@ set_style_PEKWM()
 	}
 	buf = calloc(st.st_size + 1, sizeof(*buf));
 	/* read entire file into buffer */
-	for (total = 0; total < st.st_size; total += read)
-		if ((read = fread(buf + total, 1, st.st_size - total, f)))
-			if (total < st.st_size) {
-				EPRINTF("%s: got %zu, expecting %lu\n",
-						wm->rcfile, total, st.st_size);
-				goto no_buf;
-			}
+	total = 0;
+	while (total < st.st_size) {
+		read = fread(buf + total, 1, st.st_size - total, f);
+		total += read;
+		if (total >= st.st_size)
+			break;
+		if (ferror(f)) {
+			EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			goto no_buf;
+		}
+		if (feof(f))
+			break;
+	}
 	len = strlen(stylefile) + strlen("Theme = \"\"") + 1;
 	line = calloc(len, sizeof(*line));
 	snprintf(line, len, "Theme = \"%s\"", stylefile);
