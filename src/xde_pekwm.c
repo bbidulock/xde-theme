@@ -369,7 +369,9 @@ gen_dir_PEKWM(char *xdir, char *style, enum ListType type)
 static void
 gen_menu_PEKWM()
 {
-	return xde_gen_menu_simple();
+	fprintf(stdout, "%s\n", "Dynamic {");
+	xde_gen_menu_simple();
+	fprintf(stdout, "%s\n", "}");
 }
 
 WmOperations xde_wm_ops = {
