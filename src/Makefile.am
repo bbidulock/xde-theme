@@ -14,7 +14,7 @@ endif
 libxde_la_CPPFLAGS = -DNAME=\"libxde\"
 libxde_la_SOURCES = xde.h xde.c
 libxde_la_LIBADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
-libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic $(runtime_search) \
+libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -shared $(runtime_search) \
 		    -Wl,--version-script -Wl,$(srcdir)/xde.VERSION -ldl
 
 EXTRA_DIST = xde.VERSION
