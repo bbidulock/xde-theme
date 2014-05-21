@@ -151,17 +151,17 @@ gen_item_BLACKBOX(char *style, enum ListType type, char *stylename, char *file)
 	switch(type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:
-		fprintf(stdout, "  [exec] (%s) {xde-style -s %s -u '%s'}\n",
-				stylename, options.theme ? "-t" : "-r", stylename);
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r -u '%s'}\n",
+				stylename, stylename);
 		break;
 	case XDE_LIST_SYSTEM:
 	case XDE_LIST_GLOBAL:
-		fprintf(stdout, "  [exec] (%s) {xde-style -s %s -y '%s'}\n",
-				stylename, options.theme ? "-t" : "-r", stylename);
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r -y '%s'}\n",
+				stylename, stylename);
 		break;
 	case XDE_LIST_MIXED:
-		fprintf(stdout, "  [exec] (%s) {xde-style -s %s '%s'}\n",
-				stylename, options.theme ? "-t" : "-r", stylename);
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r '%s'}\n",
+				stylename, stylename);
 		break;
 	}
 }

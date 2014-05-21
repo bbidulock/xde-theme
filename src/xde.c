@@ -44,6 +44,7 @@
 
 /* Library functions for XDE. */
 
+#define _GNU_SOURCE
 #include "xde.h"
 #include <dlfcn.h>
 
@@ -1825,6 +1826,10 @@ show_wm()
 		OPRINTF("%d %s: style %s\n", screen, wm->name, wm->style);
 	if (wm->stylename)
 		OPRINTF("%d %s: stylename %s\n", screen, wm->name, wm->stylename);
+	if (wm->theme)
+		OPRINTF("%d %s: theme %s\n", screen, wm->name, wm->theme);
+	if (wm->themefile)
+		OPRINTF("%d %s: themefile %s\n", screen, wm->name, wm->themefile);
 }
 
 void
@@ -2732,6 +2737,7 @@ __xde_set_theme(char *name)
 		}
 		fclose(f);
 	} else {
+		DPRINTF("%s: %s\n", file, strerror(errno));
 		snprintf(buf, BUFSIZ, "gtk-theme-name=\"%s\"\n", name);
 	}
 	if (!(f = fopen(file, "w"))) {
@@ -3364,8 +3370,17 @@ get_wm_ops()
 	DPRINTF("attempting to dlopen %s\n", dlfile);
 	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
 		DPRINTF("dlopen of %s succeeded\n", dlfile);
-		if ((loaded = dlsym(handle, "xde_wm_ops")))
+		if ((loaded = dlsym(handle, "xde_wm_ops"))) {
+			Dl_info info;
+
 			DPRINTF("module version is %s\n", loaded->version);
+			if (dladdr(loaded, &info)) {
+				DPRINTF("dli_fname = %s\n", info.dli_fname);
+				DPRINTF("dli_fbase = %p\n", info.dli_fbase);
+				DPRINTF("dli_sname = %s\n", info.dli_sname);
+				DPRINTF("dli_saddr = %p\n", info.dli_saddr);
+			}
+		}
 		return loaded;
 	} else
 		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());

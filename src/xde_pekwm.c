@@ -342,16 +342,34 @@ list_styles_PEKWM()
 static void
 gen_item_PEKWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	switch(type) {
+	case XDE_LIST_PRIVATE:
+	case XDE_LIST_USER:
+		fprintf(stdout, "Entry = \"%s\" { Actions = \"Exec xde-style -s -t -r -u '%s'\" }\n",
+				stylename, stylename);
+		break;
+	case XDE_LIST_SYSTEM:
+	case XDE_LIST_GLOBAL:
+		fprintf(stdout, "Entry = \"%s\" { Actions = \"Exec xde-style -s -t -r -y '%s'\" }\n",
+				stylename, stylename);
+		break;
+	case XDE_LIST_MIXED:
+		fprintf(stdout, "Entry = \"%s\" { Actions = \"Exec xde-style -s -t -r '%s'\" }\n",
+				stylename, stylename);
+		break;
+	}
 }
 
 static void
 gen_dir_PEKWM(char *xdir, char *style, enum ListType type)
 {
+	return xde_gen_dir_simple(xdir, "themes", "/theme", "", style, type);
 }
 
 static void
 gen_menu_PEKWM()
 {
+	return xde_gen_menu_simple();
 }
 
 WmOperations xde_wm_ops = {
