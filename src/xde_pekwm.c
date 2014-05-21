@@ -275,13 +275,18 @@ set_style_PEKWM()
 	/* read entire file into buffer */
 	for (total = 0; total < st.st_size; total += read)
 		if ((read = fread(buf + total, 1, st.st_size - total, f)))
-			if (total < st.st_size)
+			if (total < st.st_size) {
+				EPRINTF("%s: got %zu, expecting %lu\n",
+						wm->rcfile, total, st.st_size);
 				goto no_buf;
+			}
 	len = strlen(stylefile) + strlen("Theme = \"\"") + 1;
 	line = calloc(len, sizeof(*line));
 	snprintf(line, len, "Theme = \"%s\"", stylefile);
-	if (strstr(buf, line))
+	if (strstr(buf, line)) {
+		DPRINTF("%s: no change\n", stylefile);
 		goto no_change;
+	}
 	if (options.dryrun) {
 	} else {
 		if (!(f = freopen(wm->rcfile, "w", f))) {
@@ -290,10 +295,13 @@ set_style_PEKWM()
 		}
 		for (pos = buf, end = buf + st.st_size; pos < end; pos = pos + strlen(pos) + 1) {
 			*strchrnul(pos, '\n') = '\0';
-			if ((p = strstr(pos, "Theme = ")) && (!(q = strchr(pos, '#')) || p < q))
+			if ((p = strstr(pos, "Theme = ")) && (!(q = strchr(pos, '#')) || p < q)) {
+				DPRINTF("%s: printing line '    %s'\n", wm->rcfile, line);
 				fprintf(f, "    %s\n", line);
-			else
+			} else {
+				DPRINTF("%s: printing line '%s'\n", wm->rcfile, pos);
 				fprintf(f, "%s\n", pos);
+			}
 		}
 		if (options.reload)
 			reload_style_PEKWM();
