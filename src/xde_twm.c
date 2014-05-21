@@ -122,6 +122,11 @@ list_styles_TWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_TWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"twm",
 	VERSION,
@@ -132,7 +137,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_TWM,
 	&list_dir_TWM,
 	&list_styles_TWM,
-	&get_menu_TWM
+	&get_menu_TWM,
+	&gen_menu_TWM
 };
 
 /** @} */

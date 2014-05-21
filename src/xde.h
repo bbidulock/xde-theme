@@ -115,6 +115,7 @@ typedef struct {
 	void (*list_dir) (char *, char *, enum ListType);
 	void (*list_styles) (void);
 	char *(*get_menu) (void);
+	void (*gen_menu) (void);
 } WmOperations;
 
 typedef struct {
@@ -153,7 +154,7 @@ typedef struct {
 	char *style;			/* WM current style */
 	char *stylename;		/* WM current style name */
 	char *theme;			/* XDE theme name */
-	char *themefile;		/* XDE tehme file */
+	char *themefile;		/* XDE theme file */
 	char *menu;			/* WM current menu */
 	Bool noenv;			/* Do we have an environment? */
 	char *env;			/* Window manager environment */
@@ -183,6 +184,7 @@ typedef struct {
 	int debug;
 	int output;
 	Bool current;
+	Bool menu;
 	Bool list;
 	Bool set;
 	Bool system;
@@ -242,7 +244,9 @@ extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);
 extern void xde_show_wms(void);
 extern void xde_identify_wm(void);
-extern Bool xde_find_theme(char *name);
+extern Bool xde_find_theme(char *name, char **filename);
+extern char *xde_get_theme(void);
+extern void xde_set_theme(char *name);
 extern char *xde_get_proc_environ(char *name);
 extern char *xde_get_rcfile_optarg(char *optname);
 extern void xde_get_simple_dirs(char *wmname);

@@ -240,6 +240,11 @@ list_styles_CWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_CWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"cwm",
 	VERSION,
@@ -250,7 +255,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_CWM,
 	&list_dir_CWM,
 	&list_styles_CWM,
-	&get_menu_CWM
+	&get_menu_CWM,
+	&gen_menu_CWM
 };
 
 /** @} */

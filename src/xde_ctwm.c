@@ -103,6 +103,11 @@ list_styles_CTWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_CTWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"ctwm",
 	VERSION,
@@ -113,7 +118,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_CTWM,
 	&list_dir_CTWM,
 	&list_styles_CTWM,
-	&get_menu_CTWM
+	&get_menu_CTWM,
+	&gen_menu_CTWM
 };
 
 /** @} */

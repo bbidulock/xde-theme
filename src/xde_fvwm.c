@@ -102,6 +102,11 @@ list_styles_FVWM()
 {
 }
 
+static void
+gen_menu_FVWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"fvwm",
 	VERSION,
@@ -112,7 +117,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_FVWM,
 	&list_dir_FVWM,
 	&list_styles_FVWM,
-	&get_menu_FVWM
+	&get_menu_FVWM,
+	&gen_menu_FVWM
 };
 
 /** @} */

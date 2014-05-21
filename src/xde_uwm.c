@@ -185,6 +185,11 @@ list_styles_UWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_UWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"uwm",
 	VERSION,
@@ -195,7 +200,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_UWM,
 	&list_dir_UWM,
 	&list_styles_UWM,
-	&get_menu_UWM
+	&get_menu_UWM,
+	&gen_menu_UWM
 };
 
 /** @} */

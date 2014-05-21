@@ -210,6 +210,11 @@ list_styles_JWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_JWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"jwm",
 	VERSION,
@@ -220,7 +225,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_JWM,
 	&list_dir_JWM,
 	&list_styles_JWM,
-	&get_menu_JWM
+	&get_menu_JWM,
+	&gen_menu_JWM
 };
 
 /** @} */

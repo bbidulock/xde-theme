@@ -103,6 +103,11 @@ list_styles_VTWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_VTWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"vtwm",
 	VERSION,
@@ -113,7 +118,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_VTWM,
 	&list_dir_VTWM,
 	&list_styles_VTWM,
-	&get_menu_VTWM
+	&get_menu_VTWM,
+	&gen_menu_VTWM
 };
 
 /** @} */

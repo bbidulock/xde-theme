@@ -184,6 +184,11 @@ list_styles_ECHINUS()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_ECHINUS()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"echinus",
 	VERSION,
@@ -194,7 +199,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_ECHINUS,
 	&list_dir_ECHINUS,
 	&list_styles_ECHINUS,
-	&get_menu_ECHINUS
+	&get_menu_ECHINUS,
+	&gen_menu_ECHINUS
 };
 
 /** @} */

@@ -142,6 +142,10 @@ directory as the style file.
 =item B<-t>, B<--theme>
 
 When listing styles, only list styles that correspond to XDE themes.
+When settings styles, set the XDE theme when the style name corresponds
+to an XDE theme, regardless of whether the name corresponds to a window
+manager style.  When getting the current style, get the current XDE
+theme name instead.
 
 =item B<-w>, B<--wmname> I<WMNAME>
 

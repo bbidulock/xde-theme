@@ -133,6 +133,11 @@ list_styles_WMX()
 {
 }
 
+static void
+gen_menu_WMX()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"wmx",
 	VERSION,
@@ -143,7 +148,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_WMX,
 	&list_dir_WMX,
 	&list_styles_WMX,
-	&get_menu_WMX
+	&get_menu_WMX,
+	&gen_menu_WMX
 };
 
 /** @} */

@@ -508,7 +508,7 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 			strcpy(name, d->d_name);
 			strcat(name, "/");
 			strcat(name, e->d_name);
-			if (!options.theme || xde_find_theme(name)) {
+			if (!options.theme || xde_find_theme(name, NULL)) {
 				switch (options.format) {
 				case XDE_OUTPUT_HUMAN:
 					fprintf(stdout, "%s %s%s\n", name, file,
@@ -541,6 +541,11 @@ list_styles_ICEWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_ICEWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"icewm",
 	VERSION,
@@ -551,7 +556,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_ICEWM,
 	&list_dir_ICEWM,
 	&list_styles_ICEWM,
-	&get_menu_ICEWM
+	&get_menu_ICEWM,
+	&gen_menu_ICEWM
 };
 
 /** @} */

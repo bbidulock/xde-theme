@@ -176,6 +176,11 @@ list_styles_FLUXBOX()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_FLUXBOX()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"fluxbox",
 	VERSION,
@@ -186,7 +191,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_FLUXBOX,
 	&list_dir_FLUXBOX,
 	&list_styles_FLUXBOX,
-	&get_menu_FLUXBOX
+	&get_menu_FLUXBOX,
+	&gen_menu_FLUXBOX
 };
 
 /** @} */

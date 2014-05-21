@@ -101,6 +101,11 @@ list_styles_2BWM()
 {
 }
 
+static void
+gen_menu_2BWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"2bwm",
 	VERSION,
@@ -111,7 +116,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_2BWM,
 	&list_dir_2BWM,
 	&list_styles_2BWM,
-	&get_menu_2BWM
+	&get_menu_2BWM,
+	&gen_menu_2BWM
 };
 
 /** @} */

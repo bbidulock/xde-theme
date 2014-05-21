@@ -112,6 +112,11 @@ list_styles_MATWM2()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_MATWM2()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"matwm2",
 	VERSION,
@@ -122,7 +127,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_MATWM2,
 	&list_dir_MATWM2,
 	&list_styles_MATWM2,
-	&get_menu_MATWM2
+	&get_menu_MATWM2,
+	&gen_menu_MATWM2
 };
 
 /** @} */

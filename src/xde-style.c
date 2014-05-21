@@ -65,18 +65,19 @@ current_style()
 			scr = screens + screen;
 			root = scr->root;
 			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->get_style) {
-				EPRINTF("cannot get current style for screen %d\n",
-					screen);
+				EPRINTF("cannot get current style for screen %d\n", screen);
 				continue;
 			}
 			ops->get_style();
-			if (wm->style) {
-				if (!options.theme || xde_find_theme(wm->stylename))
-					fprintf(stdout, "%s %s\n", wm->stylename,
-						wm->style);
-			} else
-				EPRINTF("cannot get current style for screen %d\n",
-					screen);
+			if (wm->style && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
+				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
+			} else if (options.theme && xde_get_theme()) {
+				fprintf(stdout, "%s %s\n", wm->theme, wm->themefile);
+			} else if (options.theme) {
+				EPRINTF("cannot get current theme for screen %d\n", screen);
+			} else {
+				EPRINTF("cannot get current style for screen %d\n", screen);
+			}
 		}
 	} else if (0 <= options.screen && options.screen < nscr) {
 		screen = options.screen;
@@ -88,11 +89,47 @@ current_style()
 			return;
 		}
 		ops->get_style();
-		if (wm->style) {
-			if (!options.theme || xde_find_theme(wm->stylename))
-				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
-		} else
+		if (wm->style && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
+			fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
+		} else if (options.theme && xde_get_theme()) {
+			fprintf(stdout, "%s %s\n", wm->theme, wm->themefile);
+		} else if (options.theme) {
+			EPRINTF("cannot get current theme for screen %d\n", screen);
+		} else {
 			EPRINTF("cannot get current style for screen %d\n", screen);
+		}
+	} else {
+		EPRINTF("invalid screen number %d\n", options.screen);
+		exit(2);
+	}
+}
+
+/** @brief Generate a style submenu for the window manager
+  */
+static void
+gen_menu()
+{
+	WmOperations *ops;
+
+	OPRINTF("%s\n", "generating style menu");
+
+	if (options.screen == -1) {
+		for (screen = 0; screen < nscr; screen++) {
+			scr = screens + screen;
+			root = scr->root;
+			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->gen_menu)
+				continue;
+			ops->gen_menu();
+		}
+	} else if (0 <= options.screen && options.screen < nscr) {
+		screen = options.screen;
+		scr = screens + screen;
+		root = scr->root;
+		if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->gen_menu) {
+			EPRINTF("cannot generate menu for screen %d\n", screen);
+			return;
+		}
+		ops->gen_menu();
 	} else {
 		EPRINTF("invalid screen number %d\n", options.screen);
 		exit(2);
@@ -144,7 +181,11 @@ set_style()
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
-			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->set_style)
+			if (!(wm = scr->wm))
+				continue;
+			if (options.theme)
+				xde_set_theme(options.style);
+			if (!(ops = wm->ops) || !ops->set_style)
 				continue;
 			ops->set_style();
 		}
@@ -152,7 +193,11 @@ set_style()
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
-		if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->set_style) {
+		if (!(wm = scr->wm))
+			return;
+		if (options.theme)
+			xde_set_theme(options.style);
+		if (!(ops = wm->ops) || !ops->set_style) {
 			EPRINTF("cannot set style for screen %d\n", screen);
 			return;
 		}
@@ -289,7 +334,8 @@ Options:\n\
     -L, --link\n\
         link style files where possible\n\
     -t, --theme\n\
-        only list styles that are also XDE themes\n\
+        only list styles that are also XDE themes, set or get XDE theme\n\
+	name instead of style name\n\
     -w, --wmname WMNAME\n\
         don't detect window manager, use WMNAME\n\
     -f, --rcfile FILE\n\
@@ -358,15 +404,24 @@ main(int argc, char *argv[])
 		case 'c':	/* -c, --current */
 			options.set = False;
 			options.list = False;
+			options.menu = False;
 			options.current = True;
+			break;
+		case 'm':	/* -m, --menu */
+			options.set = False;
+			options.list = False;
+			options.current = False;
+			options.menu = True;
 			break;
 		case 'l':	/* -l, --list */
 			options.set = False;
 			options.current = False;
+			options.menu = False;
 			options.list = True;
 			break;
 		case 's':	/* -s, --set */
 			options.list = False;
+			options.menu = False;
 			options.current = False;
 			options.set = True;
 			break;
@@ -384,7 +439,7 @@ main(int argc, char *argv[])
 		case 'L':	/* -L, --link */
 			options.link = True;
 			break;
-		case 't':
+		case 't':	/* -t, --theme */
 			options.theme = True;
 			break;
 		case 'w':	/* -w, --wmname NAME */
@@ -498,6 +553,8 @@ main(int argc, char *argv[])
 		list_styles();
 	else if (options.set)
 		set_style();
+	else if (options.menu)
+		gen_menu();
 	else {
 		usage(argc, argv);
 		exit(2);

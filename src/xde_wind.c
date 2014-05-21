@@ -102,6 +102,11 @@ list_styles_WIND()
 {
 }
 
+static void
+gen_menu_WIND()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"wind",
 	VERSION,
@@ -112,7 +117,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_WIND,
 	&list_dir_WIND,
 	&list_styles_WIND,
-	&get_menu_WIND
+	&get_menu_WIND,
+	&gen_menu_WIND
 };
 
 /** @} */

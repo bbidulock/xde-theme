@@ -100,6 +100,11 @@ list_styles_AFTERSTEP()
 {
 }
 
+static void
+gen_menu_AFTERSTEP()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"afterstep",
 	VERSION,
@@ -110,7 +115,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_AFTERSTEP,
 	&list_dir_AFTERSTEP,
 	&list_styles_AFTERSTEP,
-	&get_menu_AFTERSTEP
+	&get_menu_AFTERSTEP,
+	&gen_menu_AFTERSTEP
 };
 
 /** @} */

@@ -103,6 +103,11 @@ list_styles_ETWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_ETWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"etwm",
 	VERSION,
@@ -113,7 +118,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_ETWM,
 	&list_dir_ETWM,
 	&list_styles_ETWM,
-	&get_menu_ETWM
+	&get_menu_ETWM,
+	&gen_menu_ETWM
 };
 
 /** @} */

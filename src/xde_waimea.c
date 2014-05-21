@@ -159,6 +159,11 @@ list_styles_WAIMEA()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_WAIMEA()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"waimea",
 	VERSION,
@@ -169,7 +174,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_WAIMEA,
 	&list_dir_WAIMEA,
 	&list_styles_WAIMEA,
-	&get_menu_WAIMEA
+	&get_menu_WAIMEA,
+	&gen_menu_WAIMEA
 };
 
 /** @} */

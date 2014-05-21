@@ -397,6 +397,11 @@ list_styles_OPENBOX()
 	}
 }
 
+static void
+gen_menu_OPENBOX()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"openbox",
 	VERSION,
@@ -407,7 +412,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_OPENBOX,
 	&list_dir_OPENBOX,
 	&list_styles_OPENBOX,
-	&get_menu_OPENBOX
+	&get_menu_OPENBOX,
+	&gen_menu_OPENBOX
 };
 
 /** @} */

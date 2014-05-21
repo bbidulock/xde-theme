@@ -101,6 +101,11 @@ list_styles_SPECTRWM()
 {
 }
 
+static void
+gen_menu_SPECTRWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"spectrwm",
 	VERSION,
@@ -111,7 +116,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_SPECTRWM,
 	&list_dir_SPECTRWM,
 	&list_styles_SPECTRWM,
-	&get_menu_SPECTRWM
+	&get_menu_SPECTRWM,
+	&gen_menu_SPECTRWM
 };
 
 /** @} */

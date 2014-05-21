@@ -322,6 +322,11 @@ list_styles_PEKWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_PEKWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"pekwm",
 	VERSION,
@@ -332,7 +337,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_PEKWM,
 	&list_dir_PEKWM,
 	&list_styles_PEKWM,
-	&get_menu_PEKWM
+	&get_menu_PEKWM,
+	&gen_menu_PEKWM
 };
 
 /** @} */

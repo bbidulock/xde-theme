@@ -249,6 +249,11 @@ list_styles_WMAKER()
 {
 }
 
+static void
+gen_menu_WMAKER()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"wmaker",
 	VERSION,
@@ -259,7 +264,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_WMAKER,
 	&list_dir_WMAKER,
 	&list_styles_WMAKER,
-	&get_menu_WMAKER
+	&get_menu_WMAKER,
+	&gen_menu_WMAKER
 };
 
 /** @} */

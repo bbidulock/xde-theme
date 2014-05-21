@@ -133,6 +133,11 @@ list_styles_FLWM()
 {
 }
 
+static void
+gen_menu_FLWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"flwm",
 	VERSION,
@@ -143,7 +148,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_FLWM,
 	&list_dir_FLWM,
 	&list_styles_FLWM,
-	&get_menu_FLWM
+	&get_menu_FLWM,
+	&gen_menu_FLWM
 };
 
 /** @} */

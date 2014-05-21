@@ -57,21 +57,23 @@ WmScreen *event_scr;
 unsigned int nscr;
 
 Options options = {
-	0,
-	1,
-	True,
-	False,
-	False,
-	True,
-	True,
-	False,
-	False,
-	False,
-	False,
-	-1,
-	NULL,
-	NULL,
-	NULL
+	.debug = 0,
+	.output = 1,
+	.current = True,
+	.menu = False,
+	.list = False,
+	.set = False,
+	.system = True,
+	.user = True,
+	.link = False,
+	.theme = False,
+	.dryrun = False,
+	.reload = False,
+	.screen = -1,
+	.style = NULL,
+	.wmname = NULL,
+	.rcfile = NULL,
+	.format = XDE_OUTPUT_HUMAN
 };
 
 static WindowManager *
@@ -105,6 +107,10 @@ delete_wm()
 		free(wm->edir);
 		free(wm->stylefile);
 		free(wm->style);
+		free(wm->stylename);
+		free(wm->theme);
+		free(wm->themefile);
+		free(wm->menu);
 		free(wm->env);
 		if (wm->db)
 			XrmDestroyDatabase(wm->db);
@@ -150,6 +156,8 @@ Atom _XA_I3_CONFIG_PATH;
 Atom _XA_I3_PID;
 Atom _XA_I3_SHMLOG_PATH;
 Atom _XA_I3_SOCKET_PATH;
+Atom _XA_XDE_THEME_NAME;
+Atom _XA_GTK_READ_RCFILES;
 
 typedef struct {
 	char *name;
@@ -174,6 +182,8 @@ static Atoms atoms[] = {
 	{"I3_PID",			&_XA_I3_PID			},
 	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH		},
 	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH		},
+	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME		},
+	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES		},
 	{NULL,				NULL				}
 	/* *INDENT-ON* */
 };
@@ -849,7 +859,7 @@ __asm__(".symver __xde_get_xdg_dirs,xde_get_xdg_dirs@@XDE_1.0");
   * @return Bool - True when theme exists; False otherwise.
   */
 Bool
-__xde_find_theme(char *name)
+__xde_find_theme(char *name, char **filename)
 {
 	char **dir, *file;
 	int len, nlen;
@@ -881,7 +891,10 @@ __xde_find_theme(char *name)
 			free(file);
 			continue;
 		}
-		free(file);
+		if (filename)
+			*filename = file;
+		else
+			free(file);
 		return True;
 	}
 	return False;
@@ -2056,7 +2069,7 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
 			*p = '\0';
-		if (!options.theme || xde_find_theme(stylename)) {
+		if (!options.theme || xde_find_theme(stylename, NULL)) {
 			switch (options.format) {
 			case XDE_OUTPUT_HUMAN:
 				fprintf(stdout, "%s %s%s\n", stylename, file,
@@ -2158,6 +2171,105 @@ __xde_list_styles_simple()
 }
 
 __asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
+
+void
+__xde_list_styles_nostyle()
+{
+	char **xdir;
+	static char *suffix = "/xde/theme.ini";
+	static char *subdir = "/themes";
+	char **seen, **saw;
+	int numb;
+
+	if (!wm->xdg_dirs)
+		xde_get_xdg_dirs();
+	if (!wm->xdg_dirs)
+		return;
+
+	numb = 0;
+	seen = calloc(numb + 1, sizeof(*seen));
+	seen[numb] = NULL;
+
+	for (xdir = wm->xdg_dirs; *xdir; xdir++) {
+		DIR *dir;
+		char *dirname;
+		struct dirent *d;
+		int dlen;
+
+		dlen = strlen(*xdir) + strlen(subdir) + 1;
+		dirname = calloc(dlen, sizeof(*dirname));
+		strcpy(dirname, *xdir);
+		strcat(dirname, subdir);
+
+		if (!(dir = opendir(dirname))) {
+			DPRINTF("%s: %s\n", dirname, strerror(errno));
+			free(dirname);
+			continue;
+		}
+		while ((d = readdir(dir))) {
+			int len;
+			char *file, *stylename;
+			struct stat st;
+
+			if (d->d_name[0] == '.')
+				continue;
+			len = strlen(dirname) + strlen(d->d_name) + strlen(suffix) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			strcat(file, suffix);
+			if (stat(file, &st)) {
+				EPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+			for (saw = seen; *saw; saw++)
+				if (!strcmp(*saw, d->d_name))
+					break;
+			if (*saw)
+				continue;
+			stylename = strdup(d->d_name);
+			numb++;
+			seen = realloc(seen, (numb + 1) * sizeof(*seen));
+			seen[numb - 1] = stylename;
+			seen[numb] = NULL;
+			switch (options.format) {
+			case XDE_OUTPUT_HUMAN:
+				fprintf(stdout, "%s %s%s\n",
+					stylename, file,
+					(wm->themefile
+					 && !strcmp(wm->themefile, file)) ? " *" : "");
+				break;
+			case XDE_OUTPUT_SHELL:
+				fprintf(stdout, "\t\'%s\t%s\t%s\'\n",
+					stylename, file,
+					(wm->themefile
+					 && !strcmp(wm->themefile, file)) ? " *" : "");
+				break;
+			case XDE_OUTPUT_PERL:
+				fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n",
+					stylename, file,
+					(wm->themefile
+					 && !strcmp(wm->themefile, file)) ? 1 : 0);
+				break;
+			}
+			free(file);
+		}
+		free(dirname);
+		closedir(dir);
+	}
+	for (saw = seen; *saw; saw++)
+		free(*saw);
+	free(seen);
+}
+
+__asm__(".symver __xde_list_styles_nostyle,xde_list_styles_nostyle@@XDE_1.0");
 
 char *
 __xde_find_style_simple(char *dname, char *fname, char *suffix)
@@ -2310,6 +2422,207 @@ __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 }
 
 __asm__(".symver __xde_get_menu_simple,xde_get_menu_simple@@XDE_1.0");
+
+/** @brief Get the current XDE theme.
+  * @return char * - The name of the current theme or NULL.
+  *
+  * In the absense of a known style system, we can still discover which XDE
+  * theme is set by examining the _XDE_THEME_NAME property on the root window
+  * and, barring that, check the ~/.gtkrc-2.0.xde file for a theme name.
+  */
+char *
+__xde_get_theme()
+{
+	char *theme = NULL, *themefile = NULL;
+	char *name, *style, *files, *end, *file;
+	int n;
+
+	style = wm->ops->get_style();
+	if (style && xde_find_theme(style, &themefile)) {
+		theme = strdup(style);
+		free(wm->theme);
+		wm->theme = theme;
+		free(wm->themefile);
+		wm->themefile = themefile;
+		return theme;
+	}
+	name = get_text(scr->root, _XA_XDE_THEME_NAME);
+	if (name && xde_find_theme(name, &themefile)) {
+		theme = strdup(name);
+		free(wm->theme);
+		wm->theme = theme;
+		free(wm->themefile);
+		wm->themefile = themefile;
+		XFree(name);
+		return theme;
+	}
+	if (name)
+		XFree(name);
+	files = calloc(PATH_MAX, sizeof(*files));
+	strcpy(files, getenv("GTK2_RC_FILES") ? : "");
+	if (*files)
+		strcat(files, ":");
+	strcat(files, getenv("HOME"));
+	strcat(files, "/.gtkrc-2.0.xde");
+
+	end = files + strlen(files);
+	for (n = 0, file = files; file < end; n++,
+	     *strchrnul(file, ':') = '\0', file += strlen(file) + 1) ;
+
+	for (n = 0, file = files; file < end; n++, file += strlen(file) + 1) {
+		struct stat st;
+		FILE *f;
+		char *buf, *b, *e;
+
+		if (stat(file, &st)) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			continue;
+		}
+		if (!S_ISREG(st.st_mode)) {
+			DPRINTF("%s: not a file\n", file);
+			continue;
+		}
+		if (!(f = fopen(file, "r"))) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			continue;
+		}
+		buf = calloc(PATH_MAX + 1, sizeof(*buf));
+		while (fgets(buf, PATH_MAX, f)) {
+			b = buf;
+			b += strspn(b, " \t");
+			if (*b == '#' || *b == '\n')
+				continue;
+			if (strncmp(b, "gtk-theme-name", 14))
+				continue;
+			b += 14;
+			b += strspn(b, " \t");
+			if (*b != '=')
+				continue;
+			b += 1;
+			b += strspn(b, " \t");
+			if (*b != '"')
+				continue;
+			b += 1;
+			e = b;
+			while ((e = strchr(e, '"'))) {
+				if (*(e - 1) != '\\')
+					break;
+				memmove(e - 1, e, strlen(e) + 1);
+			}
+			if (!e || b >= e)
+				continue;
+			*e = '\0';
+			memmove(buf, b, strlen(b) + 1);
+			if (xde_find_theme(buf, &themefile)) {
+				theme = strdup(buf);
+				free(wm->theme);
+				wm->theme = theme;
+				free(wm->themefile);
+				wm->themefile = themefile;
+			}
+		}
+		fclose(f);
+		free(buf);
+	}
+	free(files);
+	return theme;
+}
+
+__asm__(".symver __xde_get_theme,xde_get_theme@@XDE_1.0");
+
+void
+__xde_set_theme(char *name)
+{
+	const char *suffix = "/.gtkrc-2.0.xde";
+	char *theme, *file, *home, *buf;
+	int len, done = 0;
+	FILE *f;
+	XEvent xev;
+	XTextProperty xtp;
+
+	if (!xde_find_theme(name, NULL)) {
+		EPRINTF("cannot find theme %s\n", name);
+		return;
+	}
+	if ((theme = xde_get_theme()) && !strcmp(theme, name)) {
+		DPRINTF("theme %s has not changed\n", name);
+		return;
+	}
+	home = getenv("HOME") ? : "~";
+	len = strlen(home) + 1 + strlen(suffix) + 1;
+	file = calloc(len, sizeof(*file));
+	strcpy(file, home);
+	strcat(file, "/");
+	strcat(file, suffix);
+	buf = malloc(BUFSIZ);
+	if ((f = fopen(file, "r"))) {
+		char *pos;
+		int bytes;
+
+		for (bytes = 0, pos = buf + bytes; fgets(pos, BUFSIZ, f);
+		     buf = realloc(buf, BUFSIZ + bytes), pos = buf + bytes) {
+			char *b = pos;
+
+			b += strspn(b, " \t");
+			if (*b == '#' || *b == '\n') {
+				bytes += strlen(pos);
+				continue;
+			}
+			if (strncmp(b, "gtk-theme-name", 14)) {
+				bytes += strlen(pos);
+				continue;
+			}
+			snprintf(pos, BUFSIZ, "gtk-theme-name=\"%s\"\n", name);
+			done = 1;
+			bytes += strlen(pos);
+		}
+		if (!done) {
+			snprintf(pos, BUFSIZ, "gtk-theme-name=\"%s\"\n", name);
+			bytes += strlen(pos);
+		}
+		fclose(f);
+	} else {
+		snprintf(buf, BUFSIZ, "gtk-theme-name=\"%s\"\n", name);
+	}
+	if (!(f = fopen(file, "w"))) {
+		EPRINTF("%s: %s\n", file, strerror(errno));
+		free(buf);
+		free(file);
+		return;
+	}
+	fprintf(f, "%s", buf);
+	fclose(f);
+	free(buf);
+	free(file);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.serial = 0;
+	xev.xclient.send_event = False;
+	xev.xclient.display = dpy;
+	xev.xclient.window = scr->root;
+	xev.xclient.message_type = _XA_GTK_READ_RCFILES;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 0;
+	xev.xclient.data.l[1] = 0;
+	xev.xclient.data.l[2] = 0;
+	xev.xclient.data.l[3] = 0;
+	xev.xclient.data.l[4] = 0;
+	XSendEvent(dpy, scr->root, False, StructureNotifyMask |
+		   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
+	memset(&xtp, 0, sizeof(xtp));
+	if (Xutf8TextListToTextProperty(dpy, &name, 1, XUTF8StringStyle, &xtp) != Success) {
+		EPRINTF("error converting string\n");
+		return;
+	}
+	XSetTextProperty(dpy, scr->root, &xtp, _XA_XDE_THEME_NAME);
+	if (xtp.value)
+		XFree(xtp.value);
+	return;
+}
+
+__asm__(".symver __xde_set_theme,xde_set_theme@@XDE_1.0");
 
 char *
 __xde_get_style_simple(char *fname, char *(*from_file) (char *))

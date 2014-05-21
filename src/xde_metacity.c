@@ -311,6 +311,11 @@ list_styles_METACITY()
 	}
 }
 
+static void
+gen_menu_METACITY()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"metacity",
 	VERSION,
@@ -321,7 +326,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_METACITY,
 	&list_dir_METACITY,
 	&list_styles_METACITY,
-	&get_menu_METACITY
+	&get_menu_METACITY,
+	&gen_menu_METACITY
 };
 
 /** @} */

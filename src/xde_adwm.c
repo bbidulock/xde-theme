@@ -189,6 +189,11 @@ list_styles_ADWM()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_ADWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"adwm",
 	VERSION,
@@ -199,7 +204,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_ADWM,
 	&list_dir_ADWM,
 	&list_styles_ADWM,
-	&get_menu_ADWM
+	&get_menu_ADWM,
+	&gen_menu_ADWM
 };
 
 

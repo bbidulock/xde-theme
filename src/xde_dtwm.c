@@ -100,6 +100,11 @@ list_styles_DTWM()
 {
 }
 
+static void
+gen_menu_DTWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"dtwm",
 	VERSION,
@@ -110,7 +115,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_DTWM,
 	&list_dir_DTWM,
 	&list_styles_DTWM,
-	&get_menu_DTWM
+	&get_menu_DTWM,
+	&gen_menu_DTWM
 };
 
 /** @} */

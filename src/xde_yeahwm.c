@@ -100,6 +100,11 @@ list_styles_YEAHWM()
 {
 }
 
+static void
+gen_menu_YEAHWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"yeahwm",
 	VERSION,
@@ -110,7 +115,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_YEAHWM,
 	&list_dir_YEAHWM,
 	&list_styles_YEAHWM,
-	&get_menu_YEAHWM
+	&get_menu_YEAHWM,
+	&gen_menu_YEAHWM
 };
 
 /** @} */

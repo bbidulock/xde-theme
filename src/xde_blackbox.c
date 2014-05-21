@@ -145,6 +145,11 @@ list_styles_BLACKBOX()
 	return xde_list_styles_simple();
 }
 
+static void
+gen_menu_BLACKBOX()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"blackbox",
 	VERSION,
@@ -155,7 +160,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_BLACKBOX,
 	&list_dir_BLACKBOX,
 	&list_styles_BLACKBOX,
-	&get_menu_BLACKBOX
+	&get_menu_BLACKBOX,
+	&gen_menu_BLACKBOX
 };
 
 /** @} */

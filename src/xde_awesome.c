@@ -100,6 +100,11 @@ list_styles_AWESOME()
 {
 }
 
+static void
+gen_menu_AWESOME()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"awesome",
 	VERSION,
@@ -110,7 +115,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_AWESOME,
 	&list_dir_AWESOME,
 	&list_styles_AWESOME,
-	&get_menu_AWESOME
+	&get_menu_AWESOME,
+	&gen_menu_AWESOME
 };
 
 /** @} */

@@ -100,6 +100,11 @@ list_styles_MWM()
 {
 }
 
+static void
+gen_menu_MWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"mwm",
 	VERSION,
@@ -110,7 +115,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_MWM,
 	&list_dir_MWM,
 	&list_styles_MWM,
-	&get_menu_MWM
+	&get_menu_MWM,
+	&gen_menu_MWM
 };
 
 /** @} */

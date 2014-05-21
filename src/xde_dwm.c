@@ -103,6 +103,11 @@ list_styles_DWM()
 {
 }
 
+static void
+gen_menu_DWM()
+{
+}
+
 WmOperations xde_wm_ops = {
 	"dwm",
 	VERSION,
@@ -113,7 +118,8 @@ WmOperations xde_wm_ops = {
 	&reload_style_DWM,
 	&list_dir_DWM,
 	&list_styles_DWM,
-	&get_menu_DWM
+	&get_menu_DWM,
+	&gen_menu_DWM
 };
 
 /** @} */
