@@ -286,6 +286,9 @@ set_style_PEKWM()
 		if (feof(f))
 			break;
 	}
+	/* strip trailing "/theme" */
+	if ((pos = strrchr(stylefile, '/')) && !strcmp(pos, "/theme"))
+		*pos = '\0';
 	len = strlen(stylefile) + strlen("Theme = \"\"") + 1;
 	line = calloc(len, sizeof(*line));
 	snprintf(line, len, "Theme = \"%s\"", stylefile);
