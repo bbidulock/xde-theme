@@ -115,6 +115,7 @@ typedef struct {
 	void (*list_dir) (char *, char *, enum ListType);
 	void (*list_styles) (void);
 	char *(*get_menu) (void);
+	void (*gen_item) (char *, enum ListType, char *, char *);
 	void (*gen_dir) (char *, char *, enum ListType);
 	void (*gen_menu) (void);
 } WmOperations;
@@ -264,6 +265,8 @@ extern void xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 extern void xde_set_style_database(char *name);
 extern void xde_get_rcfile_XTWM(char *xtwm);
 extern void xde_get_xdg_dirs(void);
+extern void xde_gen_menu_simple(void);
+extern void xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
 
 #endif				/* __XDE_H__ */
 

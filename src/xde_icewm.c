@@ -542,6 +542,11 @@ list_styles_ICEWM()
 }
 
 static void
+gen_item_ICEWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_ICEWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -562,6 +567,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_ICEWM,
 	.list_styles = &list_styles_ICEWM,
 	.get_menu = &get_menu_ICEWM,
+	.gen_item = &gen_item_ICEWM,
 	.gen_dir = &gen_dir_ICEWM,
 	.gen_menu = &gen_menu_ICEWM
 };

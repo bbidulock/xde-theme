@@ -113,6 +113,11 @@ list_styles_MATWM2()
 }
 
 static void
+gen_item_MATWM2(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_MATWM2(char *xdir, char *style, enum ListType type)
 {
 }
@@ -133,6 +138,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_MATWM2,
 	.list_styles = &list_styles_MATWM2,
 	.get_menu = &get_menu_MATWM2,
+	.gen_item = &gen_item_MATWM2,
 	.gen_dir = &gen_dir_MATWM2,
 	.gen_menu = &gen_menu_MATWM2
 };

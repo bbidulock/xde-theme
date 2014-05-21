@@ -323,6 +323,11 @@ list_styles_PEKWM()
 }
 
 static void
+gen_item_PEKWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_PEKWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -343,6 +348,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_PEKWM,
 	.list_styles = &list_styles_PEKWM,
 	.get_menu = &get_menu_PEKWM,
+	.gen_item = &gen_item_PEKWM,
 	.gen_dir = &gen_dir_PEKWM,
 	.gen_menu = &gen_menu_PEKWM
 };

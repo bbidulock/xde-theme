@@ -185,6 +185,11 @@ list_styles_ECHINUS()
 }
 
 static void
+gen_item_ECHINUS(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_ECHINUS(char *xdir, char *style, enum ListType type)
 {
 }
@@ -205,6 +210,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_ECHINUS,
 	.list_styles = &list_styles_ECHINUS,
 	.get_menu = &get_menu_ECHINUS,
+	.gen_item = &gen_item_ECHINUS,
 	.gen_dir = &gen_dir_ECHINUS,
 	.gen_menu = &gen_menu_ECHINUS
 };

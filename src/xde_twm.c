@@ -123,6 +123,11 @@ list_styles_TWM()
 }
 
 static void
+gen_item_TWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_TWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -143,6 +148,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_TWM,
 	.list_styles = &list_styles_TWM,
 	.get_menu = &get_menu_TWM,
+	.gen_item = &gen_item_TWM,
 	.gen_dir = &gen_dir_TWM,
 	.gen_menu = &gen_menu_TWM
 };

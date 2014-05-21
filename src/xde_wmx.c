@@ -134,6 +134,11 @@ list_styles_WMX()
 }
 
 static void
+gen_item_WMX(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_WMX(char *xdir, char *style, enum ListType type)
 {
 }
@@ -154,6 +159,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_WMX,
 	.list_styles = &list_styles_WMX,
 	.get_menu = &get_menu_WMX,
+	.gen_item = &gen_item_WMX,
 	.gen_dir = &gen_dir_WMX,
 	.gen_menu = &gen_menu_WMX
 };

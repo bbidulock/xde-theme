@@ -101,6 +101,11 @@ list_styles_DTWM()
 }
 
 static void
+gen_item_DTWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_DTWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -121,6 +126,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_DTWM,
 	.list_styles = &list_styles_DTWM,
 	.get_menu = &get_menu_DTWM,
+	.gen_item = &gen_item_DTWM,
 	.gen_dir = &gen_dir_DTWM,
 	.gen_menu = &gen_menu_DTWM
 };

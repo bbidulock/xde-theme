@@ -102,6 +102,11 @@ list_styles_SPECTRWM()
 }
 
 static void
+gen_item_SPECTRWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_SPECTRWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -122,6 +127,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_SPECTRWM,
 	.list_styles = &list_styles_SPECTRWM,
 	.get_menu = &get_menu_SPECTRWM,
+	.gen_item = &gen_item_SPECTRWM,
 	.gen_dir = &gen_dir_SPECTRWM,
 	.gen_menu = &gen_menu_SPECTRWM
 };

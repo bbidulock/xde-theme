@@ -312,6 +312,11 @@ list_styles_METACITY()
 }
 
 static void
+gen_item_METACITY(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_METACITY(char *xdir, char *style, enum ListType type)
 {
 }
@@ -332,6 +337,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_METACITY,
 	.list_styles = &list_styles_METACITY,
 	.get_menu = &get_menu_METACITY,
+	.gen_item = &gen_item_METACITY,
 	.gen_dir = &gen_dir_METACITY,
 	.gen_menu = &gen_menu_METACITY
 };

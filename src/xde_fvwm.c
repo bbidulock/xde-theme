@@ -103,6 +103,11 @@ list_styles_FVWM()
 }
 
 static void
+gen_item_FVWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_FVWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -123,6 +128,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_FVWM,
 	.list_styles = &list_styles_FVWM,
 	.get_menu = &get_menu_FVWM,
+	.gen_item = &gen_item_FVWM,
 	.gen_dir = &gen_dir_FVWM,
 	.gen_menu = &gen_menu_FVWM
 };

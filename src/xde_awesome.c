@@ -101,6 +101,11 @@ list_styles_AWESOME()
 }
 
 static void
+gen_item_AWESOME(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_AWESOME(char *xdir, char *style, enum ListType type)
 {
 }
@@ -121,6 +126,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_AWESOME,
 	.list_styles = &list_styles_AWESOME,
 	.get_menu = &get_menu_AWESOME,
+	.gen_item = &gen_item_AWESOME,
 	.gen_dir = &gen_dir_AWESOME,
 	.gen_menu = &gen_menu_AWESOME
 };

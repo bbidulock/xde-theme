@@ -398,6 +398,11 @@ list_styles_OPENBOX()
 }
 
 static void
+gen_item_OPENBOX(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_OPENBOX(char *xdir, char *style, enum ListType type)
 {
 }
@@ -418,6 +423,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_OPENBOX,
 	.list_styles = &list_styles_OPENBOX,
 	.get_menu = &get_menu_OPENBOX,
+	.gen_item = &gen_item_OPENBOX,
 	.gen_dir = &gen_dir_OPENBOX,
 	.gen_menu = &gen_menu_OPENBOX
 };

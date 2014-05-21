@@ -177,6 +177,11 @@ list_styles_FLUXBOX()
 }
 
 static void
+gen_item_FLUXBOX(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_FLUXBOX(char *xdir, char *style, enum ListType type)
 {
 }
@@ -197,6 +202,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_FLUXBOX,
 	.list_styles = &list_styles_FLUXBOX,
 	.get_menu = &get_menu_FLUXBOX,
+	.gen_item = &gen_item_FLUXBOX,
 	.gen_dir = &gen_dir_FLUXBOX,
 	.gen_menu = &gen_menu_FLUXBOX
 };

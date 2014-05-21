@@ -104,6 +104,11 @@ list_styles_CTWM()
 }
 
 static void
+gen_item_CTWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_CTWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -124,6 +129,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_CTWM,
 	.list_styles = &list_styles_CTWM,
 	.get_menu = &get_menu_CTWM,
+	.gen_item = &gen_item_CTWM,
 	.gen_dir = &gen_dir_CTWM,
 	.gen_menu = &gen_menu_CTWM
 };

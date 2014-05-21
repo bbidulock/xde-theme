@@ -241,6 +241,11 @@ list_styles_CWM()
 }
 
 static void
+gen_item_CWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_CWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -261,6 +266,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_CWM,
 	.list_styles = &list_styles_CWM,
 	.get_menu = &get_menu_CWM,
+	.gen_item = &gen_item_CWM,
 	.gen_dir = &gen_dir_CWM,
 	.gen_menu = &gen_menu_CWM
 };

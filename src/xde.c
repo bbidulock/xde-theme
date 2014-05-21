@@ -2173,6 +2173,100 @@ __xde_list_styles_simple()
 __asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
 
 void
+__xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type)
+{
+	DIR *dir;
+	char *dirname, *file, *stylename, *p;
+	struct dirent *d;
+	struct stat st;
+	int len;
+
+	if (!xdir || !*xdir)
+		return;
+	len = strlen(xdir) + strlen(dname) + 2;
+	dirname = calloc(len, sizeof(*dirname));
+	strcpy(dirname, xdir);
+	strcat(dirname, "/");
+	strcat(dirname, dname);
+	if (!(dir = opendir(dirname))) {
+		DPRINTF("%s: %s\n", dirname, strerror(errno));
+		free(dirname);
+		return;
+	}
+	while ((d = readdir(dir))) {
+		if (d->d_name[0] == '.')
+			continue;
+		len = strlen(dirname) + strlen(d->d_name) + strlen(fname) + 2;
+		file = calloc(len, sizeof(*file));
+		strcpy(file, dirname);
+		strcat(file, "/");
+		strcat(file, d->d_name);
+		if (stat(file, &st)) {
+			EPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			continue;
+		}
+		if (S_ISREG(st.st_mode)) {
+			/* filename must end in suffix when specified */
+			if (suffix[0]
+			    && (!(p = strstr(d->d_name, suffix)) || p[strlen(suffix)])) {
+				DPRINTF("%s has no %s suffix\n", d->d_name, suffix);
+				free(file);
+				continue;
+			}
+		} else if (!S_ISDIR(st.st_mode)) {
+			DPRINTF("%s: not file or directory\n", file);
+			free(file);
+			continue;
+		} else {
+			strcat(file, fname);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not a file\n", file);
+				free(file);
+				continue;
+			}
+		}
+		stylename = strdup(d->d_name);
+		if (suffix[0] && (p = strstr(d->d_name, suffix))
+		    && !p[strlen(suffix)])
+			*p = '\0';
+		wm->ops->gen_item(style, type, stylename, file);
+		free(stylename);
+		free(file);
+	}
+	closedir(dir);
+	free(dirname);
+}
+
+__asm__(".symver __xde_gen_dir_simple,xde_gen_dir_simple@@XDE_1.0");
+
+void
+__xde_gen_menu_simple()
+{
+	char *style = wm->ops->get_style();
+
+	if (options.user) {
+		if (wm->pdir)
+			wm->ops->gen_dir(wm->pdir, style, XDE_LIST_PRIVATE);
+		if (wm->udir && (!wm->pdir || strcmp(wm->pdir, wm->udir)))
+			wm->ops->gen_dir(wm->udir, style, XDE_LIST_USER);
+	}
+	if (options.system) {
+		if (wm->sdir)
+			wm->ops->gen_dir(wm->sdir, style, XDE_LIST_SYSTEM);
+		if (wm->edir)
+			wm->ops->gen_dir(wm->edir, style, XDE_LIST_GLOBAL);
+	}
+}
+
+__asm__(".symver __xde_gen_menu_simple,xde_gen_menu_simple@@XDE_1.0");
+
+void
 __xde_list_styles_nostyle()
 {
 	char **xdir;

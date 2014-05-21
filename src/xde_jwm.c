@@ -211,6 +211,11 @@ list_styles_JWM()
 }
 
 static void
+gen_item_JWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_JWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -231,6 +236,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_JWM,
 	.list_styles = &list_styles_JWM,
 	.get_menu = &get_menu_JWM,
+	.gen_item = &gen_item_JWM,
 	.gen_dir = &gen_dir_JWM,
 	.gen_menu = &gen_menu_JWM
 };

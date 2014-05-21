@@ -190,6 +190,11 @@ list_styles_ADWM()
 }
 
 static void
+gen_item_ADWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_ADWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -210,6 +215,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_ADWM,
 	.list_styles = &list_styles_ADWM,
 	.get_menu = &get_menu_ADWM,
+	.gen_item = &gen_item_ADWM,
 	.gen_dir = &gen_dir_ADWM,
 	.gen_menu = &gen_menu_ADWM
 };

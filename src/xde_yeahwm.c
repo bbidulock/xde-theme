@@ -101,6 +101,11 @@ list_styles_YEAHWM()
 }
 
 static void
+gen_item_YEAHWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_YEAHWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -121,6 +126,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_YEAHWM,
 	.list_styles = &list_styles_YEAHWM,
 	.get_menu = &get_menu_YEAHWM,
+	.gen_item = &gen_item_YEAHWM,
 	.gen_dir = &gen_dir_YEAHWM,
 	.gen_menu = &gen_menu_YEAHWM
 };

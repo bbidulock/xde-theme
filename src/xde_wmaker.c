@@ -250,6 +250,11 @@ list_styles_WMAKER()
 }
 
 static void
+gen_item_WMAKER(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_WMAKER(char *xdir, char *style, enum ListType type)
 {
 }
@@ -270,6 +275,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_WMAKER,
 	.list_styles = &list_styles_WMAKER,
 	.get_menu = &get_menu_WMAKER,
+	.gen_item = &gen_item_WMAKER,
 	.gen_dir = &gen_dir_WMAKER,
 	.gen_menu = &gen_menu_WMAKER
 };

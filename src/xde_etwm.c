@@ -104,6 +104,11 @@ list_styles_ETWM()
 }
 
 static void
+gen_item_ETWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_ETWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -124,6 +129,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_ETWM,
 	.list_styles = &list_styles_ETWM,
 	.get_menu = &get_menu_ETWM,
+	.gen_item = &gen_item_ETWM,
 	.gen_dir = &gen_dir_ETWM,
 	.gen_menu = &gen_menu_ETWM
 };

@@ -146,13 +146,44 @@ list_styles_BLACKBOX()
 }
 
 static void
+gen_item_BLACKBOX(char *style, enum ListType type, char *stylename, char *file)
+{
+	switch(type) {
+	case XDE_LIST_PRIVATE:
+	case XDE_LIST_USER:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s %s -u '%s'}\n",
+				stylename, options.theme ? "-t" : "-r", stylename);
+		break;
+	case XDE_LIST_SYSTEM:
+	case XDE_LIST_GLOBAL:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s %s -y '%s'}\n",
+				stylename, options.theme ? "-t" : "-r", stylename);
+		break;
+	case XDE_LIST_MIXED:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s %s '%s'}\n",
+				stylename, options.theme ? "-t" : "-r", stylename);
+		break;
+	}
+}
+
+static void
 gen_dir_BLACKBOX(char *xdir, char *style, enum ListType type)
 {
+	xde_gen_dir_simple(xdir, "styles", "/stylerc", "", style, type);
 }
 
 static void
 gen_menu_BLACKBOX()
 {
+	if (options.theme) {
+		fprintf(stdout, "%s\n", "[submenu] (Themes) {Choose a theme...}");
+		xde_gen_menu_simple();
+		fprintf(stdout, "%s\n", "[end]");
+	} else {
+		fprintf(stdout, "%s\n", "[submenu] (Styles) {Choose a style...}");
+		xde_gen_menu_simple();
+		fprintf(stdout, "%s\n", "[end]");
+	}
 }
 
 WmOperations xde_wm_ops = {
@@ -166,6 +197,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_BLACKBOX,
 	.list_styles = &list_styles_BLACKBOX,
 	.get_menu = &get_menu_BLACKBOX,
+	.gen_item = &gen_item_BLACKBOX,
 	.gen_dir = &gen_dir_BLACKBOX,
 	.gen_menu = &gen_menu_BLACKBOX
 };

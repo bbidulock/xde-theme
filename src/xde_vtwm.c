@@ -104,6 +104,11 @@ list_styles_VTWM()
 }
 
 static void
+gen_item_VTWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_VTWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -124,6 +129,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_VTWM,
 	.list_styles = &list_styles_VTWM,
 	.get_menu = &get_menu_VTWM,
+	.gen_item = &gen_item_VTWM,
 	.gen_dir = &gen_dir_VTWM,
 	.gen_menu = &gen_menu_VTWM
 };

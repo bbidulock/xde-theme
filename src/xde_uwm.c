@@ -186,6 +186,11 @@ list_styles_UWM()
 }
 
 static void
+gen_item_UWM(char *style, enum ListType type, char *stylename, char *file)
+{
+}
+
+static void
 gen_dir_UWM(char *xdir, char *style, enum ListType type)
 {
 }
@@ -206,6 +211,7 @@ WmOperations xde_wm_ops = {
 	.list_dir = &list_dir_UWM,
 	.list_styles = &list_styles_UWM,
 	.get_menu = &get_menu_UWM,
+	.gen_item = &gen_item_UWM,
 	.gen_dir = &gen_dir_UWM,
 	.gen_menu = &gen_menu_UWM
 };
