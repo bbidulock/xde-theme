@@ -46,326 +46,15 @@
 #define _XOPEN_SOURCE 600
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "autoconf.h"
-#endif
+#include "xde.h"
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <fcntl.h>
 #ifdef _GNU_SOURCE
 #include <getopt.h>
-#endif
-#include <time.h>
-#include <signal.h>
-#include <syslog.h>
-#include <sys/utsname.h>
-
-#include <assert.h>
-#include <locale.h>
-#include <stdarg.h>
-#include <strings.h>
-#include <regex.h>
-
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xresource.h>
-#ifdef XRANDR
-#include <X11/extensions/Xrandr.h>
-#include <X11/extensions/randr.h>
-#endif
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
-#ifdef STARTUP_NOTIFICATION
-#define SN_API_NOT_YET_FROZEN
-#include <libsn/sn.h>
 #endif
 
 const char *program = NAME;
 
-static int debug = 0;
-static int output = 1;
-
-typedef struct {
-	Bool grab;
-	Bool setroot;
-	Bool nomonitor;
-	char *theme;
-	unsigned long delay;
-	Bool areas;
-	char **files;
-} Options;
-
-Options options = {
-	False,
-	False,
-	False,
-	NULL,
-	2000,
-	False,
-	NULL
-};
-
-#define CHECK_DIRS 3
-
-typedef struct {
-	Window netwm_check;		/* NetWM/EWMH check window */
-	Window winwm_check;		/* GNOME1/WMH check window */
-	Window maker_check;		/* WindowMaker Noticeboard check window */
-	Window motif_check;		/* Motif/MWMH check window */
-	Window icccm_check;		/* ICCCM 2.0 manager window */
-	long pid;			/* window manager pid */
-	char *host;			/* window manager host */
-	char *name;			/* window manager name */
-	char **argv;			/* window manager command line argv[] */
-	int argc;			/* window manager command line argc */
-	char **command;			/* window manager WM_COMMAND */
-	XClassHint ch;			/* window manager WM_CLASS */
-	char *rcfile;			/* window manager rc file */
-	union {
-		struct {
-			char *pdir;	/* WM private directory */
-			char *udir;	/* WM user directory */
-			char *sdir;	/* WM system directory */
-			char *edir;	/* WM config directory */
-		};
-		char *dirs[CHECK_DIRS];
-	};
-} WindowManager;
-
-WindowManager wmnow, wmnew;
-
-typedef struct WmImage WmImage;
-struct WmImage {
-	WmImage *next;
-	int num;
-	char *file;
-	int width, height;
-	Pixmap pmid;
-};
-
-WmImage *images = NULL;
-
-
-typedef struct {
-	WmImage *image; /* image assigned to this desktop */
-} WmArea;
-
-typedef struct {
-	int num;
-	int row, col; /* row and column indices */
-	struct {
-		int current;
-		unsigned int numb;
-		unsigned int cols;
-		unsigned int rows;
-		WmArea *areas; /* areas belonging to this desktop */
-	} a;
-	WmImage *image; /* image assigned to this desktop */
-} WmDesktop;
-
-typedef struct {
-	int num;
-	int x, y, width, height;
-	struct {
-		int current;
-		unsigned int numb;
-		unsigned int cols;
-		unsigned int rows;
-		WmImage *images; /* points to pixmap sized for monitor */
-	} i;
-} WmMonitor;
-
-typedef struct {
-	int screen;			/* screen number */
-	int x, y, width, height;	/* geometry in pixels */
-	Window root;			/* root window for this screen */
-	WindowManager *wm;		/* window manager managing this screen */
-	struct {
-		int current;		/* current monitor/desktop */
-		unsigned int numb;	/* number  monitors/desktops */
-		unsigned int cols;	/* cols of monitors/desktops */
-		unsigned int rows;	/* rows of monitors/desktops */
-		union {
-			WmMonitor *monitors; /* monitors belonging to this screen */
-			WmDesktop *desktops; /* desktops belonging to this screen */
-		};
-	} m, d;
-	Pixmap pmid;			/* pixmap for entire screen */
-	Pixmap save;			/* backing store pixmap for entire screen */
-} WmScreen;
-
-typedef struct {
-	Display *dpy;
-	struct {
-		int current;		/* current screen/image */
-		unsigned int numb;	/* number  screens/images */
-		unsigned int cols;	/* cols of screens/images */
-		unsigned int rows;	/* rows of screens/images */
-		union {
-			WmScreen *screens; /* screens belonging to this display */
-			WmImage *images; /* images belonging to this display */
-		};
-	} s, i;
-} WmDisplay;
-
-WmDisplay wm_dpy;
-
-Display *dpy = NULL;
-int screen = 0;
-Window root = None;
-unsigned int nscr;
-WmScreen *screens;
-WmScreen *scr;
-WmDesktop *dsk;
-
-Atom _XA_BB_THEME;
-Atom _XA_BLACKBOX_PID;
-Atom _XA_ESETROOT_PMAP_ID;
-Atom _XA_ICEWMBG_QUIT;
-Atom _XA_MOTIF_WM_INFO;
-Atom _XA_NET_CURRENT_DESKTOP;
-Atom _XA_NET_DESKTOP_LAYOUT;
-Atom _XA_NET_DESKTOP_PIXMAPS;
-Atom _XA_NET_NUMBER_OF_DESKTOPS;
-Atom _XA_NET_SUPPORTING_WM_CHECK;
-Atom _XA_NET_VISIBLE_DESKTOPS;
-Atom _XA_NET_WM_NAME;
-Atom _XA_NET_WM_PID;
-Atom _XA_OB_THEME;
-Atom _XA_OPENBOX_PID;
-Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
-Atom _XA_WINDOWMAKER_NOTICEBOARD;
-Atom _XA_WIN_SUPPORTING_WM_CHECK;
-Atom _XA_WIN_WORKSPACE;
-Atom _XA_WIN_WORKSPACE_COUNT;
-Atom _XA_XROOTPMAP_ID;
-Atom _XA_XSETROOT_ID;
-
-static void handle_BB_THEME(XEvent *);
-static void handle_BLACKBOX_PID(XEvent *);
-static void handle_ESETROOT_PMAP_ID(XEvent *);
-static void handle_NET_CURRENT_DESKTOP(XEvent *);
-static void handle_NET_DESKTOP_LAYOUT(XEvent *);
-static void handle_NET_NUMBER_OF_DESKTOPS(XEvent *);
-static void handle_NET_SUPPORTING_WM_CHECK(XEvent *);
-static void handle_NET_VISIBLE_DESKTOPS(XEvent *);
-static void handle_OB_THEME(XEvent *);
-static void handle_OPENBOX_PID(XEvent *);
-static void handle_WIN_DESKTOP_BUTTON_PROXY(XEvent *);
-static void handle_WINDOWMAKER_NOTICEBOARD(XEvent *);
-static void handle_WIN_SUPPORTING_WM_CHECK(XEvent *);
-static void handle_WIN_WORKSPACE_COUNT(XEvent *);
-static void handle_WIN_WORKSPACE(XEvent *);
-static void handle_XROOTPMAP_ID(XEvent *);
-static void handle_XSETROOT_ID(XEvent *);
-
-typedef struct {
-	char *name;
-	Atom *atom;
-	void (*handler) (XEvent *);
-	Atom value;
-} Atoms;
-
-XContext ScreenContext;
-
-Atoms atoms[] = {
-	/* *INDENT-OFF* */
-	/* name				global				handler					value			*/
-	/* ----				------				-------					-----			*/
-	{ "_BB_THEME",			&_XA_BB_THEME,			handle_BB_THEME,			None			},
-	{ "_BLACKBOX_PID",		&_XA_BLACKBOX_PID,		handle_BLACKBOX_PID,			None			},
-	{ "ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID,		handle_ESETROOT_PMAP_ID,		None			},
-	{ "_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		NULL,					None			},
-	{ "_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO,		NULL,					None			},
-	{ "_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP,	handle_NET_CURRENT_DESKTOP,		None			},
-	{ "_NET_DESKTOP_LAYOUT",	&_XA_NET_DESKTOP_LAYOUT,	handle_NET_DESKTOP_LAYOUT,		None			},
-	{ "_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAPS,	NULL,					None			},
-	{ "_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS,	handle_NET_NUMBER_OF_DESKTOPS,		None			},
-	{ "_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK,	handle_NET_SUPPORTING_WM_CHECK,		None			},
-	{ "_NET_VISIBLE_DESKTOPS",	&_XA_NET_VISIBLE_DESKTOPS,	handle_NET_VISIBLE_DESKTOPS,		None			},
-	{ "_NET_WM_NAME",		&_XA_NET_WM_NAME,		NULL,					None			},
-	{ "_NET_WM_PID",		&_XA_NET_WM_PID,		NULL,					None			},
-	{ "_OB_THEME",			&_XA_OB_THEME,			handle_OB_THEME,			None			},
-	{ "_OPENBOX_PID",		&_XA_OPENBOX_PID,		handle_OPENBOX_PID,			None			},
-	{ "_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY,	handle_WIN_DESKTOP_BUTTON_PROXY,	None			},
-	{ "_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD,	handle_WINDOWMAKER_NOTICEBOARD,		None			},
-	{ "_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK,	handle_WIN_SUPPORTING_WM_CHECK,		None			},
-	{ "_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	handle_WIN_WORKSPACE_COUNT,		None			},
-	{ "_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE,		handle_WIN_WORKSPACE,			None			},
-	{ "WM_COMMAND",			NULL,				NULL,					XA_WM_COMMAND		},
-	{ "_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID,		handle_XROOTPMAP_ID,			None			},
-	{ "_XSETROOT_ID",		&_XA_XSETROOT_ID,		handle_XSETROOT_ID,			None			},
-	{ NULL,				NULL,				NULL,					None			}
-	/* *INDENT-ON* */
-};
-
-void
-intern_atoms()
-{
-	int i, j, n;
-	char **atom_names;
-	Atom *atom_values;
-
-	for (i = 0, n = 0; atoms[i].name; i++)
-		if (atoms[i].atom)
-			n++;
-	atom_names = calloc(n + 1, sizeof(*atom_names));
-	atom_values = calloc(n + 1, sizeof(*atom_values));
-	for (i = 0, j = 0; j < n; i++)
-		if (atoms[i].atom)
-			atom_names[j++] = atoms[i].name;
-	XInternAtoms(dpy, atom_names, n, False, atom_values);
-	for (i = 0, j = 0; j < n; i++)
-		if (atoms[i].atom)
-			*atoms[i].atom = atoms[i].value = atom_values[j++];
-	free(atom_names);
-	free(atom_values);
-}
-
-Bool
-get_display()
-{
-	if (!dpy) {
-		if (!(dpy = wm_dpy.dpy = XOpenDisplay(0))) {
-			fprintf(stderr, "cannot open display\n");
-			exit(127);
-		}
-		ScreenContext = XUniqueContext();
-		intern_atoms();
-		nscr = wm_dpy.s.numb = ScreenCount(dpy);
-		screens = wm_dpy.s.screens = calloc(nscr + 1, sizeof(*screens));
-		for (screen = 0; screen < nscr; screen++) {
-			screens[screen].screen = screen;
-			screens[screen].root = root = RootWindow(dpy, screen);
-			screens[screen].width = DisplayWidth(dpy, screen);
-			screens[screen].height = DisplayHeight(dpy, screen);
-			root = RootWindow(dpy, screen);
-			XSaveContext(dpy, root, ScreenContext,
-				     (XPointer) &screens[screen]);
-		}
-		screen = DefaultScreen(dpy);
-		root = RootWindow(dpy, screen);
-	}
-	return (dpy ? True : False);
-}
-
-static char *
+char *
 get_text(Window win, Atom prop)
 {
 	XTextProperty tp = { NULL, };
@@ -460,429 +149,12 @@ get_pixmaps(Window win, Atom prop, Atom type, long *n)
 {
 	return (Pixmap *) get_cardinals(win, prop, type, n);
 }
+
 Bool
-get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret)
+get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
 {
 	return get_cardinal(win, prop, type, (long *) pixmap_ret);
 }
-
-Window
-check_recursive(Atom atom, Atom type)
-{
-	Atom real;
-	int format;
-	unsigned long nitems, after;
-	unsigned long *data = NULL;
-	Window check;
-
-	if (XGetWindowProperty(dpy, root, atom, 0L, 1L, False, type, &real,
-			       &format, &nitems, &after, (unsigned char **) &data) == Success
-	    && format != 0) {
-		if (nitems > 0) {
-			if ((check = data[0]))
-				XSelectInput(dpy, check, PropertyChangeMask | StructureNotifyMask);
-			XFree(data);
-			data = NULL;
-		} else {
-			if (data)
-				XFree(data);
-			return None;
-		}
-		if (XGetWindowProperty(dpy, check, atom, 0L, 1L, False, type, &real,
-				       &format, &nitems, &after,
-				       (unsigned char **) &data) == Success && format != 0) {
-			if (nitems > 0) {
-				if (check != (Window) data[0]) {
-					XFree(data);
-					return None;
-				}
-			} else {
-				if (data)
-					XFree(data);
-				return None;
-			}
-			XFree(data);
-		} else
-			return None;
-	} else
-		return None;
-	return check;
-}
-
-static void setup_icewm(void);
-static void setup_blackbox(void);
-static void setup_fluxbox(void);
-static void setup_openbox(void);
-static void setup_fvwm(void);
-static void setup_wmaker(void);
-static void setup_pekwm(void);
-static void setup_jwm(void);
-static void setup_vtwm(void);
-static void setup_ctwm(void);
-static void setup_echinus(void);
-
-struct {
-	char *name;
-	void (*setup)(void);
-} names[] = {
-	/* *INDENT-OFF* */
-	{ "icewm", &setup_icewm },
-	{ "blackbox", &setup_blackbox },
-	{ "fluxbox", &setup_fluxbox },
-	{ "openbox", &setup_openbox },
-	{ "fvwm", &setup_fvwm },
-	{ "windowmaker", &setup_wmaker },
-	{ "pekwm", &setup_pekwm },
-	{ "jwm", &setup_jwm },
-	{ "vtwm", &setup_vtwm },
-	{ "ctwm", &setup_ctwm },
-	{ "echinus", &setup_echinus },
-	{ NULL, NULL }
-	/* *INDENT-ON* */
-};
-
-static void
-setup_icewm()
-{
-}
-
-static void
-setup_blackbox()
-{
-}
-
-static void
-setup_fluxbox()
-{
-}
-
-static void
-setup_openbox()
-{
-}
-
-static void
-setup_fvwm()
-{
-}
-
-static void
-setup_wmaker()
-{
-}
-
-static void
-setup_pekwm()
-{
-}
-
-static void
-setup_jwm()
-{
-}
-
-static void
-setup_vtwm()
-{
-}
-
-static void
-setup_ctwm()
-{
-}
-
-static void
-setup_echinus()
-{
-}
-
-Window
-check_netwm(WindowManager *wm)
-{
-	int i = 0;
-
-	do {
-		wm->netwm_check = check_recursive(_XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW);
-	} while (i++ < 2 && !wm->netwm_check);
-	if (wm->netwm_check) {
-		if (output > 1)
-			fprintf(stderr, "Window Manger NetWM check window 0x%lx\n", wm->netwm_check);
-	} else if (output > 1)
-		fprintf(stderr, "Window Manager does not support NetWM/EWMH\n");
-	if (wm->netwm_check) {
-		XSelectInput(dpy, wm->netwm_check, PropertyChangeMask | StructureNotifyMask);
-		XSaveContext(dpy, wm->netwm_check, ScreenContext, (XPointer) scr);
-	}
-	return wm->netwm_check;
-}
-
-Window
-check_winwm(WindowManager *wm)
-{
-	int i = 0;
-
-	do {
-		wm->winwm_check = check_recursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_WINDOW);
-	} while (i++ < 2 && !wm->winwm_check);
-	if (wm->winwm_check) {
-		if (output > 1)
-			fprintf(stderr, "Window Manger WinWM check window 0x%lx\n", wm->winwm_check);
-	} else if (output > 1)
-		fprintf(stderr, "Window Manager does not support GNOME1/WMH\n");
-	if (wm->winwm_check) {
-		XSelectInput(dpy, wm->winwm_check, PropertyChangeMask | StructureNotifyMask);
-		XSaveContext(dpy, wm->winwm_check, ScreenContext, (XPointer) scr);
-	}
-	return wm->winwm_check;
-}
-
-Window
-check_maker(WindowManager *wm)
-{
-	int i = 0;
-
-	do {
-		wm->maker_check = check_recursive(_XA_WINDOWMAKER_NOTICEBOARD, XA_WINDOW);
-	} while (i++ < 2 && !wm->maker_check);
-	if (wm->maker_check) {
-		if (output > 1)
-			fprintf(stderr, "Window Manager wimaker notice window 0x%lx\n", wm->maker_check);
-	} else if (output > 1)
-		fprintf(stderr, "Window Manager does not support WindowMaker\n");
-	if (wm->maker_check) {
-		XSelectInput(dpy, wm->maker_check, PropertyChangeMask | StructureNotifyMask);
-		XSaveContext(dpy, wm->maker_check, ScreenContext, (XPointer) scr);
-	}
-	return wm->maker_check;
-}
-
-Window
-check_motif(WindowManager *wm)
-{
-	int i = 0;
-	long *data, n = 0;
-
-	do {
-		data = get_cardinals(root, _XA_MOTIF_WM_INFO, AnyPropertyType, &n);
-	} while (i++ < 2 && !data);
-	if (data && n >= 2 && (wm->motif_check = data[1])) {
-		if (output > 1)
-			fprintf(stderr, "Window Manager Motif check window 0x%lx\n",
-				wm->motif_check);
-	} else if (output > 1)
-		fprintf(stderr, "Window Manager does not support Motif/MWMH\n");
-	if (wm->motif_check) {
-		XSelectInput(dpy, wm->motif_check, PropertyChangeMask | StructureNotifyMask);
-		XSaveContext(dpy, wm->motif_check, ScreenContext, (XPointer) scr);
-	}
-	return wm->motif_check;
-}
-
-Window
-check_icccm(WindowManager *wm)
-{
-	return None;
-}
-
-/*
- * Note that pekwm and openbox are setting a null WM_CLASS property on the check
- * window.  fvwm is setting WM_NAME and WM_CLASS property on the check window.
- * Recent jwm, blackbox and icewm are properly setting _NET_WM_NAME and WM_CLASS
- * on the check window.
- */
-void
-check_name(WindowManager * wm, Window check)
-{
-	char *name;
-
-	if (!check)
-		return;
-	if ((name = get_text(check, _XA_NET_WM_NAME)) && name[0])
-		goto got_it_xfree;
-	if (name)
-		XFree(name);
-	if ((name = get_text(check, XA_WM_NAME)) && name[0])
-		goto got_it_xfree;
-	if (name)
-		XFree(name);
-	if (wm->ch.res_name) {
-		XFree(wm->ch.res_name);
-		wm->ch.res_name = NULL;
-	}
-	if (wm->ch.res_class) {
-		XFree(wm->ch.res_class);
-		wm->ch.res_class = NULL;
-	}
-	if (XGetClassHint(dpy, check, &wm->ch)) {
-		if ((name = wm->ch.res_name) && name[0])
-			goto got_it;
-		if ((name = wm->ch.res_class) && name[0])
-			goto got_it;
-	}
-	if (wm->argv) {
-		XFreeStringList(wm->argv);
-		wm->argv = NULL;
-		wm->argc = 0;
-	}
-	if (XGetCommand(dpy, check, &wm->argv, &wm->argc)) {
-		if ((name = wm->argv[0]) && name[0]) {
-			name = strrchr(wm->argv[0], '/') ? : wm->argv[0];
-			goto got_it;
-		}
-	} else if (XGetCommand(dpy, root, &wm->argv, &wm->argc)) {
-		if ((name = wm->argv[0]) && name[0]) {
-			name = strrchr(wm->argv[0], '/') ? : wm->argv[0];
-			goto got_it;
-		}
-	}
-	return;
-      got_it:
-	wm->name = strdup(name);
-	return;
-      got_it_xfree:
-	wm->name = strdup(name);
-	XFree(name);
-	return;
-}
-
-/*
- * Note that fluxbox is setting _BLACKBOX_PID on the root window instead.  PekWM is
- * setting _NET_WM_PID, but on the root window instead.  IcewWM sets it correctly
- * on the check window.  Openbox sets _OPENBOX_PID on the root window.
- */
-void
-check_pid(WindowManager * wm, Window check)
-{
-	long pid;
-
-	if (!check)
-		return;
-	if (get_cardinal(check, _XA_NET_WM_PID, XA_CARDINAL, &pid) && pid)
-		goto got_it;
-	if (wm->name && !strcasecmp(wm->name, "fluxbox"))
-		if (get_cardinal(check, _XA_BLACKBOX_PID, XA_CARDINAL, &pid) && pid)
-			goto got_it;
-	if (wm->name && !strcasecmp(wm->name, "openbox"))
-		if (get_cardinal(check, _XA_OPENBOX_PID, XA_CARDINAL, &pid) && pid)
-			goto got_it;
-	return;
-      got_it:
-	wm->pid = pid;
-	return;
-}
-
-/*
- * We do this, but we pretty much assume that we are running under
- * the same host unless it can be retrieved.
- */
-void
-check_host(WindowManager * wm, Window check)
-{
-	char *host;
-
-	if (!check)
-		return;
-	if ((host = get_text(check, XA_WM_CLIENT_MACHINE)) && host[0])
-		goto got_it_xfree;
-	if (host)
-		XFree(host);
-	return;
-      got_it_xfree:
-	wm->host = strdup(host);
-	XFree(host);
-	return;
-}
-
-void
-check_same_host(WindowManager * wm)
-{
-	if (wm->host) {
-		char buf[64] = { 0, };
-		int len1, len2;
-
-		/* null out wm->host if it is the same as us */
-		gethostname(buf, 64);
-		len1 = strlen(wm->host);
-		len2 = strlen(buf);
-		if (len1 < len2) {
-			if (!strncasecmp(wm->host, buf, len1) && buf[len1 + 1] == '.') {
-				free(wm->host);
-				wm->host = NULL;
-				return;
-			}
-		} else if (len2 > len1) {
-			if (!strncasecmp(wm->host, buf, len2) && wm->host[len2 + 1] == '.') {
-				free(wm->host);
-				wm->host = NULL;
-				return;
-			}
-		} else {
-			if (!strcasecmp(wm->host, buf)) {
-				free(wm->host);
-				wm->host = NULL;
-				return;
-			}
-		}
-	}
-}
-
-/*
- * When we have a pid that is on the same host as us, there is a lot of information
- * that we can get from the /proc filesystem:  we can get the command line, the
- * executable, and check the environment of the process.
- */
-void
-check_proc(WindowManager *wm)
-{
-	/* need a pid on the same host as us */
-	if (!wm->pid || wm->host)
-		return;
-}
-
-void
-check_wm(WindowManager *wm)
-{
-	char *maybe = NULL;
-	Window totest[6];
-	int i;
-
-	totest[0] = check_netwm(wm);
-	totest[1] = check_winwm(wm);
-	totest[2] = check_maker(wm);
-	totest[3] = check_motif(wm);
-	totest[4] = check_icccm(wm);
-	totest[5] = root;
-
-	if (wm->maker_check)
-		maybe = strdup("wmaker");
-	else if (wm->motif_check)
-		maybe = strdup("mwm");
-
-	free(wm->name);
-	wm->name = NULL;
-	for (i = 0; i < 6 && !wm->name; i++)
-		check_name(wm, totest[i]);
-	/*
-	 * CTWM with the old GNOME support uses the work space manager window as
-	 * a check window.  New CTWM is fully NetWM/EWMH compliant.
-	 */
-	if (!wm->name && maybe)
-		wm->name = strdup(maybe);
-	if (wm->name && !strcmp(wm->name, "workspacemanager"))
-		sprintf(wm->name, "ctwm");
-
-	free(wm->host);
-	wm->host = NULL;
-	for (i = 9; i < 6 && !wm->host; i++)
-		check_host(wm, totest[i]);
-	check_same_host(wm);
-
-	wm->pid = 0;
-	for (i = 0; i < 6 && !wm->pid; i++)
-		check_pid(wm, totest[i]);
-	check_proc(wm);
-}
-
 
 typedef struct Deferred Deferred;
 struct Deferred {
@@ -926,7 +198,7 @@ set_pixmap(Window proot, Pixmap pmid)
 	if (grab)
 		XGrabServer(dpy);
 	XChangeProperty(dpy, proot, _XA_XROOTPMAP_ID, XA_PIXMAP, 32,
-			PropModeReplace, (unsigned char *)&pmid, 1);
+			PropModeReplace, (unsigned char *) &pmid, 1);
 	XSync(dpy, False);
 	if (grab)
 		XUngrabServer(dpy);
@@ -937,14 +209,14 @@ deferred_set_pixmap(void *data)
 {
 	Pixmap pmid;
 
-	scr = (WmScreen *)data;
+	scr = (WmScreen *) data;
 	screen = scr->screen;
 	root = scr->root;
 	dsk = &scr->d.desktops[scr->d.current];
 	if (!(pmid = dsk->image->pmid))
 		return;
 	if (!scr->pmid)
-		get_cardinal(root, _XA_XROOTPMAP_ID, XA_PIXMAP, (long *)&scr->pmid);
+		get_cardinal(root, _XA_XROOTPMAP_ID, XA_PIXMAP, (long *) &scr->pmid);
 	if (!scr->pmid)
 		return;
 	if (pmid != scr->pmid)
@@ -959,33 +231,71 @@ check_theme()
 static Bool
 get_context(XEvent *e)
 {
-	int status = XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &scr);
+	int status =
+	    XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &event_scr);
 
 	if (status == Success) {
+		scr = event_scr;
 		screen = scr->screen;
 		root = scr->root;
+		wm = scr->wm;
 		return True;
 	}
 	return False;
 }
 
+/** @brief handle a _BB_THEME property change notification
+  *
+  *  Our blackbox(1) theme files have a rootCommand that changes the _BB_THEME
+  *  property on the root window.  Check the theme again when it changes.  Check
+  *  the window manager again when it is not blackbox.
+  */
 static void
 handle_BB_THEME(XEvent *e)
 {
+	if (get_context(e) && xde_check_wm())
+		check_theme();
 }
 
+/** @brief handle a _BLACKBOX_PID property change notification.
+  *
+  *  When fluxbox(1) restarts, it does not change the _NET_SUPPORTING_WM_CHECK
+  *  window, but it does change the _BLACKBOX_PID, even if it is just to replace
+  *  it with the same value.  When restarting, check the theme again.  Check the
+  *  window manager again when it is not fluxbox.
+  */
 static void
 handle_BLACKBOX_PID(XEvent *e)
 {
+	if (get_context(e) && xde_check_wm())
+		check_theme();
 }
 
+/** @brief handle a _ESETROOT_PMAP_ID property change notification
+  *
+  *  We do not really process this because all property root setters now set the
+  *  _XROOTPMAP_ID property which we handle below.  However, it is used to
+  *  trigger recheck of the theme needed by some window managers such as
+  *  blackbox.  If it means we check 3 times after a theme switch, so be it.
+  */
 static void
 handle_ESETROOT_PMAP_ID(XEvent *e)
 {
-	/* We do not really process this because all property root setters now set the
-	   _XROOTPMAP_ID property which we handle below.  However, it is used to trigger
-	   recheck of the theme needed by some window managers such as blackbox.  If it
-	   means we check 3 times after a theme switch, so be it. */
+	if (get_context(e) && xde_check_wm())
+		check_theme();
+}
+
+/** @brief handle a _GTK_READ_RCFILES client message
+  *
+  *  When a GTK style changer changes its style it sends a _GTK_READ_RCFILES
+  *  message to the root window to let GTK clients know to reread their RC
+  *  files.  We use this also for XDE GTK styles for the desktop.  When we
+  *  receive such a message, check the theme again.
+  *
+  */
+static void
+handle_GTK_READ_RCFILES(XEvent *e)
+{
 	check_theme();
 }
 
@@ -1078,10 +388,15 @@ handle_NET_NUMBER_OF_DESKTOPS(XEvent *e)
 }
 
 static void
+handle_NET_SUPPORTED(XEvent *e)
+{
+}
+
+static void
 handle_NET_SUPPORTING_WM_CHECK(XEvent *e)
 {
-	if (get_context(e))
-		check_netwm(scr->wm);
+	if (get_context(e) && xde_check_wm())
+		check_theme();
 }
 
 static void
@@ -1089,9 +404,16 @@ handle_NET_VISIBLE_DESKTOPS(XEvent *e)
 {
 }
 
+/** @brief handle an _OB_THEME property change notification.
+  *
+  * openbox(1) signals a theme change by changing the _OB_THEME property on the
+  * root window.  Check the theme again when it changes.  Check the window
+  * manager again when it is not openbox.
+  */
 static void
 handle_OB_THEME(XEvent *e)
 {
+	check_theme();
 }
 
 static void
@@ -1107,15 +429,20 @@ handle_WIN_DESKTOP_BUTTON_PROXY(XEvent *e)
 static void
 handle_WINDOWMAKER_NOTICEBOARD(XEvent *e)
 {
-	if (get_context(e))
-		check_maker(scr->wm);
+	if (get_context(e) && xde_check_wm())
+		check_theme();
+}
+
+static void
+handle_WIN_PROTOCOLS(XEvent *e)
+{
 }
 
 static void
 handle_WIN_SUPPORTING_WM_CHECK(XEvent *e)
 {
-	if (get_context(e))
-		check_winwm(scr->wm);
+	if (get_context(e) && xde_check_wm())
+		check_theme();
 }
 
 static void
@@ -1125,6 +452,11 @@ handle_WIN_WORKSPACE_COUNT(XEvent *e)
 
 static void
 handle_WIN_WORKSPACE(XEvent *e)
+{
+}
+
+static void
+handle_XDE_THEME_NAME(XEvent *e)
 {
 }
 
@@ -1149,7 +481,8 @@ handle_XSETROOT_ID(XEvent *e)
 	   _XROOTPMAP_ID property which we handle above.  However, it is used to trigger
 	   recheck of the theme needed by some window managers such as blackbox.  If it
 	   means we check 3 times after a theme switch, so be it. */
-	if (XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *)&scr) == Success) {
+	if (XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &scr) ==
+	    Success) {
 		Pixmap pmid = None, oldid;
 
 		screen = scr->screen;
@@ -1170,23 +503,99 @@ handle_XSETROOT_ID(XEvent *e)
 	}
 }
 
-Bool running;
+/** @brief find the screen associated with an X event
+  */
+void
+get_event_screen(XEvent *e)
+{
+	XPointer xptr = NULL;
+
+	event_scr = NULL;
+
+	if (XFindContext(dpy, e->xany.window, ScreenContext, &xptr)) {
+		Window root, parent, *children = NULL;
+		unsigned int nchildren;
+
+		/* try to find the root of the window */
+		if (XQueryTree(dpy, e->xany.window, &root, &parent, &children, &nchildren))
+			if (!XFindContext(dpy, root, ScreenContext, &xptr))
+				event_scr = (WmScreen *) xptr;
+		if (children)
+			XFree(children);
+	} else
+		event_scr = (WmScreen *) xptr;
+}
+
+typedef struct {
+	Atom *atom;
+	void (*handler_PropertyNotify) (XEvent *);
+	void (*handler_ClientMessage) (XEvent *);
+} Handlers;
+
+Handlers handlers[] = {
+	/* *INDENT-OFF* */
+	/* global			handler_PropertyNotify		handler_ClientMessage	*/
+	/* ------			-------				---------------------	*/
+	{  &_XA_BB_THEME,		handle_BB_THEME,		NULL			},
+	{  &_XA_BLACKBOX_PID,		handle_BLACKBOX_PID,		NULL			},
+	{  &_XA_ESETROOT_PMAP_ID,	handle_ESETROOT_PMAP_ID,	NULL			},
+	{  &_XA_GTK_READ_RCFILES,	NULL,				handle_GTK_READ_RCFILES	},
+	{  &_XA_I3_CONFIG_PATH,		NULL,				NULL			},
+	{  &_XA_I3_PID,			NULL,				NULL			},
+	{  &_XA_I3_SHMLOG_PATH,		NULL,				NULL			},
+	{  &_XA_I3_SOCKET_PATH,		NULL,				NULL			},
+	{  &_XA_ICEWMBG_QUIT,		NULL,				NULL			},
+	{  &_XA_MOTIF_WM_INFO,		NULL,				NULL			},
+	{  &_XA_NET_CURRENT_DESKTOP,	handle_NET_CURRENT_DESKTOP,	NULL			},
+	{  &_XA_NET_DESKTOP_LAYOUT,	handle_NET_DESKTOP_LAYOUT,	NULL			},
+	{  &_XA_NET_DESKTOP_PIXMAPS,	NULL,				NULL			},
+	{  &_XA_NET_NUMBER_OF_DESKTOPS,	handle_NET_NUMBER_OF_DESKTOPS,	NULL			},
+	{  &_XA_NET_SUPPORTED,		handle_NET_SUPPORTED,		NULL			},
+	{  &_XA_NET_SUPPORTING_WM_CHECK,handle_NET_SUPPORTING_WM_CHECK,	NULL			},
+	{  &_XA_NET_VISIBLE_DESKTOPS,	handle_NET_VISIBLE_DESKTOPS,	NULL			},
+	{  &_XA_NET_WM_NAME,		NULL,				NULL			},
+	{  &_XA_NET_WM_PID,		NULL,				NULL			},
+	{  &_XA_OB_THEME,		handle_OB_THEME,		NULL			},
+	{  &_XA_OPENBOX_PID,		handle_OPENBOX_PID,		NULL			},
+	{  &_XA_WIN_DESKTOP_BUTTON_PROXY,handle_WIN_DESKTOP_BUTTON_PROXY,NULL			},
+	{  &_XA_WINDOWMAKER_NOTICEBOARD,handle_WINDOWMAKER_NOTICEBOARD,	NULL			},
+	{  &_XA_WIN_PROTOCOLS,		handle_WIN_PROTOCOLS,		NULL			},
+	{  &_XA_WIN_SUPPORTING_WM_CHECK,handle_WIN_SUPPORTING_WM_CHECK,	NULL			},
+	{  &_XA_WIN_WORKSPACE,		handle_WIN_WORKSPACE,		NULL			},
+	{  &_XA_WIN_WORKSPACE_COUNT,	handle_WIN_WORKSPACE_COUNT,	NULL			},
+	{  &_XA_WM_COMMAND,		NULL,				NULL			},
+	{  &_XA_XDE_THEME_NAME,		handle_XDE_THEME_NAME,		NULL			},
+	{  &_XA_XROOTPMAP_ID,		handle_XROOTPMAP_ID,		NULL			},
+	{  &_XA_XSETROOT_ID,		handle_XSETROOT_ID,		NULL			},
+	{  NULL,			NULL,				NULL			}
+	/* *INDENT-ON* */
+};
 
 void
 handle_event(XEvent *e)
 {
 	int i;
 
+	get_event_screen(e);
+
 	switch (e->type) {
 	case PropertyNotify:
-		for (i = 0; atoms[i].atom; i++) {
-			if (e->xproperty.atom == atoms[i].value) {
-				if (atoms[i].handler)
-					atoms[i].handler(e);
+		for (i = 0; handlers[i].atom; i++) {
+			if (e->xproperty.atom == *handlers[i].atom) {
+				if (handlers[i].handler_PropertyNotify)
+					handlers[i].handler_PropertyNotify(e);
 				break;
 			}
 		}
 		break;
+	case ClientMessage:
+		for (i = 0; handlers[i].atom; i++) {
+			if (e->xclient.message_type == *handlers[i].atom) {
+				if (handlers[i].handler_ClientMessage)
+					handlers[i].handler_ClientMessage(e);
+				break;
+			}
+		}
 	case DestroyNotify:
 		if (get_context(e))
 			if (e->xany.window == scr->wm->netwm_check ||
@@ -1194,7 +603,7 @@ handle_event(XEvent *e)
 			    e->xany.window == scr->wm->maker_check ||
 			    e->xany.window == scr->wm->motif_check ||
 			    e->xany.window == scr->wm->icccm_check)
-				check_wm(scr->wm);
+				xde_check_wm();
 		break;
 	}
 }
@@ -1213,6 +622,8 @@ handle_deferred_events()
 		}
 	}
 }
+
+Bool running;
 
 void
 event_loop()
@@ -1337,7 +748,7 @@ event_loop()
 static void
 copying(int argc, char *argv[])
 {
-	if (!output && !debug)
+	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
 --------------------------------------------------------------------------------\n\
@@ -1381,7 +792,7 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
-	if (!output && !debug)
+	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
 %1$s (OpenSS7 %2$s) %3$s\n\
@@ -1403,7 +814,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
-	if (!output && !debug)
+	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stderr, "\
 Usage:\n\
@@ -1417,7 +828,7 @@ Usage:\n\
 static void
 help(int argc, char *argv[])
 {
-	if (!output && !debug)
+	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
@@ -1491,12 +902,13 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "D::v::hVCH?", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "D::v::hVCH?", long_options,
+				     &option_index);
 #else				/* defined _GNU_SOURCE */
 		c = getopt(argc, argv, "DvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
-			if (debug)
+			if (options.debug)
 				fprintf(stderr, "%s: done options processing\n", argv[0]);
 			break;
 		}
@@ -1513,7 +925,7 @@ main(int argc, char *argv[])
 			options.nomonitor = True;
 			break;
 		case 't':	/* -t, --theme THEME */
-			options.theme = strdup(optarg);
+			options.style = strdup(optarg);
 			break;
 		case 'd':	/* -d, --delay MILLISECONDS */
 			options.delay = strtoul(optarg, NULL, 0);
@@ -1523,41 +935,45 @@ main(int argc, char *argv[])
 			break;
 
 		case 'D':	/* -D, --debug [level] */
-			if (debug)
-				fprintf(stderr, "%s: increasing debug verbosity\n", argv[0]);
+			if (options.debug)
+				fprintf(stderr, "%s: increasing debug verbosity\n",
+					argv[0]);
 			if (optarg == NULL) {
-				debug++;
+				options.debug++;
 			} else {
 				if ((val = strtol(optarg, NULL, 0)) < 0)
 					goto bad_option;
-				debug = val;
+				options.debug = val;
 			}
 			break;
 		case 'v':	/* -v, --verbose [level] */
-			if (debug)
-				fprintf(stderr, "%s: increasing output verbosity\n", argv[0]);
+			if (options.debug)
+				fprintf(stderr, "%s: increasing output verbosity\n",
+					argv[0]);
 			if (optarg == NULL) {
-				output++;
+				options.output++;
 				break;
 			}
 			if ((val = strtol(optarg, NULL, 0)) < 0)
 				goto bad_option;
-			output = val;
+			options.output = val;
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
-			if (debug)
+			if (options.debug)
 				fprintf(stderr, "%s: printing help message\n", argv[0]);
 			help(argc, argv);
 			exit(0);
 		case 'V':	/* -V, --version */
-			if (debug)
-				fprintf(stderr, "%s: printing version message\n", argv[0]);
+			if (options.debug)
+				fprintf(stderr, "%s: printing version message\n",
+					argv[0]);
 			version(argc, argv);
 			exit(0);
 		case 'C':	/* -C, --copying */
-			if (debug)
-				fprintf(stderr, "%s: printing copying message\n", argv[0]);
+			if (options.debug)
+				fprintf(stderr, "%s: printing copying message\n",
+					argv[0]);
 			copying(argc, argv);
 			exit(0);
 		case '?':
@@ -1566,14 +982,16 @@ main(int argc, char *argv[])
 			optind--;
 			goto bad_nonopt;
 		      bad_nonopt:
-			if (output || debug) {
+			if (options.output || options.debug) {
 				if (optind < argc) {
-					fprintf(stderr, "%s: syntax error near '", argv[0]);
+					fprintf(stderr, "%s: syntax error near '",
+						argv[0]);
 					while (optind < argc)
 						fprintf(stderr, "%s ", argv[optind++]);
 					fprintf(stderr, "'\n");
 				} else {
-					fprintf(stderr, "%s: missing option or argument", argv[0]);
+					fprintf(stderr, "%s: missing option or argument",
+						argv[0]);
 					fprintf(stderr, "\n");
 				}
 				fflush(stderr);
@@ -1583,7 +1001,7 @@ main(int argc, char *argv[])
 			exit(2);
 		}
 	}
-	if (debug) {
+	if (options.debug) {
 		fprintf(stderr, "%s: option index = %d\n", argv[0], optind);
 		fprintf(stderr, "%s: option count = %d\n", argv[0], argc);
 	}
@@ -1596,3 +1014,5 @@ main(int argc, char *argv[])
 	}
 	exit(0);
 }
+
+// vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:
