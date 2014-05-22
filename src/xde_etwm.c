@@ -118,6 +118,12 @@ gen_menu_ETWM()
 {
 }
 
+static char *
+get_icon_ETWM()
+{
+	return xde_get_icon_simple("etwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "etwm",
 	.version = VERSION,
@@ -131,7 +137,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_ETWM,
 	.gen_item = &gen_item_ETWM,
 	.gen_dir = &gen_dir_ETWM,
-	.gen_menu = &gen_menu_ETWM
+	.gen_menu = &gen_menu_ETWM,
+	.get_icon = &get_icon_ETWM
 };
 
 /** @} */

@@ -117,6 +117,12 @@ gen_menu_FVWM()
 {
 }
 
+static char *
+get_icon_FVWM()
+{
+	return xde_get_icon_simple("fvwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "fvwm",
 	.version = VERSION,
@@ -130,7 +136,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_FVWM,
 	.gen_item = &gen_item_FVWM,
 	.gen_dir = &gen_dir_FVWM,
-	.gen_menu = &gen_menu_FVWM
+	.gen_menu = &gen_menu_FVWM,
+	.get_icon = &get_icon_FVWM
 };
 
 /** @} */

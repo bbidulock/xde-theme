@@ -264,6 +264,12 @@ gen_menu_WMAKER()
 {
 }
 
+static char *
+get_icon_WMAKER()
+{
+	return xde_get_icon_simple("wmaker");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "wmaker",
 	.version = VERSION,
@@ -277,7 +283,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_WMAKER,
 	.gen_item = &gen_item_WMAKER,
 	.gen_dir = &gen_dir_WMAKER,
-	.gen_menu = &gen_menu_WMAKER
+	.gen_menu = &gen_menu_WMAKER,
+	.get_icon = &get_icon_WMAKER
 };
 
 /** @} */

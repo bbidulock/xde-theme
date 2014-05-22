@@ -118,6 +118,7 @@ typedef struct {
 	void (*gen_item) (char *, enum ListType, char *, char *);
 	void (*gen_dir) (char *, char *, enum ListType);
 	void (*gen_menu) (void);
+	char *(*get_icon) (void);
 } WmOperations;
 
 typedef struct {
@@ -163,6 +164,7 @@ typedef struct {
 	size_t nenv;			/* Number of characters in environment */
 	XrmDatabase db;			/* WM resource database */
 	char **xdg_dirs;		/* XDG data dirs */
+	char *icon;			/* Icon for window manager */
 } WindowManager;
 
 typedef struct WmImage WmImage;
@@ -362,6 +364,7 @@ extern void xde_get_xdg_dirs(void);
 extern void xde_gen_menu_simple(void);
 extern void xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
 extern Bool xde_check_wm(void);
+extern char *xde_get_icon_simple(const char *fallback);
 
 #endif				/* __XDE_H__ */
 

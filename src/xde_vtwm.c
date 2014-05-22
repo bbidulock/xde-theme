@@ -118,6 +118,12 @@ gen_menu_VTWM()
 {
 }
 
+static char *
+get_icon_VTWM()
+{
+	return xde_get_icon_simple("vtwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "vtwm",
 	.version = VERSION,
@@ -131,7 +137,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_VTWM,
 	.gen_item = &gen_item_VTWM,
 	.gen_dir = &gen_dir_VTWM,
-	.gen_menu = &gen_menu_VTWM
+	.gen_menu = &gen_menu_VTWM,
+	.get_icon = &get_icon_VTWM
 };
 
 /** @} */

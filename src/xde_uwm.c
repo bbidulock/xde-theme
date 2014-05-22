@@ -200,6 +200,12 @@ gen_menu_UWM()
 {
 }
 
+static char *
+get_icon_UWM()
+{
+	return xde_get_icon_simple("uwm16x16");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "uwm",
 	.version = VERSION,
@@ -213,7 +219,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_UWM,
 	.gen_item = &gen_item_UWM,
 	.gen_dir = &gen_dir_UWM,
-	.gen_menu = &gen_menu_UWM
+	.gen_menu = &gen_menu_UWM,
+	.get_icon = &get_icon_UWM
 };
 
 /** @} */

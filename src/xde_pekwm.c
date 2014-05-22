@@ -374,6 +374,12 @@ gen_menu_PEKWM()
 	fprintf(stdout, "%s\n", "}");
 }
 
+static char *
+get_icon_PEKWM()
+{
+	return xde_get_icon_simple("pekwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "pekwm",
 	.version = VERSION,
@@ -387,7 +393,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_PEKWM,
 	.gen_item = &gen_item_PEKWM,
 	.gen_dir = &gen_dir_PEKWM,
-	.gen_menu = &gen_menu_PEKWM
+	.gen_menu = &gen_menu_PEKWM,
+	.get_icon = &get_icon_PEKWM
 };
 
 /** @} */

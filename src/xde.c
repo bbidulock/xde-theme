@@ -124,6 +124,7 @@ delete_wm()
 		if (wm->db)
 			XrmDestroyDatabase(wm->db);
 		free(wm->xdg_dirs);
+		free(wm->icon);
 	}
 }
 
@@ -1630,6 +1631,8 @@ xde_identify_wm_human()
 		fprintf(stdout, "Style name: %s\n", wm->stylename);
 	if (wm->menu)
 		fprintf(stdout, "Menu file: %s\n", wm->menu);
+	if (wm->icon)
+		fprintf(stdout, "Icon name: %s\n", wm->icon);
 }
 
 static void
@@ -1702,6 +1705,8 @@ xde_identify_wm_shell()
 		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
 	if (wm->menu)
 		fprintf(stdout, "XDE_WM_MENU=\"%s\"\n", wm->menu);
+	if (wm->icon)
+		fprintf(stdout, "XDE_WM_ICON=\"%s\"\n", wm->icon);
 }
 
 static void
@@ -1775,6 +1780,8 @@ xde_identify_wm_perl()
 		fprintf(stdout, "\tXDE_WM_STYLENAME => '%s',\n", wm->stylename);
 	if (wm->menu)
 		fprintf(stdout, "\tXDE_WM_MENU => '%s',\n", wm->menu);
+	if (wm->icon)
+		fprintf(stdout, "\tXDE_WM_ICON => '%s',\n", wm->icon);
 	fprintf(stdout, "}\n");
 }
 
@@ -1866,6 +1873,8 @@ show_wm()
 		OPRINTF("%d %s: theme %s\n", screen, wm->name, wm->theme);
 	if (wm->themefile)
 		OPRINTF("%d %s: themefile %s\n", screen, wm->name, wm->themefile);
+	if (wm->icon)
+		OPRINTF("%d %s: icon %s\n", screen, wm->name, wm->icon);
 }
 
 void
@@ -3096,6 +3105,137 @@ __xde_set_style_database(char *name)
 }
 
 __asm__(".symver __xde_set_style_database,xde_set_style_database@@XDE_1.0");
+
+/** @brief get an icon for the window manager
+  *
+  * Basically search the XDG directories for an xsession .desktop file with the
+  * same name as the window manager.  If one is found, use the Icon= field;
+  * otherwise, use the fallback if provided; otherwise, use the window manager
+  * name if available; otherwise, return NULL.
+  *
+  */
+char *
+__xde_get_icon_simple(const char *fallback)
+{
+	char **xdir, *dirname, *file;
+	char *icon = NULL;
+	static char *subdir = "/xsessions";
+	int nlen, len;
+	DIR *dir;
+	struct dirent *d;
+	FILE *f;
+	struct stat st;
+	char *buf, *maybe, *b;
+	Bool match;
+
+	if (!wm->name) {
+		DPRINTF("No window manager name, falling back\n");
+		goto fallback;
+	}
+	if (!wm->xdg_dirs)
+		xde_get_xdg_dirs();
+	if (!wm->xdg_dirs) {
+		DPRINTF("No XDG directories, falling back\n");
+		goto fallback;
+	}
+	nlen = strlen(subdir);
+	for (xdir = wm->xdg_dirs; *xdir; xdir++) {
+		DPRINTF("Checking XDG directory '%s'\n", *xdir);
+		len = strlen(*xdir) + nlen + 1;
+		dirname = calloc(len, sizeof(*dirname));
+		strcpy(dirname, *xdir);
+		strcat(dirname, subdir);
+		if (!(dir = opendir(dirname))) {
+			DPRINTF("%s: %s\n", dirname, strerror(errno));
+			free(dirname);
+			continue;
+		}
+		while ((d = readdir(dir))) {
+			if (d->d_name[0] == '.')
+				continue;
+			if (!strstr(d->d_name, ".desktop")) {
+				DPRINTF("%s: does not end in .desktop\n", d->d_name);
+				continue;
+			}
+			len = strlen(dirname) + strlen(d->d_name) + 2;
+			file = calloc(len, sizeof(*file));
+			strcpy(file, dirname);
+			strcat(file, "/");
+			strcat(file, d->d_name);
+			if (stat(file, &st)) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			if (!S_ISREG(st.st_mode)) {
+				DPRINTF("%s: not file\n", file);
+				free(file);
+				continue;
+			}
+			if (!(f = fopen(file, "r"))) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				continue;
+			}
+			DPRINTF("Checking file '%s'\n", file);
+			buf = calloc(PATH_MAX + 1, sizeof(*buf));
+			maybe = NULL;
+			b = strrchr(file, '/') + 1;
+			*strstr(b, ".desktop") = '\0';
+			match = strcasecmp(b, wm->name) ? False : True;
+			while (fgets(buf, PATH_MAX, f)) {
+				b = buf;
+				b += strspn(b, " \t");
+				if (*b == '#' || *b == '\n')
+					continue;
+				*strchrnul(b, '\n') = '\0';
+				if (!strncmp(b, "Icon=", 5)) {
+					b += 5;
+					DPRINTF("Possible icon: %s\n", b);
+					free(maybe);
+					maybe = strdup(b);
+					if (match) {
+						icon = maybe;
+						break;
+					}
+					continue;
+				}
+				if (!strncmp(b, "X-GNOME-WMName=", 15)) {
+					b += 15;
+					if (!strcasecmp(b, wm->name)) {
+						DPRINTF("Matched wmname: %s\n", b);
+						match = True;
+						if (maybe) {
+							icon = maybe;
+							break;
+						}
+					}
+				}
+				/* might want to keep looking for Hidden=true */
+			}
+			fclose(f);
+			free(file);
+			if (icon)
+				break;
+		}
+		closedir(dir);
+		free(dirname);
+		if (icon)
+			break;
+	}
+      fallback:
+	if (!icon && fallback) {
+		DPRINTF("Could not find icon: falling back to %s\n", fallback);
+		icon = strdup(fallback);
+	}
+	if (icon) {
+		free(wm->icon);
+		wm->icon = icon;
+	}
+	return icon;
+}
+
+__asm__(".symver __xde_get_icon_simple,xde_get_icon_simple@@XDE_1.0");
 
 Bool
 __xde_test_file(char *path)

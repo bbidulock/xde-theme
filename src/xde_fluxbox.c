@@ -191,6 +191,12 @@ gen_menu_FLUXBOX()
 {
 }
 
+static char *
+get_icon_FLUXBOX()
+{
+	return xde_get_icon_simple("fluxbox");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "fluxbox",
 	.version = VERSION,
@@ -204,7 +210,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_FLUXBOX,
 	.gen_item = &gen_item_FLUXBOX,
 	.gen_dir = &gen_dir_FLUXBOX,
-	.gen_menu = &gen_menu_FLUXBOX
+	.gen_menu = &gen_menu_FLUXBOX,
+	.get_icon = &get_icon_FLUXBOX
 };
 
 /** @} */

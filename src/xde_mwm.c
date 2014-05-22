@@ -115,6 +115,12 @@ gen_menu_MWM()
 {
 }
 
+static char *
+get_icon_MWM()
+{
+	return xde_get_icon_simple("mwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "mwm",
 	.version = VERSION,
@@ -128,7 +134,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_MWM,
 	.gen_item = &gen_item_MWM,
 	.gen_dir = &gen_dir_MWM,
-	.gen_menu = &gen_menu_MWM
+	.gen_menu = &gen_menu_MWM,
+	.get_icon = &get_icon_MWM
 };
 
 /** @} */

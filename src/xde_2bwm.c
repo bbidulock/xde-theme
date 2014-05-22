@@ -116,6 +116,13 @@ gen_menu_2BWM()
 {
 }
 
+static char *
+get_icon_2BWM()
+{
+	return xde_get_icon_simple("2bWM");
+}
+
+
 WmOperations xde_wm_ops = {
 	.name = "2bwm",
 	.version = VERSION,
@@ -129,7 +136,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_2BWM,
 	.gen_item = &gen_item_2BWM,
 	.gen_dir = &gen_dir_2BWM,
-	.gen_menu = &gen_menu_2BWM
+	.gen_menu = &gen_menu_2BWM,
+	.get_icon = &get_icon_2BWM
 };
 
 /** @} */

@@ -148,6 +148,12 @@ gen_menu_WMX()
 {
 }
 
+static char *
+get_icon_WMX()
+{
+	return xde_get_icon_simple("wmx");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "wmx",
 	.version = VERSION,
@@ -161,7 +167,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_WMX,
 	.gen_item = &gen_item_WMX,
 	.gen_dir = &gen_dir_WMX,
-	.gen_menu = &gen_menu_WMX
+	.gen_menu = &gen_menu_WMX,
+	.get_icon = &get_icon_WMX
 };
 
 /** @} */

@@ -115,6 +115,12 @@ gen_menu_DTWM()
 {
 }
 
+static char *
+get_icon_DTWM()
+{
+	return xde_get_icon_simple("dtwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "dtwm",
 	.version = VERSION,
@@ -128,7 +134,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_DTWM,
 	.gen_item = &gen_item_DTWM,
 	.gen_dir = &gen_dir_DTWM,
-	.gen_menu = &gen_menu_DTWM
+	.gen_menu = &gen_menu_DTWM,
+	.get_icon = &get_icon_DTWM
 };
 
 /** @} */

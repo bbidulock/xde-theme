@@ -118,6 +118,12 @@ gen_menu_DWM()
 {
 }
 
+static char *
+get_icon_DWM()
+{
+	return xde_get_icon_simple("dwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "dwm",
 	.version = VERSION,
@@ -131,7 +137,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_DWM,
 	.gen_item = &gen_item_DWM,
 	.gen_dir = &gen_dir_DWM,
-	.gen_menu = &gen_menu_DWM
+	.gen_menu = &gen_menu_DWM,
+	.get_icon = &get_icon_DWM
 };
 
 /** @} */

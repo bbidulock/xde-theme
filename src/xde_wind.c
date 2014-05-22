@@ -117,6 +117,12 @@ gen_menu_WIND()
 {
 }
 
+static char *
+get_icon_WIND()
+{
+	return xde_get_icon_simple("windwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "wind",
 	.version = VERSION,
@@ -130,7 +136,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_WIND,
 	.gen_item = &gen_item_WIND,
 	.gen_dir = &gen_dir_WIND,
-	.gen_menu = &gen_menu_WIND
+	.gen_menu = &gen_menu_WIND,
+	.get_icon = &get_icon_WIND
 };
 
 /** @} */

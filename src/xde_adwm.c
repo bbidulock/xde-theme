@@ -204,6 +204,12 @@ gen_menu_ADWM()
 {
 }
 
+static char *
+get_icon_ADWM()
+{
+	return xde_get_icon_simple("adwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "adwm",
 	.version = VERSION,
@@ -217,7 +223,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_ADWM,
 	.gen_item = &gen_item_ADWM,
 	.gen_dir = &gen_dir_ADWM,
-	.gen_menu = &gen_menu_ADWM
+	.gen_menu = &gen_menu_ADWM,
+	.get_icon = &get_icon_ADWM
 };
 
 

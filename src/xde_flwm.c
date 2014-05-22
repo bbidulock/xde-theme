@@ -148,6 +148,12 @@ gen_menu_FLWM()
 {
 }
 
+static char *
+get_icon_FLWM()
+{
+	return xde_get_icon_simple("flwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "flwm",
 	.version = VERSION,
@@ -161,7 +167,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_FLWM,
 	.gen_item = &gen_item_FLWM,
 	.gen_dir = &gen_dir_FLWM,
-	.gen_menu = &gen_menu_FLWM
+	.gen_menu = &gen_menu_FLWM,
+	.get_icon = &get_icon_FLWM
 };
 
 /** @} */

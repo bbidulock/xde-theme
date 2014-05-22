@@ -118,6 +118,12 @@ gen_menu_CTWM()
 {
 }
 
+static char *
+get_icon_CTWM()
+{
+	return xde_get_icon_simple("ctwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "ctwm",
 	.version = VERSION,
@@ -131,7 +137,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_CTWM,
 	.gen_item = &gen_item_CTWM,
 	.gen_dir = &gen_dir_CTWM,
-	.gen_menu = &gen_menu_CTWM
+	.gen_menu = &gen_menu_CTWM,
+	.get_icon = &get_icon_CTWM
 };
 
 /** @} */

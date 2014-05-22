@@ -115,6 +115,12 @@ gen_menu_AWESOME()
 {
 }
 
+static char *
+get_icon_AWESOME()
+{
+	return xde_get_icon_simple("awesome");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "awesome",
 	.version = VERSION,
@@ -128,7 +134,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_AWESOME,
 	.gen_item = &gen_item_AWESOME,
 	.gen_dir = &gen_dir_AWESOME,
-	.gen_menu = &gen_menu_AWESOME
+	.gen_menu = &gen_menu_AWESOME,
+	.get_icon = &get_icon_AWESOME
 };
 
 /** @} */

@@ -199,6 +199,12 @@ gen_menu_ECHINUS()
 {
 }
 
+static char *
+get_icon_ECHINUS()
+{
+	return xde_get_icon_simple("echinus");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "echinus",
 	.version = VERSION,
@@ -212,7 +218,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_ECHINUS,
 	.gen_item = &gen_item_ECHINUS,
 	.gen_dir = &gen_dir_ECHINUS,
-	.gen_menu = &gen_menu_ECHINUS
+	.gen_menu = &gen_menu_ECHINUS,
+	.get_icon = &get_icon_ECHINUS
 };
 
 /** @} */

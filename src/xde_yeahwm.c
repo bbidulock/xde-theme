@@ -115,6 +115,12 @@ gen_menu_YEAHWM()
 {
 }
 
+static char *
+get_icon_YEAHWM()
+{
+	return xde_get_icon_simple("yeahwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "yeahwm",
 	.version = VERSION,
@@ -128,7 +134,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_YEAHWM,
 	.gen_item = &gen_item_YEAHWM,
 	.gen_dir = &gen_dir_YEAHWM,
-	.gen_menu = &gen_menu_YEAHWM
+	.gen_menu = &gen_menu_YEAHWM,
+	.get_icon = &get_icon_YEAHWM
 };
 
 /** @} */

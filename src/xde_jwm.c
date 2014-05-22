@@ -225,6 +225,12 @@ gen_menu_JWM()
 {
 }
 
+static char *
+get_icon_JWM()
+{
+	return xde_get_icon_simple("jwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "jwm",
 	.version = VERSION,
@@ -238,7 +244,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_JWM,
 	.gen_item = &gen_item_JWM,
 	.gen_dir = &gen_dir_JWM,
-	.gen_menu = &gen_menu_JWM
+	.gen_menu = &gen_menu_JWM,
+	.get_icon = &get_icon_JWM
 };
 
 /** @} */

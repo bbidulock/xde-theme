@@ -557,6 +557,12 @@ gen_menu_ICEWM()
 {
 }
 
+static char *
+get_icon_ICEWM()
+{
+	return xde_get_icon_simple("icewm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "icewm",
 	.version = VERSION,
@@ -570,7 +576,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_ICEWM,
 	.gen_item = &gen_item_ICEWM,
 	.gen_dir = &gen_dir_ICEWM,
-	.gen_menu = &gen_menu_ICEWM
+	.gen_menu = &gen_menu_ICEWM,
+	.get_icon = &get_icon_ICEWM
 };
 
 /** @} */

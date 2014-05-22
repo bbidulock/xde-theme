@@ -195,6 +195,12 @@ gen_menu_BLACKBOX()
 	}
 }
 
+static char *
+get_icon_BLACKBOX()
+{
+	return xde_get_icon_simple("blackbox");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "blackbox",
 	.version = VERSION,
@@ -208,7 +214,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_BLACKBOX,
 	.gen_item = &gen_item_BLACKBOX,
 	.gen_dir = &gen_dir_BLACKBOX,
-	.gen_menu = &gen_menu_BLACKBOX
+	.gen_menu = &gen_menu_BLACKBOX,
+	.get_icon = &get_icon_BLACKBOX
 };
 
 /** @} */

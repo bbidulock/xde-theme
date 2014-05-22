@@ -209,6 +209,12 @@ gen_menu_WAIMEA()
 	}
 }
 
+static char *
+get_icon_WAIMEA()
+{
+	return xde_get_icon_simple("waimea");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "waimea",
 	.version = VERSION,
@@ -222,7 +228,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_WAIMEA,
 	.gen_item = &gen_item_WAIMEA,
 	.gen_dir = &gen_dir_WAIMEA,
-	.gen_menu = &gen_menu_WAIMEA
+	.gen_menu = &gen_menu_WAIMEA,
+	.get_icon = &get_icon_WAIMEA
 };
 
 /** @} */

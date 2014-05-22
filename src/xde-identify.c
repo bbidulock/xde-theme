@@ -303,6 +303,10 @@ main(int argc, char *argv[])
 		DPRINTF("getting menu\n");
 		wm->ops->get_menu();
 	}
+	if (wm->ops && wm->ops->get_icon) {
+		DPRINTF("getting icon\n");
+		wm->ops->get_icon();
+	}
 	DPRINTF("identifying window manager\n");
 	xde_identify_wm();
 	if (options.output > 1)

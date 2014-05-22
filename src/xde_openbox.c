@@ -412,6 +412,12 @@ gen_menu_OPENBOX()
 {
 }
 
+static char *
+get_icon_OPENBOX()
+{
+	return xde_get_icon_simple("openbox");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "openbox",
 	.version = VERSION,
@@ -425,7 +431,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_OPENBOX,
 	.gen_item = &gen_item_OPENBOX,
 	.gen_dir = &gen_dir_OPENBOX,
-	.gen_menu = &gen_menu_OPENBOX
+	.gen_menu = &gen_menu_OPENBOX,
+	.get_icon = &get_icon_OPENBOX
 };
 
 /** @} */

@@ -116,6 +116,12 @@ gen_menu_SPECTRWM()
 {
 }
 
+static char *
+get_icon_SPECTRWM()
+{
+	return xde_get_icon_simple("spectrwm");
+}
+
 WmOperations xde_wm_ops = {
 	.name = "spectrwm",
 	.version = VERSION,
@@ -129,7 +135,8 @@ WmOperations xde_wm_ops = {
 	.get_menu = &get_menu_SPECTRWM,
 	.gen_item = &gen_item_SPECTRWM,
 	.gen_dir = &gen_dir_SPECTRWM,
-	.gen_menu = &gen_menu_SPECTRWM
+	.gen_menu = &gen_menu_SPECTRWM,
+	.get_icon = &get_icon_SPECTRWM
 };
 
 /** @} */
