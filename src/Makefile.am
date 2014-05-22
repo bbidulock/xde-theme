@@ -24,7 +24,7 @@ EXTRA_PROGRAMS = xde-backdrop
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c
-xde_theme_LDADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+xde_theme_LDADD = libxde.la $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 xde_theme_LDFLAGS = $(runtime_search) -ldl
 
 xde_identify_CPPFLAGS = -DNAME=\"xde-identify\"
