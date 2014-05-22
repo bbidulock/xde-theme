@@ -502,12 +502,14 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 				free(file);
 				continue;
 			}
-			*(pos = strstr(e->d_name, ".theme")) = '\0';
 			len = strlen(d->d_name) + strlen(e->d_name) + 2;
 			name = calloc(len, sizeof(*name));
 			strcpy(name, d->d_name);
-			strcat(name, "/");
-			strcat(name, e->d_name);
+			if (strcmp(e->d_name, "default.theme")) {
+				strcat(name, "/");
+				strcat(name, e->d_name);
+				*strstr(name, ".theme") = '\0';
+			}
 			if (!options.theme || xde_find_theme(name, NULL)) {
 				switch (options.format) {
 				case XDE_OUTPUT_HUMAN:
@@ -524,7 +526,6 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 					break;
 				}
 			}
-			*pos = '.';
 			free(name);
 			free(file);
 		}
