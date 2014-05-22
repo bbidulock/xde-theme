@@ -165,16 +165,81 @@ typedef struct {
 	char **xdg_dirs;		/* XDG data dirs */
 } WindowManager;
 
+typedef struct WmImage WmImage;
+struct WmImage {
+	WmImage *next;
+	int num;
+	char *file;
+	unsigned int width, height;
+	Pixmap pmid;
+};
+
+typedef struct {
+	WmImage *image;			/* image assigned to this desktop */
+} WmArea;
+
+typedef struct {
+	int num;
+	int row, col;			/* row and column indices */
+	struct {
+		int current;
+		unsigned int numb;
+		unsigned int cols;
+		unsigned int rows;
+		WmArea *areas;		/* areas belonging to this desktop */
+	} a;
+	WmImage *image;			/* image assigned to this desktop */
+} WmDesktop;
+
+typedef struct {
+	int num;
+	int x, y;
+	unsigned int width, height;
+	struct {
+		int current;
+		unsigned int numb;
+		unsigned int cols;
+		unsigned int rows;
+		WmImage *images;	/* points to pixmap sized for monitor */
+	} i;
+} WmMonitor;
+
 typedef struct {
 	int screen;			/* screen number */
-	int x, y;			/* screen position */
-	unsigned int width, height;	/* screen dimensions */
+	int x, y;			/* geometry in pixels */
+	unsigned int width, height;
 	Window root;			/* root window for this screen */
 	Atom selection;			/* MANAGER selection atom for screen */
 	Window selwin;			/* MANAGER selection window for screen */
 	Window owner;			/* MANAGER selection owner */
 	WindowManager *wm;		/* window manager managing this screen */
+	struct {
+		int current;		/* current monitor/desktop */
+		unsigned int numb;	/* number monitors/desktops */
+		unsigned int cols;	/* cols of monitors/desktops */
+		unsigned int rows;	/* rows of monitors/desktops */
+		union {
+			WmMonitor *monitors;	/* monitors belonging to this screen */
+			WmDesktop *desktops;	/* desktops belonging to this screen */
+		};
+	} m, d;
+	Pixmap pmid;			/* pixmap for entire screen */
+	Pixmap save;			/* backing store pixmap for entire screen */
 } WmScreen;
+
+typedef struct {
+	Display *dpy;
+	struct {
+		int current;		/* current screen/image */
+		unsigned int numb;	/* number screens/images */
+		unsigned int cols;	/* cols of screens/images */
+		unsigned int rows;	/* rows of screens/images */
+		union {
+			WmScreen *screens;	/* screens belonging to this display */
+			WmImage *images;	/* images belonging to this display */
+		};
+	} s, i;
+} WmDisplay;
 
 enum OutputFormat {
 	XDE_OUTPUT_HUMAN,
@@ -200,6 +265,12 @@ typedef struct {
 	char *wmname;
 	char *rcfile;
 	enum OutputFormat format;
+	Bool grab;
+	Bool setroot;
+	Bool nomonitor;
+	unsigned long delay;
+	Bool areas;
+	char **files;
 } Options;
 
 extern Display *dpy;
@@ -210,6 +281,8 @@ extern WmScreen *screens;
 extern WmScreen *scr;
 extern WmScreen *event_scr;
 extern unsigned int nscr;
+extern WmImage *images;
+extern WmDesktop *dsk;
 
 #define OPRINTF(args...) do { if (options.output > 1) { \
 	fprintf(stderr, "I: "); \
@@ -229,14 +302,35 @@ extern unsigned int nscr;
 
 extern Atom _XA_BB_THEME;
 extern Atom _XA_BLACKBOX_PID;
+extern Atom _XA_ESETROOT_PMAP_ID;
+extern Atom _XA_GTK_READ_RCFILES;
+extern Atom _XA_I3_CONFIG_PATH;
+extern Atom _XA_I3_PID;
+extern Atom _XA_I3_SHMLOG_PATH;
+extern Atom _XA_I3_SOCKET_PATH;
+extern Atom _XA_ICEWMBG_QUIT;
 extern Atom _XA_MOTIF_WM_INFO;
+extern Atom _XA_NET_CURRENT_DESKTOP;
+extern Atom _XA_NET_DESKTOP_LAYOUT;
+extern Atom _XA_NET_DESKTOP_PIXMAPS;
+extern Atom _XA_NET_NUMBER_OF_DESKTOPS;
+extern Atom _XA_NET_SUPPORTED;
 extern Atom _XA_NET_SUPPORTING_WM_CHECK;
+extern Atom _XA_NET_VISIBLE_DESKTOPS;
 extern Atom _XA_NET_WM_NAME;
 extern Atom _XA_NET_WM_PID;
 extern Atom _XA_OB_THEME;
 extern Atom _XA_OPENBOX_PID;
+extern Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
 extern Atom _XA_WINDOWMAKER_NOTICEBOARD;
+extern Atom _XA_WIN_PROTOCOLS;
 extern Atom _XA_WIN_SUPPORTING_WM_CHECK;
+extern Atom _XA_WIN_WORKSPACE;
+extern Atom _XA_WIN_WORKSPACE_COUNT;
+extern Atom _XA_WM_COMMAND;
+extern Atom _XA_XDE_THEME_NAME;
+extern Atom _XA_XROOTPMAP_ID;
+extern Atom _XA_XSETROOT_ID;
 
 extern XContext ScreenContext;
 
@@ -267,6 +361,7 @@ extern void xde_get_rcfile_XTWM(char *xtwm);
 extern void xde_get_xdg_dirs(void);
 extern void xde_gen_menu_simple(void);
 extern void xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
+extern Bool xde_check_wm(void);
 
 #endif				/* __XDE_H__ */
 

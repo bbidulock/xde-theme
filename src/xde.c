@@ -56,6 +56,8 @@ WmScreen *screens;
 WmScreen *scr;
 WmScreen *event_scr;
 unsigned int nscr;
+WmImage *images;
+WmDesktop *dsk;
 
 Options options = {
 	.debug = 0,
@@ -74,7 +76,13 @@ Options options = {
 	.style = NULL,
 	.wmname = NULL,
 	.rcfile = NULL,
-	.format = XDE_OUTPUT_HUMAN
+	.format = XDE_OUTPUT_HUMAN,
+	.grab = False,
+	.setroot = False,
+	.nomonitor = False,
+	.delay = 2000,
+	.areas = False,
+	.files = NULL
 };
 
 static WindowManager *
@@ -143,22 +151,35 @@ init_xrm()
 
 Atom _XA_BB_THEME;
 Atom _XA_BLACKBOX_PID;
-Atom _XA_MOTIF_WM_INFO;
-Atom _XA_NET_SUPPORTED;
-Atom _XA_NET_SUPPORTING_WM_CHECK;
-Atom _XA_NET_WM_NAME;
-Atom _XA_NET_WM_PID;
-Atom _XA_OB_THEME;
-Atom _XA_OPENBOX_PID;
-Atom _XA_WINDOWMAKER_NOTICEBOARD;
-Atom _XA_WIN_SUPPORTING_WM_CHECK;
-Atom _XA_WIN_PROTOCOLS;
+Atom _XA_ESETROOT_PMAP_ID;
+Atom _XA_GTK_READ_RCFILES;
 Atom _XA_I3_CONFIG_PATH;
 Atom _XA_I3_PID;
 Atom _XA_I3_SHMLOG_PATH;
 Atom _XA_I3_SOCKET_PATH;
+Atom _XA_ICEWMBG_QUIT;
+Atom _XA_MOTIF_WM_INFO;
+Atom _XA_NET_CURRENT_DESKTOP;
+Atom _XA_NET_DESKTOP_LAYOUT;
+Atom _XA_NET_DESKTOP_PIXMAPS;
+Atom _XA_NET_NUMBER_OF_DESKTOPS;
+Atom _XA_NET_SUPPORTED;
+Atom _XA_NET_SUPPORTING_WM_CHECK;
+Atom _XA_NET_VISIBLE_DESKTOPS;
+Atom _XA_NET_WM_NAME;
+Atom _XA_NET_WM_PID;
+Atom _XA_OB_THEME;
+Atom _XA_OPENBOX_PID;
+Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
+Atom _XA_WINDOWMAKER_NOTICEBOARD;
+Atom _XA_WIN_PROTOCOLS;
+Atom _XA_WIN_SUPPORTING_WM_CHECK;
+Atom _XA_WIN_WORKSPACE;
+Atom _XA_WIN_WORKSPACE_COUNT;
+Atom _XA_WM_COMMAND;
 Atom _XA_XDE_THEME_NAME;
-Atom _XA_GTK_READ_RCFILES;
+Atom _XA_XROOTPMAP_ID;
+Atom _XA_XSETROOT_ID;
 
 typedef struct {
 	char *name;
@@ -169,22 +190,35 @@ static Atoms atoms[] = {
 	/* *INDENT-OFF* */
 	{"_BB_THEME",			&_XA_BB_THEME			},
 	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID		},
-	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO		},
-	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK	},
-	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED		},
-	{"_NET_WM_NAME",		&_XA_NET_WM_NAME		},
-	{"_NET_WM_PID",			&_XA_NET_WM_PID			},
-	{"_OB_THEME",			&_XA_OB_THEME			},
-	{"_OPENBOX_PID",		&_XA_OPENBOX_PID		},
-	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD	},
-	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK	},
-	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS		},
+	{"ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID		},
+	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES		},
 	{"I3_CONFIG_PATH",		&_XA_I3_CONFIG_PATH		},
 	{"I3_PID",			&_XA_I3_PID			},
 	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH		},
 	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH		},
+	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT		},
+	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO		},
+	{"_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP	},
+	{"_NET_DESKTOP_LAYOUT",		&_XA_NET_DESKTOP_LAYOUT		},
+	{"_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAPS	},
+	{"_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS	},
+	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED		},
+	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK	},
+	{"_NET_VISIBLE_DESKTOPS",	&_XA_NET_VISIBLE_DESKTOPS	},
+	{"_NET_WM_NAME",		&_XA_NET_WM_NAME		},
+	{"_NET_WM_PID",			&_XA_NET_WM_PID			},
+	{"_OB_THEME",			&_XA_OB_THEME			},
+	{"_OPENBOX_PID",		&_XA_OPENBOX_PID		},
+	{"_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY	},
+	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD	},
+	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS		},
+	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK	},
+	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT	},
+	{"_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE		},
+	{"WM_COMMAND",			&_XA_WM_COMMAND			},
 	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME		},
-	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES		},
+	{"_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID		},
+	{"_XSETROOT_ID",		&_XA_XSETROOT_ID		},
 	{NULL,				NULL				}
 	/* *INDENT-ON* */
 };
@@ -1480,8 +1514,8 @@ static WmOperations *get_wm_ops(void);
 
 /** @brief Check for a window manager on the current screen.
   */
-static Bool
-check_wm()
+Bool
+__xde_check_wm()
 {
 	OPRINTF("checking wm for screen %d\n", screen);
 	unref_wm();
@@ -1523,6 +1557,8 @@ check_wm()
 	unref_wm();
 	return False;
 }
+
+__asm__(".symver __xde_check_wm,xde_check_wm@@XDE_1.0");
 
 static void
 xde_identify_wm_human()
@@ -1876,7 +1912,7 @@ __xde_detect_wm()
 			scr = screens + screen;
 			root = scr->root;
 			wm = scr->wm;
-			if (check_wm()) {
+			if (xde_check_wm()) {
 				OPRINTF("found wm %s(%ld) for screen %d\n",
 					wm->name, wm->pid, screen);
 				have_wm = True;
