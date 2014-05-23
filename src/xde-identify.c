@@ -299,6 +299,8 @@ main(int argc, char *argv[])
 		DPRINTF("getting style\n");
 		wm->ops->get_style();
 	}
+	DPRINTF("getting theme\n");
+	xde_get_theme();
 	if (wm->ops && wm->ops->get_menu) {
 		DPRINTF("getting menu\n");
 		wm->ops->get_menu();

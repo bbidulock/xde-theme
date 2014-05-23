@@ -1629,6 +1629,10 @@ xde_identify_wm_human()
 		fprintf(stdout, "Style: %s\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "Style name: %s\n", wm->stylename);
+	if (wm->theme)
+		fprintf(stdout, "Theme: %s\n", wm->theme);
+	if (wm->themefile)
+		fprintf(stdout, "Theme file: %s\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "Menu file: %s\n", wm->menu);
 	if (wm->icon)
@@ -1703,6 +1707,10 @@ xde_identify_wm_shell()
 		fprintf(stdout, "XDE_WM_STYLE=\"%s\"\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
+	if (wm->theme)
+		fprintf(stdout, "XDE_WM_THEME=\"%s\"\n", wm->theme);
+	if (wm->themefile)
+		fprintf(stdout, "XDE_WM_THEMEFILE=\"%s\"\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "XDE_WM_MENU=\"%s\"\n", wm->menu);
 	if (wm->icon)
@@ -1778,6 +1786,10 @@ xde_identify_wm_perl()
 		fprintf(stdout, "\tXDE_WM_STYLE => '%s',\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "\tXDE_WM_STYLENAME => '%s',\n", wm->stylename);
+	if (wm->theme)
+		fprintf(stdout, "\tXDE_WM_THEME => '%s',\n", wm->theme);
+	if (wm->themefile)
+		fprintf(stdout, "\tXDE_WM_THEMEFILE => '%s',\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "\tXDE_WM_MENU => '%s',\n", wm->menu);
 	if (wm->icon)
