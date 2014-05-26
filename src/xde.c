@@ -2848,12 +2848,10 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 	if (options.user && !options.system) {
 		beg = 0;
 		end = 2;
-	}
-	else if (options.system && !options.user) {
+	} else if (options.system && !options.user) {
 		beg = 2;
 		end = CHECK_DIRS;
-	}
-	else {
+	} else {
 		beg = 0;
 		end = CHECK_DIRS;
 	}
@@ -2912,16 +2910,15 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 		break;
 	}
 	if (stylefile) {
-		char *pos, buf[32] = "/";
+		char *pos;
 
 		free(wm->style);
 		wm->style = strdup(stylefile);
 		free(wm->stylename);
 		/* trim off /fname */
-		strcat(buf, fname);
-		if ((pos = strrchr(stylefile, '/')))
-			if ((pos = strstr(pos, buf)) && (*(pos + strlen(buf)) == '\0'))
-				*pos = '\0';
+		if ((pos = strrchr(stylefile, '/'))
+		    && !strcmp(pos + 1, fname))
+			*pos = '\0';
 		/* trim off path */
 		wm->stylename = (pos = strrchr(stylefile, '/')) ?
 		    strdup(pos + 1) : strdup(stylefile);
