@@ -205,6 +205,24 @@ Options:\n\
 ", argv[0]);
 }
 
+Display *dpy;
+
+int
+handler(Display *display, XErrorEvent *xev)
+{
+	if (debug) {
+		char msg[80], req[80], num[80], def[80];
+
+		snprintf(num, sizeof(num), "%d", xev->request_code);
+		snprintf(def, sizeof(def), "[request_code=%d]", xev->request_code);
+		XGetErrorDatabaseText(dpy, "xdg-setwm", num, def, req, sizeof(req));
+		if (XGetErrorText(dpy, xev->error_code, msg, sizeof(msg)) != Success)
+			msg[0] = '\0';
+		fprintf(stderr, "X error %s(0x%lx): %s\n", req, xev->resourceid, msg);
+	}
+	return(0);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -214,7 +232,6 @@ main(int argc, char *argv[])
 	char *revision = NULL;
 	pid_t pid = 0;
 	int screen = -1;
-	Display *dpy;
 	Window root;
 
 	while (1) {
@@ -347,6 +364,7 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s\n", "cannot open display");
 		exit(127);
 	}
+	XSetErrorHandler(handler);
 	if (screen == -1)
 		screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);

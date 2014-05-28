@@ -249,6 +249,22 @@ intern_atoms()
 
 XContext ScreenContext;
 
+int
+error_handler(Display *display, XErrorEvent *xev)
+{
+	if (options.debug) {
+		char msg[80], req[80], num[80], def[80];
+
+		snprintf(num, sizeof(num), "%d", xev->request_code);
+		snprintf(def, sizeof(def), "[request_code=%d]", xev->request_code);
+		XGetErrorDatabaseText(dpy, "libxde", num, def, req, sizeof(req));
+		if (XGetErrorText(dpy, xev->error_code, msg, sizeof(msg)) != Success)
+			msg[0] = '\0';
+		fprintf(stderr, "X error %s(0x%lx): %s\n", req, xev->resourceid, msg);
+	}
+	return(0);
+}
+
 void
 __xde_init_display()
 {
@@ -260,6 +276,7 @@ __xde_init_display()
 		EPRINTF("%s\n", "cannot open display");
 		exit(127);
 	}
+	XSetErrorHandler(error_handler);
 	OPRINTF("%s\n", "opened display");
 	ScreenContext = XUniqueContext();
 	intern_atoms();
