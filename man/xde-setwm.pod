@@ -1,0 +1,117 @@
+=head1 NAME
+
+xde-setwm - set some information on root pertaining to window manager
+
+=head1 SYNOPSIS
+
+ xde-setwm [options]
+ xde-setwm [options] {-h|--help}
+ xde-setwm {-V|--version}
+ xde-setwm {-C|--copying}
+
+=head1 DESCRIPTION
+
+B<xde-setwm> is a C-language application that can be used to set
+pertinent information about the window manager on the root window.
+
+=head1 OPTIONS
+
+B<xde-setwm> uses GNU <get_options_long_only()> to parse options, so
+long options with a single dash are accepted; however, short options
+cannot be concatenated.  B<xde-setwm> accepts the following options:
+
+=head2 COMMAND OPTIONS
+
+B<xde-setwm> accepts the following options:
+
+=over
+
+=item B<-h>, B<--help>, B<-?>, B<--?>
+
+Prints usage information to standard output and exits.  This command
+option can be preceded by other options to observe the settings that
+result in the help output.
+
+=item B<-V>, B<--version>
+
+Prints version information to standard output and exits.
+
+=item B<-C>, B<--copying>
+
+Prints copying permission to standard output and exits.
+
+=back
+
+The default behaviour when no command options are specified is to set
+the specified values and exit.
+
+=head2 GENERAL OPTIONS
+
+B<xde-setwm> accepts the following non-command options:
+
+=over
+
+=item B<-N>, B<--name> I<NAME>
+
+Specify the (resource) name of the window manager.  This should normally be all
+lower case.
+
+=item B<-K>, B<--class> I<CLASS>
+
+Specify the (resource) class of the window manager.  This should
+normally be the same as I<NAME>, with the first letter capitalized.
+
+=item B<-p>, B<--pid> I<PID>
+
+Specify the process identifier, I<PID>, of the window manager.
+
+=item B<-r>, B<--revision> I<VERSION>
+
+Specify the revision (or version) of the window manager software.
+
+=item B<-c>, B<--command> I<PROGRAM> [I<ARG> [I<ARG> ...]]
+
+Specify the command to be used to launch the window manager.  This must
+be the last option in the command line: all options that appear after
+this one will be considered to be part of the program, I<PROGRAM>, and
+its arguments, I<ARG>.
+
+=item B<-D>, B<--debug> [I<LEVEL>]
+
+Increment or set the debug level to I<LEVEL>.  The default debug level
+is 0.
+
+=item B<-v>, B<--verbose> [I<LEVEL>]
+
+Increment or set output verbosity level to I<LEVEL>.  The default output
+verbosity level is 1.  This option may be repeated.
+
+=back
+
+=head1 EXAMPLES
+
+Following is an example of setting all of the possible values for the
+L<blackbox(1)> window manager:
+
+ xde-setwm -N blackbox \
+           -K Blackbox \
+	   -p $$ \
+	   -r 0.70.2 \
+	   -c blackbox -rc ~/.config/blackbox/rc
+
+=head1 HISTORY
+
+I wrote this program because L<xprpo(1)> refuses to set multiple values
+on a property and the C<WM_COMMAND> property is rather important.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=head1 SEE ALSO
+
+L<xde-identify(1)>.
+
+=cut
+
+# vim: sw=4 tw=72 spell spelllang=en_ca nocin

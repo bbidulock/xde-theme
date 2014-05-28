@@ -6,7 +6,8 @@ xde_man_files = \
 	    xde-actions.man \
 	    xde-menu.man \
 	    xde-identify.man \
-	    xde-stylemon.man
+	    xde-stylemon.man \
+	    xde-setwm.man
 
 nodist_man1_MANS = $(xde_man_files)
 CLEANFILES = $(xde_man_files)
@@ -18,7 +19,8 @@ EXTRA_DIST = \
 	     xde-actions.pod \
 	     xde-menu.pod \
 	     xde-identify.pod \
-	     xde-stylemon.pod
+	     xde-stylemon.pod \
+	     xde-setwm.pod
 
 xde-theme.man: MANNAME = XDE-THEME
 xde-theme.man: xde-theme.pod
@@ -40,6 +42,9 @@ xde-identify.man: xde-identify.pod
 
 xde-stylemon.man: MANNAME = XDE-STYLEMON
 xde-stylemon.man: xde-stylemon.pod
+
+xde-setwm.man: MANNAME = XDE-SETWM
+xde-setwm.man: xde-setwm.pod
 
 SUFFIXES = .man .pod
 

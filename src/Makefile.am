@@ -19,7 +19,7 @@ libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -shared $(runtime_search
 
 EXTRA_DIST = xde.VERSION
 
-bin_PROGRAMS = xde-theme xde-style xde-identify
+bin_PROGRAMS = xde-theme xde-style xde-identify xde-setwm
 EXTRA_PROGRAMS = xde-backdrop
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
@@ -41,6 +41,10 @@ xde_backdrop_CPPFLAGS = -DNAME=\"xde-backdrop\"
 xde_backdrop_SOURCES = xde-backdrop.c
 xde_backdrop_LDADD = libxde.la $(X11_LIBS)
 xde_backdrop_LDFLAGS = $(runtime_search) -ldl
+
+xde_setwm_CPPFLAGS = -DNAME=\"xde-setwm\"
+xde_setwm_SOURCES = xde-setwm.c
+xde_setwm_LDADD = $(X11_LIBS)
 
 xdemod_LTLIBRARIES = \
 	xde-2bwm.la \
