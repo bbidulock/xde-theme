@@ -208,7 +208,7 @@ Options:\n\
 Display *dpy;
 
 int
-handler(Display *display, XErrorEvent *xev)
+handler(Display *display, XErrorEvent * xev)
 {
 	if (debug) {
 		char msg[80], req[80], num[80], def[80];
@@ -220,19 +220,23 @@ handler(Display *display, XErrorEvent *xev)
 			msg[0] = '\0';
 		fprintf(stderr, "X error %s(0x%lx): %s\n", req, xev->resourceid, msg);
 	}
-	return(0);
+	return (0);
 }
 
 int
 main(int argc, char *argv[])
 {
-	int cmdind = 0;
 	char *name = NULL;
 	char *klass = NULL;
 	char *revision = NULL;
 	pid_t pid = 0;
 	int screen = -1;
 	Window root;
+	XTextProperty xtp = { NULL, };
+	char *p;
+	char *hostp;
+	char **cmdv = NULL;
+	int cmdc = 0;
 
 	while (1) {
 		int c, val;
@@ -245,7 +249,7 @@ main(int argc, char *argv[])
 			{"class",	required_argument,	NULL, 'K'},
 			{"pid",		required_argument,	NULL, 'p'},
 			{"revision",	required_argument,	NULL, 'r'},
-			{"command",	no_argument,		NULL, 'c'},
+			{"command",	required_argument,	NULL, 'c'},
 			{"screen",	required_argument,	NULL, 'S'},
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -257,10 +261,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "N:K:p:r:cS:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "N:K:p:r:c:S:nD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "N:K:p:r:cS:nDvhVC?");
+		c = getopt(argc, argv, "N:K:p:r:c:S:nDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (debug)
@@ -285,7 +289,8 @@ main(int argc, char *argv[])
 			revision = strdup(optarg);
 			break;
 		case 'c':	/* -c, --command PROGRAM [ARG [ARG ...]] */
-			cmdind = optind;
+			cmdv = &argv[optind - 1];
+			cmdc = argc - optind + 1;
 			break;
 		case 'S':	/* -S, --screen SCREEN */
 			screen = atoi(optarg);
@@ -356,7 +361,7 @@ main(int argc, char *argv[])
 			}
 			exit(2);
 		}
-		if (cmdind)
+		if (cmdv)
 			break;
 	}
 
@@ -368,46 +373,158 @@ main(int argc, char *argv[])
 	if (screen == -1)
 		screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
+	if ((hostp = calloc(64, sizeof(*hostp)))) {
+		gethostname(hostp, 64);
+		if (!*hostp) {
+			free(hostp);
+			hostp = NULL;
+		}
+	}
+	if (!name && cmdv) {
+		name = strdup(cmdv[0]);
+		if ((p = strrchr(name, '/')))
+			memmove(name, p + 1, strlen(p + 1) + 1);
+		for (p = name; *p; p++)
+			*p = tolower(*p);
+	}
+	if (name && !klass) {
+		klass = strdup(name);
+		klass[0] = toupper(klass[0]);
+	}
+	if (klass && !name) {
+		name = strdup(klass);
+		for (p = name; *p; p++)
+			*p = tolower(*p);
+	}
 	if (name) {
-		XTextProperty xtp = { NULL, };
 		char *namever;
-		
+		char *res[3] = { NULL, };
+
 		namever = calloc(256, sizeof(*namever));
 		strcpy(namever, name);
 		if (revision) {
 			strcat(namever, " ");
 			strcat(namever, revision);
 		}
-		Xutf8TextListToTextProperty(dpy, &namever, 1, XUTF8StringStyle, &xtp);
+		XmbTextListToTextProperty(dpy, &namever, 1, XUTF8StringStyle, &xtp);
 		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_NET_WM_NAME", False));
+		free(namever);
+		namever = NULL;
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		XmbTextListToTextProperty(dpy, &name, 1, XStdICCTextStyle, &xtp);
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "WM_NAME", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		XmbTextListToTextProperty(dpy, &name, 1, XUTF8StringStyle, &xtp);
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_NAME", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		res[0] = name;
+		res[1] = klass;
+		res[2] = NULL;
+		XmbTextListToTextProperty(dpy, res, 2, XStdICCTextStyle, &xtp);
+		if (xtp.value)
+			xtp.nitems++;
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "WM_CLASS", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		XmbTextListToTextProperty(dpy, res, 2, XUTF8StringStyle, &xtp);
+		if (xtp.value)
+			xtp.nitems++;
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_CLASS", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+	} else {
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_NET_WM_NAME", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "WM_NAME", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_NAME", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "WM_CLASS", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_CLASS", False));
+	}
+	if (revision) {
+		XmbTextListToTextProperty(dpy, &revision, 1, XUTF8StringStyle, &xtp);
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_VERSION", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+	} else {
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_VERSION", False));
 	}
 	if (pid) {
 		unsigned long long_pid = pid;
 
 		XChangeProperty(dpy, root, XInternAtom(dpy, "_NET_WM_PID", False),
-				XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&long_pid,
-				1);
+				XA_CARDINAL, 32, PropModeReplace,
+				(unsigned char *) &long_pid, 1);
+		XChangeProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_PID", False),
+				XA_CARDINAL, 32, PropModeReplace,
+				(unsigned char *) &long_pid, 1);
+	} else {
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_NET_WM_PID", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_PID", False));
 	}
-	{
-		XClassHint ch, *chp = NULL;
-		char **cmdv = NULL;
-		int cmdc = 0;
+	if (hostp) {
+		XmbTextListToTextProperty(dpy, &hostp, 1, XStdICCTextStyle, &xtp);
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "WM_CLIENT_MACHINE", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		XmbTextListToTextProperty(dpy, &hostp, 1, XUTF8StringStyle, &xtp);
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_HOSTNAME", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
 
-		if (cmdind) {
-			cmdv = &argv[cmdind];
-			cmdc = argc - cmdind;
-		}
-		if (name) {
-			ch.res_name = name;
-			if (klass) {
-				ch.res_class = strdup(klass);
-			} else {
-				ch.res_class = strdup(name);
-				ch.res_class[0] = toupper(name[0]);
-			}
-			chp = &ch;
-		}
-		Xutf8SetWMProperties(dpy, root, name, NULL, cmdv, cmdc, NULL, NULL, chp);
+	} else {
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "WM_CLIENT_MACHINE", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_HOSTNAME", False));
 	}
+	if (cmdv) {
+		XmbTextListToTextProperty(dpy, cmdv, cmdc, XStdICCTextStyle, &xtp);
+		if (xtp.value)
+			xtp.nitems++;
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "WM_COMMAND", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+		XmbTextListToTextProperty(dpy, cmdv, cmdc, XUTF8StringStyle, &xtp);
+		if (xtp.value)
+			xtp.nitems++;
+		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_COMMAND", False));
+		if (xtp.value) {
+			XFree(xtp.value);
+			xtp.value = NULL;
+		}
+		memset(&xtp, 0, sizeof(xtp));
+	} else {
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "WM_COMMAND", False));
+		XDeleteProperty(dpy, root, XInternAtom(dpy, "_XDE_WM_COMMAND", False));
+	}
+	XSync(dpy, False);
+	XCloseDisplay(dpy);
 	exit(0);
 }
