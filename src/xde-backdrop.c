@@ -55,48 +55,8 @@ const char *program = NAME;
 
 static enum { StartingUp, WaitForWM, WaitAfterWM, DetectWM, ShutDown } state;
 
-/* Structure representing a single pixmap of an image at a specific size */
-typedef struct {
-	unsigned int width, height;
-	Pixmap pixmap;
-} BdPixmap;
-
-/* structure representing a set of pixmaps for an image of various sizes */
-typedef struct {
-	int count;
-	BdPixmap *pixmaps;
-} BdImage;
-
-/* structure representing a desktop on a monitor */
-typedef struct {
-	int index;
-	BdImage *image;
-} BdDesktop;
-
-/* structure representing a monitor of a screen */
-typedef struct {
-	int index;
-	int x, y;
-	unsigned int width, height;
-	int row, col;			/* r&c in monitor layout */
-	Window backdrop;		/* backdrop window for this monitor */
-	BdDesktop *current_desktop;
-} BdMonitor;
-
-BdMonitor *monitors;
-
-/* structure representing a screen of a display */
-typedef struct {
-	int index;
-	int x, y;
-	unsigned int width, height;
-	int row, col;			/* r&c in screen layout */
-	int number_of_desktops;
-	int current_desktop;
-	int workspace_count;
-	int workspace;
-	BdDesktop *desktops;
-} BdScreen;
+WmMonitor *monitors;
+int nmon;
 
 #define EXTRANGE    16		/* all (used) X11 extension events must fit in this range 
 				 */
@@ -408,6 +368,7 @@ bd_init_xinerama()
 				monitors[i].height = si[i].height;
 			}
 			XFree(si);
+			nmon = n;
 		} while (0);
 	}
 #endif				/* XINERAMA */
@@ -449,14 +410,97 @@ bd_init_xrandr()
 				monitors[n].height = ci->height;
 				n++;
 			}
+			nmon = n;
 		} while (0);
 	}
 #endif				/* XRANDR */
 }
 
+void
+get_desktops()
+{
+	long retval = 0;
+	Bool found_one = False;
+	int i;
+
+	if (!(wm = scr->wm))
+		return;
+
+	if (wm->netwm_check) {
+		int number_of_desktops, current_desktop;
+
+		number_of_desktops =
+		    xde_get_cardinal(root, _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL,
+				     &retval)
+		    ? retval : 0;
+		current_desktop =
+		    xde_get_cardinal(root, _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, &retval)
+		    ? retval : 0;
+		if (number_of_desktops && !found_one) {
+			found_one = True;
+			scr->numdesk = number_of_desktops;
+			scr->curdesk = current_desktop;
+		}
+	}
+	if (wm->winwm_check) {
+		int workspace_count, workspace;
+
+		workspace_count =
+		    xde_get_cardinal(root, _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL, &retval)
+		    ? retval : 0;
+		workspace =
+		    xde_get_cardinal(root, _XA_WIN_WORKSPACE, XA_CARDINAL, &retval)
+		    ? retval : 0;
+		if (workspace_count && !found_one) {
+			found_one = True;
+			scr->numdesk = workspace_count;
+			scr->curdesk = workspace;
+		}
+	}
+	if (wm->motif_check) {
+		Atom *workspace_list, workspace_current;
+		int workspace_list_len;
+
+		workspace_list =
+		    xde_get_atoms(root, _XA_DT_WORKSPACE_LIST, XA_ATOM, &retval);
+		if (workspace_list)
+			workspace_list_len = retval;
+		workspace_current =
+		    xde_get_atom(root, _XA_DT_WORKSPACE_CURRENT, XA_ATOM, &retval)
+		    ? retval : None;
+		if (workspace_list && !found_one) {
+			for (i = 0; i < workspace_list_len; i++) {
+				if (workspace_list[i] == workspace_current) {
+					found_one = True;
+					scr->numdesk = workspace_list_len;
+					scr->curdesk = i;
+					break;
+				}
+			}
+		}
+		free(workspace_list);
+	}
+	/* yeah, I know, but some WM's do this */
+	if (wm->redir_check) {
+		int desktop;
+
+		desktop = xde_get_cardinal(root, _XA_WM_DESKTOP, XA_CARDINAL, &retval)
+		    ? retval : -1;
+		if (desktop >= 0 && !found_one) {
+			found_one = True;
+			scr->curdesk = desktop;
+		}
+	}
+	if (found_one) {
+	} else {
+	}
+}
+
 static void
 mainloop()
 {
+	Window dw;
+	unsigned int du;
 	int dummy;
 
 	state = StartingUp;
@@ -471,8 +515,9 @@ mainloop()
 	for (screen = 0; screen < nscr; screen++) {
 		scr = screens + screen;
 		root = scr->root;
-		XSelectInput(dpy, root, PropertyChangeMask | SubstructureNotifyMask);
-		XSaveContext(dpy, root, ScreenContext, (XPointer) scr);
+		XSelectInput(dpy, root, PropertyChangeMask | StructureNotifyMask |
+			     SubstructureNotifyMask);
+		get_desktops();
 	}
 
 	tfd = timerfd_create(CLOCK_MONOTONIC, 0);
@@ -518,8 +563,8 @@ mainloop()
 				got_timeout();
 			if (pfd[1].revents & POLLIN)
 				got_xevents();
-			if ((pfd[0].revents & pfd[1].
-			     revents) & (POLLNVAL | POLLHUP | POLLERR)) {
+			if ((pfd[0].
+			     revents & pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
 				EPRINTF("fatal error on poll");
 				exit(1);
 			}
