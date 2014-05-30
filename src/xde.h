@@ -227,6 +227,8 @@ typedef struct {
 	} m, d;
 	Pixmap pmid;			/* pixmap for entire screen */
 	Pixmap save;			/* backing store pixmap for entire screen */
+	int numdesk;			/* number of desktops for this screen */
+	int curdesk;			/* current desktop for this screen */
 } WmScreen;
 
 typedef struct {
@@ -304,6 +306,8 @@ extern WmDesktop *dsk;
 
 extern Atom _XA_BB_THEME;
 extern Atom _XA_BLACKBOX_PID;
+extern Atom _XA_DT_WORKSPACE_CURRENT;
+extern Atom _XA_DT_WORKSPACE_LIST;
 extern Atom _XA_ESETROOT_PMAP_ID;
 extern Atom _XA_GTK_READ_RCFILES;
 extern Atom _XA_I3_CONFIG_PATH;
@@ -330,6 +334,7 @@ extern Atom _XA_WIN_SUPPORTING_WM_CHECK;
 extern Atom _XA_WIN_WORKSPACE;
 extern Atom _XA_WIN_WORKSPACE_COUNT;
 extern Atom _XA_WM_COMMAND;
+extern Atom _XA_WM_DESKTOP;
 extern Atom _XA_XDE_THEME_NAME;
 extern Atom _XA_XROOTPMAP_ID;
 extern Atom _XA_XSETROOT_ID;
@@ -337,6 +342,19 @@ extern Atom _XA_XSETROOT_ID;
 extern XContext ScreenContext;
 
 extern Options options;
+
+/* some utility functions */
+char *xde_get_text(Window win, Atom prop);
+long *xde_get_cardinals(Window win, Atom prop, Atom type, long *n);
+Bool xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret);
+Window *xde_get_windows(Window win, Atom prop, Atom type, long *n);
+Bool xde_get_window(Window win, Atom prop, Atom type, Window *win_ret);
+Time *xde_get_times(Window win, Atom prop, Atom type, long *n);
+Bool xde_get_time(Window win, Atom prop, Atom type, Time * time_ret);
+Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
+Bool xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret);
+Pixmap *xde_get_pixmaps(Window win, Atom prop, Atom type, long *n);
+Bool xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret);
 
 extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);

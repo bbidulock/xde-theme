@@ -34,6 +34,7 @@
 -TDisplay
 -TAtom
 -TWindow
+-TPixmap
 -TBool
 -TXPointer
 -Tclient

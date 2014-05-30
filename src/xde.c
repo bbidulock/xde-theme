@@ -152,6 +152,8 @@ init_xrm()
 
 Atom _XA_BB_THEME;
 Atom _XA_BLACKBOX_PID;
+Atom _XA_DT_WORKSPACE_CURRENT;
+Atom _XA_DT_WORKSPACE_LIST;
 Atom _XA_ESETROOT_PMAP_ID;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_I3_CONFIG_PATH;
@@ -178,6 +180,7 @@ Atom _XA_WIN_SUPPORTING_WM_CHECK;
 Atom _XA_WIN_WORKSPACE;
 Atom _XA_WIN_WORKSPACE_COUNT;
 Atom _XA_WM_COMMAND;
+Atom _XA_WM_DESKTOP;
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XROOTPMAP_ID;
 Atom _XA_XSETROOT_ID;
@@ -191,6 +194,8 @@ static Atoms atoms[] = {
 	/* *INDENT-OFF* */
 	{"_BB_THEME",			&_XA_BB_THEME			},
 	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID		},
+	{"_DT_WORKSPACE_CURRENT",	&_XA_DT_WORKSPACE_CURRENT	},
+	{"_DT_WORKSPACE_LIST",		&_XA_DT_WORKSPACE_LIST		},
 	{"ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID		},
 	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES		},
 	{"I3_CONFIG_PATH",		&_XA_I3_CONFIG_PATH		},
@@ -217,6 +222,7 @@ static Atoms atoms[] = {
 	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT	},
 	{"_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE		},
 	{"WM_COMMAND",			&_XA_WM_COMMAND			},
+	{"WM_DESKTOP",			&_XA_WM_DESKTOP			},
 	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME		},
 	{"_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID		},
 	{"_XSETROOT_ID",		&_XA_XSETROOT_ID		},
@@ -303,8 +309,8 @@ __asm__(".symver __xde_init_display,xde_init_display@@XDE_1.0");
   *
   * @{ */
 
-static char *
-get_text(Window win, Atom prop)
+char *
+__xde_get_text(Window win, Atom prop)
 {
 	XTextProperty tp = { NULL, };
 
@@ -316,8 +322,10 @@ get_text(Window win, Atom prop)
 	return NULL;
 }
 
-static long *
-get_cardinals(Window win, Atom prop, Atom type, long *n)
+__asm__(".symver __xde_get_text,xde_get_text@@XDE_1.0");
+
+long *
+__xde_get_cardinals(Window win, Atom prop, Atom type, long *n)
 {
 	Atom real;
 	int format;
@@ -342,13 +350,15 @@ get_cardinals(Window win, Atom prop, Atom type, long *n)
 	return NULL;
 }
 
-static Bool
-get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
+__asm__(".symver __xde_get_cardinals,xde_get_cardinals@@XDE_1.0");
+
+Bool
+__xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 {
 	Bool result = False;
 	long *data, n;
 
-	if ((data = get_cardinals(win, prop, type, &n)) && n > 0) {
+	if ((data = xde_get_cardinals(win, prop, type, &n)) && n > 0) {
 		*card_ret = data[0];
 		result = True;
 	}
@@ -357,53 +367,71 @@ get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 	return result;
 }
 
+__asm__(".symver __xde_get_cardinal,xde_get_cardinal@@XDE_1.0");
+
 Window *
-get_windows(Window win, Atom prop, Atom type, long *n)
+__xde_get_windows(Window win, Atom prop, Atom type, long *n)
 {
-	return (Window *) get_cardinals(win, prop, type, n);
+	return (Window *) xde_get_cardinals(win, prop, type, n);
 }
 
+__asm__(".symver __xde_get_windows,xde_get_windows@@XDE_1.0");
+
 Bool
-get_window(Window win, Atom prop, Atom type, Window *win_ret)
+__xde_get_window(Window win, Atom prop, Atom type, Window *win_ret)
 {
-	return get_cardinal(win, prop, type, (long *) win_ret);
+	return xde_get_cardinal(win, prop, type, (long *) win_ret);
 }
+
+__asm__(".symver __xde_get_window,xde_get_window@@XDE_1.0");
 
 Time *
-get_times(Window win, Atom prop, Atom type, long *n)
+__xde_get_times(Window win, Atom prop, Atom type, long *n)
 {
-	return (Time *) get_cardinals(win, prop, type, n);
+	return (Time *) xde_get_cardinals(win, prop, type, n);
 }
 
+__asm__(".symver __xde_get_times,xde_get_times@@XDE_1.0");
+
 Bool
-get_time(Window win, Atom prop, Atom type, Time * time_ret)
+__xde_get_time(Window win, Atom prop, Atom type, Time * time_ret)
 {
-	return get_cardinal(win, prop, type, (long *) time_ret);
+	return xde_get_cardinal(win, prop, type, (long *) time_ret);
 }
+
+__asm__(".symver __xde_get_time,xde_get_time@@XDE_1.0");
 
 Atom *
-get_atoms(Window win, Atom prop, Atom type, long *n)
+__xde_get_atoms(Window win, Atom prop, Atom type, long *n)
 {
-	return (Atom *) get_cardinals(win, prop, type, n);
+	return (Atom *) xde_get_cardinals(win, prop, type, n);
 }
 
+__asm__(".symver __xde_get_atoms,xde_get_atoms@@XDE_1.0");
+
 Bool
-get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
+__xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
 {
-	return get_cardinal(win, prop, type, (long *) atom_ret);
+	return xde_get_cardinal(win, prop, type, (long *) atom_ret);
 }
+
+__asm__(".symver __xde_get_atom,xde_get_atom@@XDE_1.0");
 
 Pixmap *
-get_pixmaps(Window win, Atom prop, Atom type, long *n)
+__xde_get_pixmaps(Window win, Atom prop, Atom type, long *n)
 {
-	return (Pixmap *) get_cardinals(win, prop, type, n);
+	return (Pixmap *) xde_get_cardinals(win, prop, type, n);
 }
 
+__asm__(".symver __xde_get_pixmaps,xde_get_pixmaps@@XDE_1.0");
+
 Bool
-get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
+__xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
 {
-	return get_cardinal(win, prop, type, (long *) pixmap_ret);
+	return xde_get_cardinal(win, prop, type, (long *) pixmap_ret);
 }
+
+__asm__(".symver __xde_get_pixmap,xde_get_pixmap@@XDE_1.0");
 
 /** @brief Check for recursive window properties
   * @param atom - property name
@@ -643,7 +671,7 @@ check_motif()
 	long *data, n = 0;
 
 	do {
-		data = get_cardinals(root, _XA_MOTIF_WM_INFO, AnyPropertyType, &n);
+		data = xde_get_cardinals(root, _XA_MOTIF_WM_INFO, AnyPropertyType, &n);
 	} while (i++ < 2 && !data);
 
 	if (data && n >= 2)
@@ -977,11 +1005,11 @@ check_name(Window check)
 
 	if (!check)
 		return NULL;
-	if ((name = get_text(check, _XA_NET_WM_NAME)) && name[0])
+	if ((name = xde_get_text(check, _XA_NET_WM_NAME)) && name[0])
 		goto got_it_xfree;
 	if (name)
 		XFree(name);
-	if ((name = get_text(check, XA_WM_NAME)) && name[0])
+	if ((name = xde_get_text(check, XA_WM_NAME)) && name[0])
 		goto got_it_xfree;
 	if (name)
 		XFree(name);
@@ -1082,7 +1110,7 @@ check_host(Window check)
 
 	if (!check)
 		return NULL;
-	if ((host = get_text(check, XA_WM_CLIENT_MACHINE)) && host[0])
+	if ((host = xde_get_text(check, XA_WM_CLIENT_MACHINE)) && host[0])
 		goto got_it_xfree;
 	if (host)
 		XFree(host);
@@ -1156,16 +1184,16 @@ check_pid(Window check)
 
 	if (!check)
 		return 0;
-	if (get_cardinal(check, _XA_NET_WM_PID, XA_CARDINAL, &pid) && pid)
+	if (xde_get_cardinal(check, _XA_NET_WM_PID, XA_CARDINAL, &pid) && pid)
 		goto got_it;
 	if (wm->name && !strcasecmp(wm->name, "fluxbox"))
-		if (get_cardinal(check, _XA_BLACKBOX_PID, XA_CARDINAL, &pid) && pid)
+		if (xde_get_cardinal(check, _XA_BLACKBOX_PID, XA_CARDINAL, &pid) && pid)
 			goto got_it;
 	if (wm->name && !strcasecmp(wm->name, "openbox"))
-		if (get_cardinal(check, _XA_OPENBOX_PID, XA_CARDINAL, &pid) && pid)
+		if (xde_get_cardinal(check, _XA_OPENBOX_PID, XA_CARDINAL, &pid) && pid)
 			goto got_it;
 	if (wm->name && !strcasecmp(wm->name, "i3"))
-		if (get_cardinal(check, _XA_I3_PID, XA_CARDINAL, &pid) && pid)
+		if (xde_get_cardinal(check, _XA_I3_PID, XA_CARDINAL, &pid) && pid)
 			goto got_it;
 	return 0;
       got_it:
@@ -2675,7 +2703,7 @@ __xde_get_theme()
 		wm->themefile = themefile;
 		return theme;
 	}
-	name = get_text(scr->root, _XA_XDE_THEME_NAME);
+	name = xde_get_text(scr->root, _XA_XDE_THEME_NAME);
 	if (name && xde_find_theme(name, &themefile)) {
 		theme = strdup(name);
 		free(wm->theme);
