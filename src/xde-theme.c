@@ -530,44 +530,44 @@ typedef struct {
 	Atom *atom;
 	void (*handler_PropertyNotify) (XEvent *);
 	void (*handler_ClientMessage) (XEvent *);
+	Atom value;
 } Handlers;
 
 Handlers handlers[] = {
 	/* *INDENT-OFF* */
-	/* global			handler_PropertyNotify		handler_ClientMessage	*/
+	/* global			handler_PropertyNotify		handler_ClientMessage	value		*/
 	/* ------			-------				---------------------	*/
-	{  &_XA_BB_THEME,		handle_BB_THEME,		NULL			},
-	{  &_XA_BLACKBOX_PID,		handle_BLACKBOX_PID,		NULL			},
-	{  &_XA_ESETROOT_PMAP_ID,	handle_ESETROOT_PMAP_ID,	NULL			},
-	{  &_XA_GTK_READ_RCFILES,	NULL,				handle_GTK_READ_RCFILES	},
-	{  &_XA_I3_CONFIG_PATH,		NULL,				NULL			},
-	{  &_XA_I3_PID,			NULL,				NULL			},
-	{  &_XA_I3_SHMLOG_PATH,		NULL,				NULL			},
-	{  &_XA_I3_SOCKET_PATH,		NULL,				NULL			},
-	{  &_XA_ICEWMBG_QUIT,		NULL,				NULL			},
-	{  &_XA_MOTIF_WM_INFO,		NULL,				NULL			},
-	{  &_XA_NET_CURRENT_DESKTOP,	handle_NET_CURRENT_DESKTOP,	NULL			},
-	{  &_XA_NET_DESKTOP_LAYOUT,	handle_NET_DESKTOP_LAYOUT,	NULL			},
-	{  &_XA_NET_DESKTOP_PIXMAPS,	NULL,				NULL			},
-	{  &_XA_NET_NUMBER_OF_DESKTOPS,	handle_NET_NUMBER_OF_DESKTOPS,	NULL			},
-	{  &_XA_NET_SUPPORTED,		handle_NET_SUPPORTED,		NULL			},
-	{  &_XA_NET_SUPPORTING_WM_CHECK,handle_NET_SUPPORTING_WM_CHECK,	NULL			},
-	{  &_XA_NET_VISIBLE_DESKTOPS,	handle_NET_VISIBLE_DESKTOPS,	NULL			},
-	{  &_XA_NET_WM_NAME,		NULL,				NULL			},
-	{  &_XA_NET_WM_PID,		NULL,				NULL			},
-	{  &_XA_OB_THEME,		handle_OB_THEME,		NULL			},
-	{  &_XA_OPENBOX_PID,		handle_OPENBOX_PID,		NULL			},
-	{  &_XA_WIN_DESKTOP_BUTTON_PROXY,handle_WIN_DESKTOP_BUTTON_PROXY,NULL			},
-	{  &_XA_WINDOWMAKER_NOTICEBOARD,handle_WINDOWMAKER_NOTICEBOARD,	NULL			},
-	{  &_XA_WIN_PROTOCOLS,		handle_WIN_PROTOCOLS,		NULL			},
-	{  &_XA_WIN_SUPPORTING_WM_CHECK,handle_WIN_SUPPORTING_WM_CHECK,	NULL			},
-	{  &_XA_WIN_WORKSPACE,		handle_WIN_WORKSPACE,		NULL			},
-	{  &_XA_WIN_WORKSPACE_COUNT,	handle_WIN_WORKSPACE_COUNT,	NULL			},
-	{  &_XA_WM_COMMAND,		NULL,				NULL			},
-	{  &_XA_XDE_THEME_NAME,		handle_XDE_THEME_NAME,		NULL			},
-	{  &_XA_XROOTPMAP_ID,		handle_XROOTPMAP_ID,		NULL			},
-	{  &_XA_XSETROOT_ID,		handle_XSETROOT_ID,		NULL			},
-	{  NULL,			NULL,				NULL			}
+	{  &_XA_BB_THEME,		handle_BB_THEME,		NULL,			None		},
+	{  &_XA_BLACKBOX_PID,		handle_BLACKBOX_PID,		NULL,			None		},
+	{  &_XA_ESETROOT_PMAP_ID,	handle_ESETROOT_PMAP_ID,	NULL,			None		},
+	{  &_XA_GTK_READ_RCFILES,	NULL,				handle_GTK_READ_RCFILES,None		},
+	{  &_XA_I3_CONFIG_PATH,		NULL,				NULL,			None		},
+	{  &_XA_I3_PID,			NULL,				NULL,			None		},
+	{  &_XA_I3_SHMLOG_PATH,		NULL,				NULL,			None		},
+	{  &_XA_I3_SOCKET_PATH,		NULL,				NULL,			None		},
+	{  &_XA_ICEWMBG_QUIT,		NULL,				NULL,			None		},
+	{  &_XA_MOTIF_WM_INFO,		NULL,				NULL,			None		},
+	{  &_XA_NET_CURRENT_DESKTOP,	handle_NET_CURRENT_DESKTOP,	NULL,			None		},
+	{  &_XA_NET_DESKTOP_LAYOUT,	handle_NET_DESKTOP_LAYOUT,	NULL,			None		},
+	{  &_XA_NET_DESKTOP_PIXMAPS,	NULL,				NULL,			None		},
+	{  &_XA_NET_NUMBER_OF_DESKTOPS,	handle_NET_NUMBER_OF_DESKTOPS,	NULL,			None		},
+	{  &_XA_NET_SUPPORTED,		handle_NET_SUPPORTED,		NULL,			None		},
+	{  &_XA_NET_SUPPORTING_WM_CHECK,handle_NET_SUPPORTING_WM_CHECK,	NULL,			None		},
+	{  &_XA_NET_VISIBLE_DESKTOPS,	handle_NET_VISIBLE_DESKTOPS,	NULL,			None		},
+	{  &_XA_NET_WM_NAME,		NULL,				NULL,			None		},
+	{  &_XA_NET_WM_PID,		NULL,				NULL,			None		},
+	{  &_XA_OB_THEME,		handle_OB_THEME,		NULL,			None		},
+	{  &_XA_OPENBOX_PID,		handle_OPENBOX_PID,		NULL,			None		},
+	{  &_XA_WIN_DESKTOP_BUTTON_PROXY,handle_WIN_DESKTOP_BUTTON_PROXY,NULL,			None		},
+	{  &_XA_WINDOWMAKER_NOTICEBOARD,handle_WINDOWMAKER_NOTICEBOARD,	NULL,			None		},
+	{  &_XA_WIN_PROTOCOLS,		handle_WIN_PROTOCOLS,		NULL,			None		},
+	{  &_XA_WIN_SUPPORTING_WM_CHECK,handle_WIN_SUPPORTING_WM_CHECK,	NULL,			None		},
+	{  &_XA_WIN_WORKSPACE,		handle_WIN_WORKSPACE,		NULL,			None		},
+	{  &_XA_WIN_WORKSPACE_COUNT,	handle_WIN_WORKSPACE_COUNT,	NULL,			None		},
+	{  &_XA_XDE_THEME_NAME,		handle_XDE_THEME_NAME,		NULL,			None		},
+	{  &_XA_XROOTPMAP_ID,		handle_XROOTPMAP_ID,		NULL,			None		},
+	{  &_XA_XSETROOT_ID,		handle_XSETROOT_ID,		NULL,			None		},
+	{  NULL,			NULL,				NULL,			None		}
 	/* *INDENT-ON* */
 };
 

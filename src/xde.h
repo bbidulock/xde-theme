@@ -61,8 +61,10 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <sys/timerfd.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <sys/poll.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <time.h>
@@ -120,6 +122,28 @@ typedef struct {
 	void (*gen_menu) (void);
 	char *(*get_icon) (void);
 } WmOperations;
+
+typedef struct _WmScreen WmScreen;
+
+typedef struct {
+	Bool (*wm_event) (const XEvent *);	/* event handler */
+	Bool (*wm_signal) (int);		/* signal handler */
+	void (*wm_changed) (WmScreen *);	/* window manager changed */
+	void (*wm_style_changed) (WmScreen *);	/* window manager style changed */
+	void (*wm_theme_changed) (WmScreen *);	/* window manager theme changed */
+	void (*wm_desktop_changed) (WmScreen *, int, unsigned long *);
+	/* current desktop(s) changed */
+	void (*wm_desktops_changed) (WmScreen *, unsigned long);
+	/* number of desktops changed */
+} WmCallbacks;
+
+typedef struct _WmDeferred {
+	struct _WmDeferred *next;	/* list linkage */
+	void (*action) (XPointer);	/* action to perform when invoked */
+	int screen;			/* active screen */
+	struct timespec when;		/* expiry time */
+	XPointer data;			/* hook for client data */
+} WmDeferred;
 
 typedef struct {
 	int refs;			/* references to this structure */
@@ -206,11 +230,12 @@ typedef struct {
 	} i;
 } WmMonitor;
 
-typedef struct {
+struct _WmScreen {
 	int screen;			/* screen number */
 	int x, y;			/* geometry in pixels */
 	unsigned int width, height;
 	Window root;			/* root window for this screen */
+	Window proxy;			/* desktop button proxy */
 	Atom selection;			/* MANAGER selection atom for screen */
 	Window selwin;			/* MANAGER selection window for screen */
 	Window owner;			/* MANAGER selection owner */
@@ -229,7 +254,7 @@ typedef struct {
 	Pixmap save;			/* backing store pixmap for entire screen */
 	int numdesk;			/* number of desktops for this screen */
 	int curdesk;			/* current desktop for this screen */
-} WmScreen;
+};
 
 typedef struct {
 	Display *dpy;
@@ -333,7 +358,6 @@ extern Atom _XA_WIN_PROTOCOLS;
 extern Atom _XA_WIN_SUPPORTING_WM_CHECK;
 extern Atom _XA_WIN_WORKSPACE;
 extern Atom _XA_WIN_WORKSPACE_COUNT;
-extern Atom _XA_WM_COMMAND;
 extern Atom _XA_WM_DESKTOP;
 extern Atom _XA_XDE_THEME_NAME;
 extern Atom _XA_XROOTPMAP_ID;
@@ -355,6 +379,20 @@ Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
 Bool xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret);
 Pixmap *xde_get_pixmaps(Window win, Atom prop, Atom type, long *n);
 Bool xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret);
+
+/* event functions */
+Bool xde_handle_event(const XEvent *ev);
+void xde_defer_action(void (*)(XPointer), Time, XPointer);
+Bool xde_defer_once(void (*)(XPointer), Time, XPointer);
+void xde_sig_handler(int sig);
+void xde_main_quit(XPointer);
+void xde_process_timeouts(void);
+void xde_process_xevents(void);
+void xde_process_deferred(void);
+void xde_handle_signal(int sig);
+XPointer xde_main_loop(void);
+int xde_defer_timer(void);
+void xde_init(WmCallbacks *);
 
 extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);

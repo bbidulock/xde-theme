@@ -161,6 +161,7 @@ Atom _XA_I3_PID;
 Atom _XA_I3_SHMLOG_PATH;
 Atom _XA_I3_SOCKET_PATH;
 Atom _XA_ICEWMBG_QUIT;
+Atom _XA_MANAGER;
 Atom _XA_MOTIF_WM_INFO;
 Atom _XA_NET_CURRENT_DESKTOP;
 Atom _XA_NET_DESKTOP_LAYOUT;
@@ -179,54 +180,98 @@ Atom _XA_WIN_PROTOCOLS;
 Atom _XA_WIN_SUPPORTING_WM_CHECK;
 Atom _XA_WIN_WORKSPACE;
 Atom _XA_WIN_WORKSPACE_COUNT;
-Atom _XA_WM_COMMAND;
 Atom _XA_WM_DESKTOP;
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XROOTPMAP_ID;
 Atom _XA_XSETROOT_ID;
 
+static Bool handle_BB_THEME(const XEvent *);
+static Bool handle_BLACKBOX_PID(const XEvent *);
+static Bool handle_DT_WORKSPACE_CURRENT(const XEvent *);
+static Bool handle_DT_WORKSPACE_LIST(const XEvent *);
+static Bool handle_ESETROOT_PMAP_ID(const XEvent *);
+static Bool handle_GTK_READ_RCFILES(const XEvent *);
+static Bool handle_I3_CONFIG_PATH(const XEvent *);
+static Bool handle_I3_PID(const XEvent *);
+static Bool handle_I3_SHMLOG_PATH(const XEvent *);
+static Bool handle_I3_SOCKET_PATH(const XEvent *);
+static Bool handle_ICEWMGB_QUIT(const XEvent *);
+static Bool handle_MANAGER(const XEvent *);
+static Bool handle_MOTIF_WM_INFO(const XEvent *);
+static Bool handle_NET_CURRENT_DESKTOP(const XEvent *);
+static Bool handle_NET_DESKTOP_LAYOUT(const XEvent *);
+static Bool handle_NET_DESKTOP_PIXMAPS(const XEvent *);
+static Bool handle_NET_NUMBER_OF_DESKTOPS(const XEvent *);
+static Bool handle_NET_SUPPORTED(const XEvent *);
+static Bool handle_NET_SUPPORTING_WM_CHECK(const XEvent *);
+static Bool handle_NET_VISIBLE_DESKTOPS(const XEvent *);
+static Bool handle_NET_WM_NAME(const XEvent *);
+static Bool handle_NET_WM_PID(const XEvent *);
+static Bool handle_OB_THEME(const XEvent *);
+static Bool handle_OPENBOX_PID(const XEvent *);
+static Bool handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *);
+static Bool handle_WINDOWMAKER_NOTICEBOARD(const XEvent *);
+static Bool handle_WIN_PROTOCOLS(const XEvent *);
+static Bool handle_WIN_SUPPORTING_WM_CHECK(const XEvent *);
+static Bool handle_WIN_WORKSPACE_COUNT(const XEvent *);
+static Bool handle_WIN_WORKSPACE(const XEvent *);
+static Bool handle_WM_CLASS(const XEvent *);
+static Bool handle_WM_CLIENT_MACHINE(const XEvent *);
+static Bool handle_WM_COMMAND(const XEvent *);
+static Bool handle_WM_DESKTOP(const XEvent *);
+static Bool handle_WM_NAME(const XEvent *);
+static Bool handle_XDE_THEME_NAME(const XEvent *);
+static Bool handle_XROOTPMAP_ID(const XEvent *);
+static Bool handle_XSETROOT_ID(const XEvent *);
+
 typedef struct {
 	char *name;
 	Atom *atom;
+	Bool (*handler) (const XEvent *);
+	Atom value;
 } Atoms;
 
 static Atoms atoms[] = {
 	/* *INDENT-OFF* */
-	{"_BB_THEME",			&_XA_BB_THEME			},
-	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID		},
-	{"_DT_WORKSPACE_CURRENT",	&_XA_DT_WORKSPACE_CURRENT	},
-	{"_DT_WORKSPACE_LIST",		&_XA_DT_WORKSPACE_LIST		},
-	{"ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID		},
-	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES		},
-	{"I3_CONFIG_PATH",		&_XA_I3_CONFIG_PATH		},
-	{"I3_PID",			&_XA_I3_PID			},
-	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH		},
-	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH		},
-	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT		},
-	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO		},
-	{"_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP	},
-	{"_NET_DESKTOP_LAYOUT",		&_XA_NET_DESKTOP_LAYOUT		},
-	{"_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAPS	},
-	{"_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS	},
-	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED		},
-	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK	},
-	{"_NET_VISIBLE_DESKTOPS",	&_XA_NET_VISIBLE_DESKTOPS	},
-	{"_NET_WM_NAME",		&_XA_NET_WM_NAME		},
-	{"_NET_WM_PID",			&_XA_NET_WM_PID			},
-	{"_OB_THEME",			&_XA_OB_THEME			},
-	{"_OPENBOX_PID",		&_XA_OPENBOX_PID		},
-	{"_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY	},
-	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD	},
-	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS		},
-	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK	},
-	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT	},
-	{"_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE		},
-	{"WM_COMMAND",			&_XA_WM_COMMAND			},
-	{"WM_DESKTOP",			&_XA_WM_DESKTOP			},
-	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME		},
-	{"_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID		},
-	{"_XSETROOT_ID",		&_XA_XSETROOT_ID		},
-	{NULL,				NULL				}
+	{"_BB_THEME",			&_XA_BB_THEME,			&handle_BB_THEME,			None			},
+	{"_BLACKBOX_PID",		&_XA_BLACKBOX_PID,		&handle_BLACKBOX_PID,			None			},
+	{"_DT_WORKSPACE_CURRENT",	&_XA_DT_WORKSPACE_CURRENT,	&handle_DT_WORKSPACE_CURRENT,		None			},
+	{"_DT_WORKSPACE_LIST",		&_XA_DT_WORKSPACE_LIST,		&handle_DT_WORKSPACE_LIST,		None			},
+	{"ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID,		&handle_ESETROOT_PMAP_ID,		None			},
+	{"_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES,		&handle_GTK_READ_RCFILES,		None			},
+	{"I3_CONFIG_PATH",		&_XA_I3_CONFIG_PATH,		&handle_I3_CONFIG_PATH,			None			},
+	{"I3_PID",			&_XA_I3_PID,			&handle_I3_PID,				None			},
+	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH,		&handle_I3_SHMLOG_PATH,			None			},
+	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH,		&handle_I3_SOCKET_PATH,			None			},
+	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&handle_ICEWMGB_QUIT,			None			},
+	{"MANAGER",			&_XA_MANAGER,			&handle_MANAGER,			None			},
+	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO,		&handle_MOTIF_WM_INFO,			None			},
+	{"_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP,	&handle_NET_CURRENT_DESKTOP,		None			},
+	{"_NET_DESKTOP_LAYOUT",		&_XA_NET_DESKTOP_LAYOUT,	&handle_NET_DESKTOP_LAYOUT,		None			},
+	{"_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAPS,	&handle_NET_DESKTOP_PIXMAPS,		None			},
+	{"_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS,	&handle_NET_NUMBER_OF_DESKTOPS,		None			},
+	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED,		&handle_NET_SUPPORTED,			None			},
+	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK,	&handle_NET_SUPPORTING_WM_CHECK,	None			},
+	{"_NET_VISIBLE_DESKTOPS",	&_XA_NET_VISIBLE_DESKTOPS,	&handle_NET_VISIBLE_DESKTOPS,		None			},
+	{"_NET_WM_NAME",		&_XA_NET_WM_NAME,		&handle_NET_WM_NAME,			None			},
+	{"_NET_WM_PID",			&_XA_NET_WM_PID,		&handle_NET_WM_PID,			None			},
+	{"_OB_THEME",			&_XA_OB_THEME,			&handle_OB_THEME,			None			},
+	{"_OPENBOX_PID",		&_XA_OPENBOX_PID,		&handle_OPENBOX_PID,			None			},
+	{"_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY,	&handle_WIN_DESKTOP_BUTTON_PROXY,	None			},
+	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD,	&handle_WINDOWMAKER_NOTICEBOARD,	None			},
+	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS,		&handle_WIN_PROTOCOLS,			None			},
+	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK,	&handle_WIN_SUPPORTING_WM_CHECK,	None			},
+	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	&handle_WIN_WORKSPACE_COUNT,		None			},
+	{"_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE,		&handle_WIN_WORKSPACE,			None			},
+	{"WM_CLASS",			NULL,				&handle_WM_CLASS,			XA_WM_CLASS		},
+	{"WM_CLIENT_MACHINE",		NULL,				&handle_WM_CLIENT_MACHINE,		XA_WM_CLIENT_MACHINE	},
+	{"WM_COMMAND",			NULL,				&handle_WM_COMMAND,			XA_WM_COMMAND		},
+	{"WM_DESKTOP",			&_XA_WM_DESKTOP,		&handle_WM_DESKTOP,			None			},
+	{"WM_NAME",			NULL,				&handle_WM_NAME,			XA_WM_NAME		},
+	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME,		&handle_XDE_THEME_NAME,			None			},
+	{"_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID,		&handle_XROOTPMAP_ID,			None			},
+	{"_XSETROOT_ID",		&_XA_XSETROOT_ID,		&handle_XSETROOT_ID,			None			},
+	{NULL,				NULL,				NULL,					None			}
 	/* *INDENT-ON* */
 };
 
@@ -271,6 +316,30 @@ error_handler(Display *display, XErrorEvent *xev)
 	return(0);
 }
 
+static void set_screen(WmScreen *s)
+{
+	scr = s;
+	screen = scr->screen;
+	root = scr->root;
+	wm = scr->wm;
+}
+
+void set_screen_by_numb(int s)
+{
+	set_screen(screens + s);
+}
+
+static Bool find_screen(Window window)
+{
+	WmScreen *scrn = NULL;
+
+	if (XFindContext(dpy, window, ScreenContext, (XPointer *)&scrn) == Success && scrn)
+		set_screen(scrn);
+	return (scrn != NULL) ? True : False;
+}
+
+/** @brief initialize X windows display
+  */
 void
 __xde_init_display()
 {
@@ -304,6 +373,37 @@ __xde_init_display()
 }
 
 __asm__(".symver __xde_init_display,xde_init_display@@XDE_1.0");
+
+static WmCallbacks *callbacks;
+static int defer_timer;
+
+/** @brief obtain defer timer file number
+  */
+int
+__xde_defer_timer(void)
+{
+	if (!defer_timer) {
+		if ((defer_timer = timerfd_create(CLOCK_MONOTONIC,TFD_CLOEXEC)) == -1) {
+			EPRINTF("timerfd_create: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+	return(defer_timer);
+}
+
+__asm__(".symver __xde_defer_timer,xde_defer_timer@@XDE_1.0");
+
+/** @brief initialize XDE library
+  * @param cbs - callbacks to invoke
+  */
+void
+__xde_init(WmCallbacks *cbs) {
+	callbacks = cbs;
+	xde_defer_timer();
+	xde_init_display();
+}
+
+__asm__(".symver __xde_init,xde_init@@XDE_1.0");
 
 /** @name Property retrieval functions
   *
@@ -1996,6 +2096,11 @@ __asm__(".symver __xde_detect_wm,xde_detect_wm@@XDE_1.0");
 
 /** @} */
 
+
+/** @name themes, styles and menus
+  *
+  * @{ */
+
 static char *
 get_optarg(char *optname)
 {
@@ -3318,6 +3423,8 @@ __xde_test_file(char *path)
 
 __asm__(".symver __xde_test_file,xde_test_file@@XDE_1.0");
 
+/** @} */
+
 /* @name XTWM
  *
  * There is really no window manager named xtwm, but twm, ctwm, vtwm and etwm
@@ -3576,6 +3683,10 @@ static WmOperations wm_ops_UNKNOWN = {
 
 /** @} */
 
+/** @name window manager specific operations
+  *
+  * @{ */
+
 WmOperations *wm_ops[] = {
 	&wm_ops_NONE,
 	&wm_ops_UNKNOWN,
@@ -3618,20 +3729,572 @@ get_wm_ops()
 	return NULL;
 }
 
+/** @} */
+
+Bool
+handle_DestroyNotify(const XEvent *e)
+{
+	return False;
+}
+
 /** @name Event Handlers
   *
   * The following are event handlers for detecting various things.
   *
   * @{ */
 
-/** @brief Property change of _BLACKBOX_PID.
-  *
-  * When fluxbox(1) reloads, it does not change the _NET_SUPPORTING_WM_CHECK
-  * window, but it does change the _BLACKBOX_PID, even when it is just to
-  * replace it with the same value.
+/** @brief handle an Xlib event
   */
 Bool
-xde_event_handler_PropertyNotify_BLACKBOX_PID(XEvent *ev)
+__xde_handle_event(const XEvent *ev)
+{
+	int i;
+
+	if (!find_screen(ev->xany.window))
+		return False;
+	switch (ev->type) {
+	case PropertyNotify:
+		for (i = 0; atoms[i].name; i++) {
+			if (atoms[i].value == ev->xproperty.atom) {
+				if (atoms[i].handler)
+					return (atoms[i].handler) (ev);
+				break;
+			}
+		}
+		break;
+	case ClientMessage:
+		for (i = 0; atoms[i].name; i++) {
+			if (atoms[i].value == ev->xclient.message_type) {
+				if (atoms[i].handler)
+					return (atoms[i].handler) (ev);
+				break;
+			}
+		}
+		break;
+	case DestroyNotify:
+		return handle_DestroyNotify(ev);
+	}
+	return False;
+}
+
+__asm__(".symver __xde_handle_event,xde_handle_event@@XDE_1.0");
+
+WmDeferred *deferred_wait;
+WmDeferred *deferred_done;
+WmDeferred **deferred_tail = &deferred_done;
+
+/** @brief defer and action for later
+  * @param action - action to perform later
+  * @param delay - amount of time to delay before queuing action
+  * @parma data - client data to pass to the action
+  *
+  * Defers and action to be processed after all pending X events have been
+  * handled.  When #delay is zero (0), the action will be invoked immediately
+  * after all pending X events have been processed.  When #delay is non-zero,
+  * wait at least #delay millseconds before before processing the deferred
+  * action, and then only after all pending X events have been handled.
+  */
+void
+__xde_defer_action(void (*action) (XPointer), Time delay, XPointer data)
+{
+	WmDeferred *d;
+
+	d = calloc(1, sizeof(*d));
+	clock_gettime(CLOCK_MONOTONIC, &d->when);
+
+	d->screen = scr->screen;
+	d->data = data;
+
+	if (delay) {
+		WmDeferred *def, **prev;
+
+		d->when.tv_sec += delay / 1000;
+		delay = delay % 1000;
+		if ((d->when.tv_nsec += delay * 1000000) > 1000000000) {
+			d->when.tv_sec += 1;
+			d->when.tv_nsec -= 1000000000;
+		}
+		for (prev = &deferred_wait, def = *prev; def;
+		     prev = &def->next, def = *prev) {
+			if (def->when.tv_sec < d->when.tv_sec)
+				continue;
+			if (def->when.tv_sec == d->when.tv_sec)
+				if (def->when.tv_nsec < d->when.tv_nsec)
+					continue;
+			break;
+		}
+		d->next = def;
+		*prev = d;
+		if (deferred_wait == d) {
+			struct itimerspec when;
+
+			when.it_interval.tv_sec = 0;
+			when.it_interval.tv_nsec = 0;
+			when.it_value.tv_sec = d->when.tv_sec;
+			when.it_value.tv_nsec = d->when.tv_nsec;
+			timerfd_settime(defer_timer, TFD_TIMER_ABSTIME, &when, NULL);
+		}
+	} else {
+		d->next = NULL;
+		*deferred_tail = d;
+		deferred_tail = &d->next;
+	}
+}
+
+__asm__(".symver __xde_defer_action,xde_defer_action@@XDE_1.0");
+
+/** @brief defer and action for later once
+  * @param action - action to perform once later
+  * @param delay - amount of time to delay before queuing action
+  * @param data - client data to pass to the action
+  * @return Bool - False when action already deferred; True otherwise.
+  *
+  * Like xde_defer_action(), except if the action has already been deferred with
+  * the same client data, return false and do not queue another instance of the
+  * same action.
+  */
+Bool
+__xde_defer_once(void (*action)(XPointer), Time delay, XPointer data)
+{
+	WmDeferred *d;
+
+	if (delay) {
+		for (d = deferred_wait; d ; d = d->next)
+			if (d->action == action && d->data == data)
+				return False;
+	}
+	for (d = deferred_done; d ; d = d->next)
+		if (d->action == action && d->data == data)
+			return False;
+
+	xde_defer_action(action, delay, data);
+	return True;
+}
+
+__asm__(".symver __xde_defer_once,xde_defer_once@@XDE_1.0");
+
+
+static int signum;
+
+/** @brief function to invoke from within signal handler
+  * @param sig - signal number
+  *
+  * Can be used as a function to signal() to handle a signal not otherwise
+  * handled by the library.
+  */
+void
+__xde_sig_handler(int sig)
+{
+	signum = sig;
+}
+
+__asm__(".symver __xde_sig_handler,xde_sig_handler@@XDE_1.0");
+
+XPointer retval;
+int shutting_down;
+
+/** @brief quit the main loop
+  * @param value - value to return from xde_main_loop()
+  *
+  * Quits the main loop and causes xde_main_loop() to return the value
+  * specified.
+  */
+void
+__xde_main_quit(XPointer value)
+{
+	retval = value;
+	shutting_down = 1;
+}
+
+__asm__(".symver __xde_main_quit,xde_main_quit@@XDE_1.0");
+
+/** @brief process timeouts
+  *
+  * Used to process timeouts on the defer timer file descriptor.  You should
+  * only need to call this if you are writing your own event loop.
+  */
+void
+__xde_process_timeouts()
+{
+	unsigned long long count, i;
+
+	if (read(defer_timer, &count, sizeof(count)) < sizeof(count))
+		return;
+
+	for (i = 0; i < count; i++) {
+		WmDeferred *d;
+
+		if ((d = deferred_wait)) {
+			deferred_wait = d->next;
+			d->next = *deferred_tail;
+			deferred_tail = &d->next;
+		}
+	}
+}
+
+__asm__(".symver __xde_process_timeouts,xde_process_timeouts@@XDE_1.0");
+
+/** @brief process X library events
+  *
+  * Use to process X library events.  You should only need to call this if you
+  * are writing your own event loop.
+  */
+void
+__xde_process_xevents()
+{
+	do {
+		XEvent ev;
+
+		while (XPending(dpy)) {
+			XNextEvent(dpy, &ev);
+			if (!callbacks || !callbacks->wm_event
+			    || !(callbacks->wm_event) (&ev))
+				xde_handle_event(&ev);
+		}
+		XSync(dpy, False);
+	}
+	while (XPending(dpy));
+}
+
+__asm__(".symver __xde_process_xevents,xde_process_xevents@@XDE_1.0");
+
+/** @brief process deferred events
+  *
+  * Process all deferred events that have expired their waiting intervals.  You
+  * should only need to call this if you are writing your own event loop.
+  */
+void
+__xde_process_deferred(void)
+{
+	WmDeferred *d;
+
+	while ((d = deferred_done)) {
+		(d->action) (d->data);
+		deferred_done = d->next;
+		free(d);
+	}
+	deferred_tail = &deferred_done;
+}
+
+__asm__(".symver __xde_process_deferred,xde_process_deferred@@XDE_1.0");
+
+/** @brief handle signals
+  *
+  * Process signals within the event loop (instead of the signal handler).  You
+  * should only need to call this if you are writing your own event loop.
+  */
+void
+__xde_handle_signal(int sig)
+{
+	switch (sig) {
+	case SIGINT:
+	case SIGHUP:
+	case SIGTERM:
+	case SIGQUIT:
+		xde_main_quit(NULL);
+		break;
+	}
+}
+
+__asm__(".symver __xde_handle_signal,xde_handle_signal@@XDE_1.0");
+
+/** @brief main event loop for XDE library
+  * @return XPointer - value passed by xde_main_quit()
+  */
+XPointer
+__xde_main_loop(void)
+{
+	int tfd = xde_defer_timer();
+	int xfd = ConnectionNumber(dpy);
+
+	signal(SIGINT, &xde_sig_handler);
+	signal(SIGHUP, &xde_sig_handler);
+	signal(SIGTERM, &xde_sig_handler);
+	signal(SIGQUIT, &xde_sig_handler);
+
+	for (;;) {
+		struct pollfd pfd[] = {
+			{tfd, POLLIN | POLLERR | POLLHUP, 0},
+			{xfd, POLLIN | POLLERR | POLLHUP, 0}
+		};
+
+		if (shutting_down)
+			break;
+
+		if (signum) {
+			if (!callbacks || !callbacks->wm_signal ||
+			    !(callbacks->wm_signal) (signum))
+				xde_handle_signal(signum);
+			signum = 0;
+		}
+
+		pfd[0].revents = 0;
+		pfd[1].revents = 0;
+
+		XFlush(dpy);
+
+		if (shutting_down)
+			break;
+
+		switch (poll(pfd, 2, -1)) {
+		case -1:
+			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
+				continue;
+			EPRINTF("poll: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		case 0:	/* timeout */
+			continue;
+		case 1:
+		case 2:
+			if (pfd[0].revents & POLLIN) {
+				xde_process_timeouts();
+				if (shutting_down)
+					break;
+			}
+			if (pfd[1].revents & POLLIN) {
+				xde_process_xevents();
+				if (shutting_down)
+					break;
+			}
+			if ((pfd[0].
+			     revents | pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
+				EPRINTF("fatal error on poll\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+		xde_process_deferred();
+		if (shutting_down)
+			break;
+	}
+	return (retval);
+}
+
+__asm__(".symver __xde_main_loop,xde_main_loop@@XDE_1.0");
+
+static Bool
+handle_BB_THEME(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_BLACKBOX_PID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_DT_WORKSPACE_CURRENT(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_DT_WORKSPACE_LIST(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_ESETROOT_PMAP_ID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_GTK_READ_RCFILES(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_I3_CONFIG_PATH(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_I3_PID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_I3_SHMLOG_PATH(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_I3_SOCKET_PATH(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_ICEWMGB_QUIT(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_MANAGER(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_MOTIF_WM_INFO(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_CURRENT_DESKTOP(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_DESKTOP_LAYOUT(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_DESKTOP_PIXMAPS(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_NUMBER_OF_DESKTOPS(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_SUPPORTED(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_SUPPORTING_WM_CHECK(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_VISIBLE_DESKTOPS(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_WM_NAME(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_NET_WM_PID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_OB_THEME(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_OPENBOX_PID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WIN_PROTOCOLS(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WIN_WORKSPACE_COUNT(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WIN_WORKSPACE(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WM_CLASS(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WM_CLIENT_MACHINE(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WM_COMMAND(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WM_DESKTOP(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_WM_NAME(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_XDE_THEME_NAME(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_XROOTPMAP_ID(const XEvent *e)
+{
+	return False;
+}
+
+static Bool
+handle_XSETROOT_ID(const XEvent *e)
 {
 	return False;
 }

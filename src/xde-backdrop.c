@@ -51,6 +51,20 @@
 #include <sys/poll.h>
 #include <sys/timerfd.h>
 
+typedef struct {
+	Window root;
+	int desktop;
+	int desktops;
+	struct {
+		int rows;
+		int cols;
+	} layout;
+
+} BdScreen;
+
+BdScreen *scr, *screens;
+
+
 const char *program = NAME;
 
 static enum { StartingUp, WaitForWM, WaitAfterWM, DetectWM, ShutDown } state;
@@ -132,43 +146,528 @@ recheck_wm()
 	wait_after_wm();
 }
 
+extern Atom _XA_BB_THEME;
+extern Atom _XA_BLACKBOX_PID;
+extern Atom _XA_DT_WORKSPACE_CURRENT;
+extern Atom _XA_DT_WORKSPACE_LIST;
+extern Atom _XA_ESETROOT_PMAP_ID;
+extern Atom _XA_GTK_READ_RCFILES;
+extern Atom _XA_I3_CONFIG_PATH;
+extern Atom _XA_I3_PID;
+extern Atom _XA_I3_SHMLOG_PATH;
+extern Atom _XA_I3_SOCKET_PATH;
+extern Atom _XA_ICEWMBG_QUIT;
+extern Atom _XA_MOTIF_WM_INFO;
+extern Atom _XA_NET_CURRENT_DESKTOP;
+extern Atom _XA_NET_DESKTOP_LAYOUT;
+extern Atom _XA_NET_DESKTOP_PIXMAPS;
+extern Atom _XA_NET_NUMBER_OF_DESKTOPS;
+extern Atom _XA_NET_SUPPORTED;
+extern Atom _XA_NET_SUPPORTING_WM_CHECK;
+extern Atom _XA_NET_VISIBLE_DESKTOPS;
+extern Atom _XA_NET_WM_NAME;
+extern Atom _XA_NET_WM_PID;
+extern Atom _XA_OB_THEME;
+extern Atom _XA_OPENBOX_PID;
+extern Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
+extern Atom _XA_WINDOWMAKER_NOTICEBOARD;
+extern Atom _XA_WIN_PROTOCOLS;
+extern Atom _XA_WIN_SUPPORTING_WM_CHECK;
+extern Atom _XA_WIN_WORKSPACE;
+extern Atom _XA_WIN_WORKSPACE_COUNT;
+extern Atom _XA_WM_COMMAND;
+extern Atom _XA_WM_DESKTOP;
+extern Atom _XA_XDE_THEME_NAME;
+extern Atom _XA_XROOTPMAP_ID;
+extern Atom _XA_XSETROOT_ID;
+
+static void handle_BB_THEME(XEvent *);
+static void handle_BLACKBOX_PID(XEvent *);
+static void handle_ESETROOT_PMAP_ID(XEvent *);
+static void handle_GTK_READ_RCFILES(XEvent *);
+static void handle_I3_PID(XEvent *);
+static void handle_ICEWMBG_QUIT(XEvent *);
+static void handle_NET_CURRENT_DESKTOP(XEvent *);
+static void handle_NET_DESKTOP_NAMES(XEvent *);
+static void handle_NET_DESKTOP_PIXMAP(XEvent *);
+static void handle_NET_NUMBER_OF_DESKTOPS(XEvent *);
+static void handle_NET_SUPPORTED(XEvent *);
+static void handle_NET_SUPPORTING_WM_CHECK(XEvent *);
+static void handle_NET_WM_NAME(XEvent *);
+static void handle_NET_WM_PID(XEvent *);
+static void handle_OB_THEME(XEvent *);
+static void handle_OPENBOX_PID(XEvent *);
+static void handle_WIN_DESKTOP_BUTTON_PR(XEvent *)OXY;
+static void handle_WIN_PROTOCOLS(XEvent *);
+static void handle_WIN_SUPPORTING_WM_CHECK(XEvent *);
+static void handle_WIN_WORKSPACE_COUNT(XEvent *);
+static void handle_WIN_WORKSPACE(XEvent *);
+static void handle_WM_CLASS(XEvent *);
+static void handle_WM_CLIENT_MACHINE(XEvent *);
+static void handle_WM_COMMAND(XEvent *);
+static void handle_WM_NAME(XEvent *);
+static void handle_XDE_THEME_NAME(XEvent *);
+static void handle_XROOTMAP_ID(XEvent *);
+static void handle_XROOTPMAP_ID(XEvent *);
+static void handle_XSETROOT_ID(XEvent *);
+
 typedef struct {
 	char *name;
 	Atom *atom;
-	void (*pc_handler) (XEvent *);	/* property change handler */
-	void (*cm_handler) (XEvent *);	/* client message handler */
+	void (*handler) (XEvent *);
 	Atom value;
 } AtomHandler;
 
 static AtomHandler myatoms[] = {
 	/* *INDENT-OFF* **/
-	{ "_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK,	&pc_handle_WIN_SUPPORTING_WM_CHECK,	NULL,					None },
-	{ "_NET_WM_NAME",		&_XA_NET_WM_NAME,		&pc_handle_NET_WM_NAME,			NULL,					None },
-	{ "_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&pc_handle_ICEWMBG_QUIT,		NULL,					None },
-	{ "ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID,		&pc_handle_ESETROOT_PMAP_ID,		NULL,					None },
-	{ "_XSETROOT_ID",		&_XA_XSETROOT_ID,		&pc_handle_XSETROOT_ID,			NULL,					None },
-	{ "_XROOTMAP_ID",		&_XA_XROOTMAP_ID,		&pc_handle_XROOTMAP_ID,			NULL,					None },
-	{ "_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY,	&pc_handle_WIN_DESKTOP_BUTTON_PROXY,	NULL,					None },
-	{ "_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS,	&pc_handle_NET_NUMBER_OF_DESKTOPS,	NULL,					None },
-	{ "_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP,	&pc_handle_NET_CURRENT_DESKTOP,		NULL,					None },
-	{ "_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	&pc_handle_WIN_WORKSPACE_COUNT,		NULL,					None },
-	{ "_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE,		&pc_handle_WIN_WORKSPACE,		NULL,					None },
-	{ "_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAP,	&pc_handle_NET_DESKTOP_PIXMAPS,		NULL,					None },
-	{ "_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID,		&pc_handle_XROOTPMAP_ID,		NULL,					None },
-	{ "_NET_DESKTOP_NAMES",		&_XA_NET_DESKTOP_NAMES,		&pc_handle_NET_DESKTOP_NAMES,		NULL,					None },
-	{ "_OB_THEME",			&_XA_OB_THEME,			&pc_handle_OB_THEME,			NULL,					None },
-	{ "_BB_THEME",			&_XA_BB_THEME,			&pc_handle_BB_THEME,			NULL,					None },
-	{ "_XDE_THEME",			&_XA_XDE_THEME,			&pc_handle_XDE_THEME,			NULL,					None },
-	{ NULL,				NULL,				NULL,					NULL,					None }
+	{ "_BB_THEME",			&_XA_BB_THEME,			&handle_BB_THEME,			None },
+	{ "_BLACKBOX_PID",		&_XA_BLACKBOX_PID,		&handle_BLACKBOX_PID,			None },
+	{ "ESETROOT_PMAP_ID",		&_XA_ESETROOT_PMAP_ID,		&handle_ESETROOT_PMAP_ID,		None },
+	{ "_GTK_READ_RCFILES",		&_XA_GTK_READ_RCFILES,		&handle_GTK_READ_RCFILES,		None },
+	{ "I3_PID",			&_XA_I3_PID,			&handle_I3_PID,				None },
+	{ "_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&handle_ICEWMBG_QUIT,			None },
+	{ "_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP,	&handle_NET_CURRENT_DESKTOP,		None },
+	{ "_NET_DESKTOP_NAMES",		&_XA_NET_DESKTOP_NAMES,		&handle_NET_DESKTOP_NAMES,		None },
+	{ "_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAP,	&handle_NET_DESKTOP_PIXMAPS,		None },
+	{ "_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS,	&handle_NET_NUMBER_OF_DESKTOPS,		None },
+	{ "_NET_SUPPORTED",		&_XA_NET_SUPPORTED,		&handle_NET_SUPPORTED,			None },
+	{ "_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK,	&handle_NET_SUPPORTING_WM_CHECK,	None },
+	{ "_NET_WM_NAME",		&_XA_NET_WM_NAME,		&handle_NET_WM_NAME,			None },
+	{ "_NET_WM_PID",		&_XA_NET_WM_PID,		&handle_NET_WM_PID,			None },
+	{ "_OB_THEME",			&_XA_OB_THEME,			&handle_OB_THEME,			None },
+	{ "_OPENBOX_PID",		&_XA_OPENBOX_PID,		&handle_OPENBOX_PID,			None },
+	{ "_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY,	&handle_WIN_DESKTOP_BUTTON_PROXY,	None },
+	{ "_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS,		&handle_WIN_PROTOCOLS,			None },
+	{ "_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK,	&handle_WIN_SUPPORTING_WM_CHECK,	None },
+	{ "_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	&handle_WIN_WORKSPACE_COUNT,		None },
+	{ "_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE,		&handle_WIN_WORKSPACE,			None },
+	{ "WM_CLASS",			NULL,				&handle_WM_CLASS,			XA_WM_CLASS },
+	{ "WM_CLIENT_MACHINE",		NULL,				&handle_WM_CLIENT_MACHINE,		XA_WM_CLIENT_MACHINE },
+	{ "WM_COMMAND",			NULL,				&handle_WM_COMMAND,			XA_WM_COMMAND },
+	{ "WM_NAME",			NULL,				&handle_WM_NAME,			XA_WM_NAME },
+	{ "_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME,		&handle_XDE_THEME_NAME,			None },
+	{ "_XROOTMAP_ID",		&_XA_XROOTMAP_ID,		&handle_XROOTMAP_ID,			None },
+	{ "_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID,		&handle_XROOTPMAP_ID,			None },
+	{ "_XSETROOT_ID",		&_XA_XSETROOT_ID,		&handle_XSETROOT_ID,			None },
+	{ NULL,				NULL,				NULL,					None }
 	/* *INDENT-ON* **/
 };
 
+/** @brief handle _BB_THEME property notification
+  *
+  * Our blackbox(1) theme files have a rootCommand that changes the _BB_THEME
+  * property on the root window.  Check the theme again when it changes.
+  */
+static void
+handle_BB_THEME(XEvent *e)
+{
+	check_theme();
+}
+
+/** @brief handle _BLACKBOX_PID property notification
+  *
+  * When fluxbox(1) restarts, it does not change the _NET_SUPPORTING_WM_CHECK
+  * window, but it does change the _BLACKBOX_PID cardinal (with our setup), even
+  * if it is just to replace it with the same value.  When restarting, recheck
+  * the theme.
+  */
+static void
+handle_BLACKBOX_PID(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+/** @brief handle ESETROOT_PMAP_ID property changes
+  *
+  * We do not really process this because all proper root setters now set the
+  * _XROOTPMAP_ID property which we handle above.  However, it is used to
+  * trigger recheck of the theme needed by some window managers such as
+  * blackbox(1).  If it means we check 3 times after a theme switch, so be it.
+  */
+static void
+handle_ESETROOT_PMAP_ID(XEvent *e)
+{
+	// check_theme();
+}
+
+static void
+handle_I3_PID(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+static void
+handle_GTK_READ_RCFILES(XEvent *e)
+{
+	check_theme();
+}
+
+static void
+handle_ICEWMBG_QUIT(XEvent *e)
+{
+}
+
+/** @brief handle _NET_CURRENT_DESKTOP property change
+  *
+  * Handle when _NET_CURRENT_DESKTOP property changes on the root window of any
+  * screen.  This is how we determine that the desktop has changed.
+  */
+static void
+handle_NET_CURRENT_DESKTOP(XEvent *e)
+{
+	long which = 0;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_cardinal(scr->root, _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, &which)) {
+		int newdesk = which;
+
+		DPRINTF("new desktop %d (was %d)\n", newdesk, scr->curdesk);
+		if (newdesk != scr->curdesk) {
+			if (0 <= newdesk && newdesk < scr->numdesk) {
+				scr->curdesk = newdesk;
+				set_deferred_desktop(scr);
+			} else
+				EPRINTF("unreasonable desktop %d\n", newdesk);
+		}
+
+	} else
+		DPRINTF("could not retrieve _NET_CURRENT_DESKTOP\n");
+
+}
+
+static void
+handle_NET_DESKTOP_NAMES(XEvent *e)
+{
+}
+
+static void
+handle_NET_DESKTOP_PIXMAP(XEvent *e)
+{
+}
+
+/** @brief handle _NET_NUMBER_OF_DESKTOPS property changes
+  *
+  * Handle when _NET_NUMBER_OF_DESKTOPS property changes on the root window of
+  * any screen.  This is how we determine the total number of desktops.
+  */
+static void
+handle_NET_NUMBER_OF_DESKTOPS(XEvent *e)
+{
+	long number = 0;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_cardinal(scr->root, _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, &number)) {
+		int desktops = number;
+
+		DPRINTF("new number of desktops %d (was %d)\n", desktops, scr->numdesk);
+
+		if (0 < desktops && desktops <= 64) {
+			if (desktops != scr->numdesk) {
+				scr->numdesk = desktops;
+				modulate_desktops();
+			}
+		} else
+			EPRINTF("unreasonable desktop number %d\n", desktops);
+	} else
+		DPRINTF("could not retrieve _NET_NUMBER_OF_DESKTOPS\n");
+}
+
+/** @brief handle _NET_SUPPORTED on the root window
+  *
+  * A restarting window manager (either the old one or the new one) will change
+  * this property on the root window.  Recheck the window manager and theme when
+  * this happens.
+  */
+static void
+handle_NET_SUPPORTED(XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _NET_SUPPORTING_WM_CHECK property changes
+  *
+  * A restarting window manager (either the old one or a new one) will change
+  * this recursive property on the root window.  Re-establish the identity of
+  * the window manager and recheck the theme for that window manager as some
+  * window managers restart when setting themes (such as icewm(1)).
+  */
+static void
+handle_NET_SUPPORTING_WM_CHECK(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _NET_WM_NAME property changes
+  *
+  * Some window managers set the _NET_WM_NAME property on the root window.  When
+  * this property changes on the root window, we must suspect that the window
+  * manager has changed and recheck the window manager for the screen.
+  */
+static void
+handle_NET_WM_NAME(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+static void
+handle_NET_WM_PID(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _OB_THEME property change
+  *
+  * openbox(1) signals a theme change by changing the _OB_THEME property on the
+  * root window.  Check the theme again when it changed.
+  */
+static void
+handle_OB_THEME(XEvent *e)
+{
+	check_theme();
+}
+
+static void
+handle_OPENBOX_PID(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _WIN_DESKTOP_BUTTON_PROXY property changes
+  *
+  * When the _WIN_DESKTOP_BUTTON_PROXY changes we want to select for button
+  * press and release events on the window primarily so that we can switch
+  * desktops using the scroll wheel.  Interestingly enough, most window managers
+  * that provide the _WIN_DESKTOP_BUTTON_PROXY do not change desktops in
+  * response to the scoll wheel on their own by default (e.g. icewm(1)).  The
+  * two that provide this are icewm(1) and fvwm(1), both of which do not default
+  * to changing the desktop with the scroll wheel on the root window.
+  */
+static void
+handle_WIN_DESKTOP_BUTTON_PROXY(XEvent *e)
+{
+	Window proxy;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (e->xproperty.state == PropertyNewValue) {
+		if (xde_get_window(scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY,
+				   XA_CARDINAL, &proxy) && proxy) {
+			if (proxy != scr->proxy) {
+				src->proxy = proxy;
+				XSelectInput(dpy, proxy,
+					     ButtonPressMask | ButtonReleaseMask |
+					     StructureNotifyMask);
+			}
+		} else
+			DPRINTF("cannot get _WIN_DESKTOP_BUTTON_PROXY\n");
+	} else
+		scr->proxy = None;
+}
+
+/** @brief handle _WIN_PROTOCOLS property changes
+  *
+  * A restarting window manager (either the old one or a new one) will change
+  * this property on the root window.  Check the window manager and theme again
+  * when it changes.
+  */
+static void
+handle_WIN_PROTOCOLS(XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _WIN_SUPPORTING_WM_CHECK property changes
+  *
+  * A restarting window manager (either the old one or a new one) will change
+  * this property on the root window.  Reestablish support for responding to the
+  * button proxy when that happens.
+  */
+static void
+handle_WIN_SUPPORTING_WM_CHECK(XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	set_deferred_wmcheck();
+}
+
+/** @brief handle _WIN_WORKSPACE_COUNT property changes
+  *
+  * Handle when the _WIN_WORKSPACE_COUNT property changes on the root window of
+  * any screen.  This is how we determine the total number of workspaces.  This
+  * is for compatability with older window managers (such as wmaker(1)).
+  */
+static void
+handle_WIN_WORKSPACE_COUNT(XEvent *e)
+{
+	long count = 0;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_cardinal(scr->root, _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL, &count)) {
+		int workspaces = count;
+
+		DPRINTF("new number of workspaces %d (was %d)\n", workspaces, scr->numdesk);
+
+		if (0 < workspaces && workspaces <= 64) {
+			if (workspaces != scr->numdesk) {
+				scr->numdesk = workspaces;
+				modulate_desktops();
+			}
+		} else
+			EPRINTF("unresonable workspace count %d\n", workspaces);
+	} else
+		DPRINTF("could not retrieve _WIN_WORKSPACE_COUNT\n");
+}
+
+/** @brief handle _WIN_WORKSPACE property change
+  *
+  * Handle when the _WIN_WORKSPACE property changes on the root window of any
+  * screen.  This is how we determin that a workspace has changed.  This is for
+  * compatability with older window managers (such as wmaker(1)).
+  */
+static void
+handle_WIN_WORKSPACE(XEvent *e)
+{
+	long wkspace = 0;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_cardinal(scr->root, _XA_WIN_WORKSPACE, XA_CARDINAL, &wkspace)) {
+		int newdesk = wkspace;
+
+		DPRINTF("new workspace %d (was %d)\n", newdesk, scr->curdesk);
+		if (newdesk != scr->curdesk) {
+			if (0 <= newdesk && newdesk < scr->numdesk) {
+				scr->curdesk = newdesk;
+				set_deferred_desktop(scr);
+			} else
+				EPRINTF("unreasonable workspace %d\n", newdesk);
+		}
+	} else
+		DPRINTF("could not retrieve _WIN_WORKSPACE_COUNT\n");
+}
+
+static void
+handle_WM_CLIENT_MACHINE(XEvent *e)
+{
+	set_deferred_wmcheck();
+}
+
+
+static void
+handle_XDE_THEME_NAME(XEvent *e)
+{
+	check_theme();
+}
+
+/** @brief handle _XROOTMAP_ID property changes
+  *
+  * We do not really process this becuase all proper root setters now set the
+  * _XROOTPMAP_ID property which we handle below.  However, it could be used to
+  * trigger a recheck of the theme needed by some window managers such as
+  * blackbox(1).  If it means we check 3 times after a theme switch, so be it.
+  */
+static void
+handle_XROOTMAP_ID(XEvent *e)
+{
+	// check_theme();
+}
+
+/** @brief handle _XROOTPMAP_ID property changes
+  *
+  * Handles when the _XROOTPMAP_ID property chages on the root window of any
+  * screen.  This is how we determine that another root setting tool has been
+  * used to set the background.  A couple of notes:
+  *
+  * - most root setters are not xinerama/xrandr monitor aware, so that must be
+  *   taken into consideration.
+  */
+static void
+handle_XROOTPMAP_ID(XEvent *e)
+{
+	Pixmap pixmap;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_pixmap(_XA_XROOTPMAP_ID, XA_PIXMAP, &pixmap) && pixmap) {
+		if (pixmap != scr->pmid) {
+			/*
+			 * FIXME: basically root out the image pixmap that is
+			 * currently referenced by the desktop on the root
+			 * monitor and replace it with this pixmap.  The old
+			 * pixmap (scr->pmid) must be freed and replaced with a
+			 * new one, possibly 'pixmap'.
+			 */
+		}
+	} else if (scr->pmid)
+		XChangeProperty(dpy, scr->root, _XA_XROOTPMAP_ID, XA_PIXMAP, 32,
+				PropModeReplace, (unsigned char *) &scr->pmid, 1);
+}
+
+/** @brief handle _XSETROOT_ID property changes
+  *
+  * Handle when the _XSETROOT_ID property changes on the root window of any
+  * screen.  This is how we dtermine that another root setting tool has been
+  * used to set the background.  This is for backward compatability with older
+  * root setters.
+  *
+  * We do not really process this because all proper root setters now set the
+  * _XROOTPMAP_ID property which we handle above.  However, it is used to
+  * trigger recheck of the theme needed by some window managers such as
+  * blackbox(1).  If it means we check 3 times after a theme switch, so be it.
+  */
+static void
+handle_XSETROOT_ID(XEvent *e)
+{
+	Pixmap pixmap;
+
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root) {
+		DPRINTF("ignoring event\n");
+		return;
+	}
+	if (xde_get_pixmap(scr->root, _XA_XSETROOT_ID, XA_PIXMAP, &pixmap)) {
+		WmImage *image = scr->d.desktops[scr->curdesk].image;
+		Pixmap oldid = image->pmid;
+
+		if (oldid && oldid != pixmap) {
+			/*
+			 * FIXME
+			 */
+		}
+	}
+}
 
 /** @brief handle ButtonPress events
   * @param ev - X Event
   *
   * We receive button press events from the desktop button proxy or from our own backdrop
   * windows.
+  *
+  * Currently we are activating button event actions only on the ButtonRelease.
   * 
   */
 static void
@@ -176,9 +675,109 @@ handle_ButtonPress(XEvent *ev)
 {
 }
 
+/** @brief handle ButtonRelease events
+  *
+  * We recieve button release events from the desktop button proxy or from our
+  * own backdrop windows.  This is used to change the desktop on window managers
+  * that provide this and need to have the scroll wheel change desktops
+  * (L<icewm(1)> and L<fvwm(1)>).
+  *
+  * Without modifiers, we treat the desktops as a simple linear list of desktops
+  * and wrap from the last desktop to the first.  This does not follow a desktop
+  * layout.  With a Control modifier, we move horizontally in the same row of
+  * desktops according to the layout, wrapping from the end of the row to the
+  * beginning of the row.  With a Shift modifier, we move vertically in the same
+  * column of the desktop layout, wrapping from the end of the column to the
+  * beginning of the column.
+  */
 static void
-handle_ButtonRelease(XEvent *ev)
+handle_ButtonRelease(XEvent *e)
 {
+	int desktop;
+	unsigned int state;
+	int row, col;
+
+	XFindContext(dpy, e->xbutton.root, ScreenContext, (XPointer *) &scr);
+	desktop = scr->desktop;
+	state = e->xbutton.state & (ShiftMask | ControlMask);
+	col = desktop % scr->layout.cols;
+	row = (desktop - col) / scr->layout.rows;
+	switch (e->xbutton.button) {
+	case 4:
+		switch (state) {
+		case ControlMask:
+			if (++col >= scr->layout.cols)
+				col = 0;
+			desktop = (row * scr->layout.cols) + col;
+			break;
+		case ShiftMask:
+			if (++row >= scr->layout.rows)
+				row = 0;
+			desktop = (row * scr->layout.cols) + col;
+			if (desktop >= scr->desktops)
+				desktop = col;
+			break;
+		default:
+			/* increase desktop number */
+			if (++desktop >= scr->desktops)
+				desktop = 0;
+			break;
+		}
+		break;
+	case 5:
+		switch (state) {
+		case ControlMask:
+			if (--col < 0)
+				col = scr->layout.cols - 1;
+			desktop = (row * scr->layout.cols) + col;
+			if (desktop >= scr->desktops)
+				desktop = scr->desktops;
+			break;
+		case ShiftMask:
+			if (--row < 0)
+				row = scr->layout.rows - 1;
+			desktop = (row * scr->layout.cols) + col;
+			if (desktop >= scr->desktops)
+				desktop -= scr->layout.cols;
+			break;
+		default:
+			/* decrease desktop number */
+			if (--desktop < 0)
+				desktop = scr->desktops - 1;
+			break;
+		}
+		break;
+	default:
+		/* ignore other buttons */
+		return;
+	}
+	if (options.debug) {
+		fprintf(stderr, "Mouse button: %s\n", e->xbutton.button);
+		fprintf(stderr, "Current desktop: %d\n", scr->desktop);
+		fprintf(stderr, "Requested desktop: %d\n", desktop);
+		fprintf(stderr, "Number of desktops: %d\n", scr->desktops);
+	}
+	if (scr->desktop != desktop) {
+		XEvent ev = { 0, };
+
+		ev.xclient.type = ClientMessage;
+		ev.xclient.serial = 0;
+		ev.xclient.send_event = False;
+		ev.xclient.display = dpy;
+		ev.xclient.window = scr->root;
+		ev.xclient.message_type = _XA_NET_CURRENT_DESKTOP;
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = desktop;
+		ev.xclient.data.l[1] = 0;
+		ev.xclient.data.l[2] = 0;
+		ev.xclient.data.l[3] = 0;
+		ev.xclient.data.l[4] = 0;
+
+		XSendEvent(dpy, scr->root, False,
+			   StructureNotifyMask | SubstructureNotifyMask |
+			   SubstructureRedirectMask, &ev);
+		XFlush(dpy);
+	}
 }
 
 static void
@@ -235,10 +834,12 @@ handle_PropertyNotify(XEvent *ev)
 {
 	int i;
 
+	XFindContext(dpy, ev->xproperty.window, ScreenContext, (XPointer *) &scr);
+
 	for (i = 0; myatoms[i].name; i++)
 		if (myatoms[i].value == ev->xproperty.atom) {
-			if (myatoms[i].pc_handler)
-				return myatoms[i].pc_handler(ev);
+			if (myatoms[i].handler)
+				return myatoms[i].handler(ev);
 			return;
 		}
 }
@@ -259,12 +860,14 @@ handle_ClientMessage(XEvent *ev)
 	Atom type;
 	int i;
 
+	XFindContext(dpy, ev->xclient.window, ScreenContext, (XPointer *) &scr);
+
 	if ((type = ev->xclient.message_type) == XA_WM_PROTOCOLS)
 		type = ev->xclient.data.l[0];
 	for (i = 0; myatoms[i].name; i++)
 		if (myatoms[i].value == type) {
-			if (myatoms[i].cm_handler)
-				return myatoms[i].cm_handler(ev);
+			if (myatoms[i].handler)
+				return myatoms[i].handler(ev);
 			return;
 		}
 }
@@ -308,7 +911,7 @@ handle_event(XEvent *ev)
 {
 	int i, slot;
 
-	if (ev->type <= -LASTEvent)
+	if (ev->type <= LASTEvent)
 		if (handler[ev->type])
 			return (handler[ev->type]) (ev);
 	for (i = BaseLast - 1; i >= 0; i--) {
@@ -563,8 +1166,7 @@ mainloop()
 				got_timeout();
 			if (pfd[1].revents & POLLIN)
 				got_xevents();
-			if ((pfd[0].
-			     revents & pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
+			if ((pfd[0].revents | pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
 				EPRINTF("fatal error on poll");
 				exit(1);
 			}
