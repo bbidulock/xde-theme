@@ -97,43 +97,55 @@ ref_wm()
 }
 
 static void
-delete_wm()
+delete_this_wm(WindowManager *w)
 {
-	if ((wm = scr->wm)) {
-		free(wm->host);
-		free(wm->name);
-		free(wm->argv);
-		if (wm->cargv)
-			XFreeStringList(wm->cargv);
-		if (wm->ch.res_name)
-			XFree(wm->ch.res_name);
-		if (wm->ch.res_class)
-			XFree(wm->ch.res_class);
-		free(wm->rcfile);
-		free(wm->pdir);
-		free(wm->udir);
-		free(wm->sdir);
-		free(wm->edir);
-		free(wm->stylefile);
-		free(wm->style);
-		free(wm->stylename);
-		free(wm->theme);
-		free(wm->themefile);
-		free(wm->menu);
-		free(wm->env);
-		if (wm->db)
-			XrmDestroyDatabase(wm->db);
-		free(wm->xdg_dirs);
-		free(wm->icon);
+	if (w) {
+		free(w->host);
+		free(w->name);
+		free(w->argv);
+		if (w->cargv)
+			XFreeStringList(w->cargv);
+		if (w->ch.res_name)
+			XFree(w->ch.res_name);
+		if (w->ch.res_class)
+			XFree(w->ch.res_class);
+		free(w->rcfile);
+		free(w->pdir);
+		free(w->udir);
+		free(w->sdir);
+		free(w->edir);
+		free(w->stylefile);
+		free(w->style);
+		free(w->stylename);
+		free(w->theme);
+		free(w->themefile);
+		free(w->menu);
+		free(w->env);
+		if (w->db)
+			XrmDestroyDatabase(w->db);
+		free(w->xdg_dirs);
+		free(w->icon);
 	}
 }
+
+void
+__xde_wm_unref(WindowManager *w)
+{
+	if (w) {
+		if (--w->refs <= 0) {
+			delete_this_wm(w);
+			w = NULL;
+		}
+	}
+}
+
+__asm__(".symver __xde_wm_unref,xde_wm_unref@@XDE_1.0");
 
 static WindowManager *
 unref_wm()
 {
 	if ((wm = scr->wm)) {
-		if (--wm->refs <= 0)
-			delete_wm();
+		xde_wm_unref(wm);
 		wm = scr->wm = NULL;
 	}
 	return NULL;
@@ -324,7 +336,7 @@ static void set_screen(WmScreen *s)
 	wm = scr->wm;
 }
 
-void set_screen_by_numb(int s)
+static void set_screen_by_numb(int s)
 {
 	set_screen(screens + s);
 }
@@ -2093,6 +2105,76 @@ __xde_detect_wm()
 }
 
 __asm__(".symver __xde_detect_wm,xde_detect_wm@@XDE_1.0");
+
+void
+__xde_action_check_wm(XPointer dummy)
+{
+	xde_recheck_wm();
+}
+
+__asm__(".symver __xde_action_check_wm,xde_action_check_wm@@XDE_1.0");
+
+static Bool
+string_compare(char *a, char *b)
+{
+	if (a) {
+		if (!b)
+			return False;
+		if (strcmp(a, b))
+			return False;
+	} else if (b)
+		return False;
+	return True;
+}
+
+/** @brief check whether a window manager has changed (or appeared)
+  * @return Bool - true if changed
+  */
+void
+__xde_recheck_wm()
+{
+	WindowManager *oldwm = wm;
+
+	wm = scr->wm = NULL;
+	xde_check_wm();
+	if (wm && oldwm) {
+		do {
+			if (wm->netwm_check != oldwm->netwm_check)
+				break;
+			if (wm->winwm_check != oldwm->winwm_check)
+				break;
+			if (wm->maker_check != oldwm->maker_check)
+				break;
+			if (wm->motif_check != oldwm->motif_check)
+				break;
+			if (wm->icccm_check != oldwm->icccm_check)
+				break;
+			if (wm->pid != oldwm->pid)
+				break;
+			if (!string_compare(wm->name, oldwm->name))
+				break;
+			if (!string_compare(wm->host, oldwm->host))
+				break;
+			xde_wm_unref(oldwm);
+			return;
+		} while (0);
+	} else if (!wm && oldwm) {
+		DPRINTF("window manager disappeared\n");
+	} else if (!oldwm && wm) {
+		DPRINTF("window manager appeared\n");
+	} else if (!oldwm && !wm) {
+		DPRINTF("no window manager yet, test again in 1 second\n");
+		xde_defer_action(xde_action_check_wm, 1000, NULL);
+		return;
+	}
+	if (callbacks && callbacks->wm_changed) {
+		(callbacks->wm_changed) (oldwm);
+		return;
+	}
+	xde_wm_unref(oldwm);
+}
+
+__asm__(".symver __xde_recheck_wm,xde_recheck_wm@@XDE_1.0");
 
 /** @} */
 
@@ -3969,6 +4051,7 @@ __xde_process_deferred(void)
 	WmDeferred *d;
 
 	while ((d = deferred_done)) {
+		set_screen_by_numb(d->screen);
 		(d->action) (d->data);
 		deferred_done = d->next;
 		free(d);
@@ -4071,6 +4154,16 @@ __xde_main_loop(void)
 
 __asm__(".symver __xde_main_loop,xde_main_loop@@XDE_1.0");
 
+/** @brief defer a window manager recheck
+  */
+void
+__xde_set_deferred_wmcheck()
+{
+	xde_defer_once(xde_action_check_wm, 250, NULL);
+}
+
+__asm__(".symver __xde_set_deferred_wmcheck,xde_set_deferred_wmcheck@@XDE_1.0");
+
 static Bool
 handle_BB_THEME(const XEvent *e)
 {
@@ -4080,7 +4173,8 @@ handle_BB_THEME(const XEvent *e)
 static Bool
 handle_BLACKBOX_PID(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4116,7 +4210,8 @@ handle_I3_CONFIG_PATH(const XEvent *e)
 static Bool
 handle_I3_PID(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4176,13 +4271,15 @@ handle_NET_NUMBER_OF_DESKTOPS(const XEvent *e)
 static Bool
 handle_NET_SUPPORTED(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
 handle_NET_SUPPORTING_WM_CHECK(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4194,13 +4291,15 @@ handle_NET_VISIBLE_DESKTOPS(const XEvent *e)
 static Bool
 handle_NET_WM_NAME(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
 handle_NET_WM_PID(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4212,7 +4311,8 @@ handle_OB_THEME(const XEvent *e)
 static Bool
 handle_OPENBOX_PID(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4230,13 +4330,15 @@ handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
 static Bool
 handle_WIN_PROTOCOLS(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
 handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool
@@ -4260,7 +4362,8 @@ handle_WM_CLASS(const XEvent *e)
 static Bool
 handle_WM_CLIENT_MACHINE(const XEvent *e)
 {
-	return False;
+	xde_set_deferred_wmcheck();
+	return True;
 }
 
 static Bool

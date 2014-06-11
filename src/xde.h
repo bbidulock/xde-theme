@@ -124,11 +124,12 @@ typedef struct {
 } WmOperations;
 
 typedef struct _WmScreen WmScreen;
+typedef struct _WindowManager WindowManager;
 
 typedef struct {
 	Bool (*wm_event) (const XEvent *);	/* event handler */
 	Bool (*wm_signal) (int);		/* signal handler */
-	void (*wm_changed) (WmScreen *);	/* window manager changed */
+	void (*wm_changed) (WindowManager *);	/* window manager changed */
 	void (*wm_style_changed) (WmScreen *);	/* window manager style changed */
 	void (*wm_theme_changed) (WmScreen *);	/* window manager theme changed */
 	void (*wm_desktop_changed) (WmScreen *, int, unsigned long *);
@@ -145,7 +146,7 @@ typedef struct _WmDeferred {
 	XPointer data;			/* hook for client data */
 } WmDeferred;
 
-typedef struct {
+struct _WindowManager {
 	int refs;			/* references to this structure */
 	WmOperations *ops;		/* operations */
 	union {
@@ -189,7 +190,7 @@ typedef struct {
 	XrmDatabase db;			/* WM resource database */
 	char **xdg_dirs;		/* XDG data dirs */
 	char *icon;			/* Icon for window manager */
-} WindowManager;
+};
 
 typedef struct WmImage WmImage;
 struct WmImage {
@@ -379,6 +380,12 @@ Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
 Bool xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret);
 Pixmap *xde_get_pixmaps(Window win, Atom prop, Atom type, long *n);
 Bool xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret);
+
+/* action functions */
+void xde_recheck_wm(void);
+void xde_action_check_wm(XPointer);
+void xde_set_deferred_wmcheck(void);
+void xde_wm_unref(WindowManager *);
 
 /* event functions */
 Bool xde_handle_event(const XEvent *ev);

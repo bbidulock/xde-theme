@@ -19,8 +19,8 @@ libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -shared $(runtime_search
 
 EXTRA_DIST = xde.VERSION
 
-bin_PROGRAMS = xde-theme xde-style xde-identify xde-setwm
-EXTRA_PROGRAMS = xde-backdrop
+bin_PROGRAMS = xde-theme xde-style xde-identify xde-setwm xde-backdrop
+EXTRA_PROGRAMS =
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c
