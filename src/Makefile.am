@@ -19,32 +19,37 @@ libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -shared $(runtime_search
 
 EXTRA_DIST = xde.VERSION
 
-bin_PROGRAMS = xde-theme xde-style xde-identify xde-setwm xde-backdrop
-EXTRA_PROGRAMS =
+bin_PROGRAMS = xde-theme xde-style xde-identify xde-setwm xde-watch
+EXTRA_PROGRAMS = xde-backdrop
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
-xde_theme_SOURCES = xde-theme.c
+xde_theme_SOURCES = xde-theme.c xde.h
 xde_theme_LDADD = libxde.la $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 xde_theme_LDFLAGS = $(runtime_search) -ldl
 
 xde_identify_CPPFLAGS = -DNAME=\"xde-identify\"
-xde_identify_SOURCES = xde-identify.c
+xde_identify_SOURCES = xde-identify.c xde.h
 xde_identify_LDADD = libxde.la $(X11_LIBS)
 xde_identify_LDFLAGS = $(runtime_search) -ldl
 
 xde_style_CPPFLAGS = -DNAME=\"xde-style\"
-xde_style_SOURCES = xde-style.c
+xde_style_SOURCES = xde-style.c xde.h
 xde_style_LDADD = libxde.la $(X11_LIBS)
 xde_style_LDFLAGS = $(runtime_search) -ldl
 
 xde_backdrop_CPPFLAGS = -DNAME=\"xde-backdrop\"
-xde_backdrop_SOURCES = xde-backdrop.c
+xde_backdrop_SOURCES = xde-backdrop.c xde.h
 xde_backdrop_LDADD = libxde.la $(X11_LIBS)
 xde_backdrop_LDFLAGS = $(runtime_search) -ldl
 
 xde_setwm_CPPFLAGS = -DNAME=\"xde-setwm\"
-xde_setwm_SOURCES = xde-setwm.c
+xde_setwm_SOURCES = xde-setwm.c xde.h
 xde_setwm_LDADD = $(X11_LIBS)
+
+xde_watch_CPPFLAGS = -DNAME=\"xde-watch\"
+xde_watch_SOURCES = xde-watch.c xde.h
+xde_watch_LDADD = libxde.la $(X11_LIBS)
+xde_watch_LDFLAGS = $(runtime_search) -ldl
 
 xdemod_LTLIBRARIES = \
 	xde-2bwm.la \

@@ -1,0 +1,404 @@
+=pod
+
+=head1 NAME
+
+xde-watch -- watch for window manager, style and theme changes
+
+=head1 SYNOPSIS
+
+ xde-watch [OPTIONS]
+ xde-watch [OPTIONS] {-q,--quit}
+ xde-watch [OPTIONS] {-r,--restart}
+ xde-watch [OPTIONS] {-h,--help}
+ xde-watch {-V,--version}
+ xde-watch {-C,--copying}
+
+=head1 DESSCRIPTION
+
+B<xde-watch> is a C-language application that can be used to monitor the
+presence of light-weight window managers and monitor their style and
+theme changes and signal these changes by changing properties on the
+X server.  Its primary purpose is to relieve other XDE applications
+from the effort of determininig charactersitics associated the window
+manager.
+
+=head1 OPTIONS
+
+=head2 COMMAND OPTIONS
+
+One of the following command options should be specified.  When no
+command option is specified, B<xde-watch> will assume that it is to run
+normally.
+
+=over
+
+=item B<--quit>, B<-q>
+
+Ask a running instance of B<xde-watch> to quit.
+
+=item B<--restart>, B<-r>
+
+Ask a running instance of B<xde-watch> to restart.
+
+=item B<--help>, B<-h>
+
+Print usage information to standard error containing current defaults
+and exit.
+
+=item B<--version>, B<-V>
+
+Print the program version to standard output and exit.
+
+=item B<--copying>, B<-C>
+
+Print the program copying information to standard output and exit.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+B<xde-watch> recognizes the following options: (Because
+L<Getopt::Long(3pm)> is used, non-ambiguous abbreviations and single
+dash long options are accepted.)
+
+=over
+
+=item B<--foreground>, B<-f>
+
+Run in the foreground, printing debugging information to standard error.
+
+=item B<--remove>, B<-R>
+
+When altering properties on the root windows of the X Display, delete
+properties that do not correspond to the running window manager.  This
+option can be used to clean up after window managers that do not remove
+their root window properties on exit, or window managers that crash.
+
+=item B<--verbose>, B<-v> [I<LEVEL>]
+
+Print verbose information on standard error while running.
+
+=item B<--debug>, B<-D> [I<LEVEL>]
+
+Print debugging information on standard error while running.
+
+=back
+
+=head1 BEHAVIOUR
+
+When B<xde-watch> is executed and an existing instance of B<xde-watch>
+is running, it passes its arguments to the running program and exits.
+
+On the initial invocation of B<xde-watch> for a given X Display,
+B<xde-watch> will place itself in the background (unless the B<-f>
+option is specified) and start monitoring for window managers, style and
+theme changes on all screens of the X Display.
+
+When a window manager is present, appears or changes, B<xde-watch>
+places properties on the root window to reflect the changes.  See
+L</PROPERTIES>.
+
+When given the B<-q> option, B<xde-watch> will request a running
+instance (if any) to stop.
+
+When given the B<-r> option, B<xde-watch> will request a running
+instance (if any) to restart.  Restart is performed by re-executing the
+original binary and is, therefore, suitable for upgrades.
+
+=head1 PROPERTIES
+
+During normal operation, B<xde-watch> monitors for changes in the window
+manager, its configuration, styles and themes.  It adds properties to
+the root window of the screen on which the window manager is running to
+reflect the changes.
+
+=head2 Added Properties
+
+The following properties may be added to the root window of the screens
+upon which the window manager is running:
+
+=over
+
+=item C<WM_NAME>
+
+=item C<_NET_WM_NAME>
+
+=item C<_XDE_WM_NAME>
+
+There are all set to the window manager name in lower case, possibly
+followed by the window manager version.
+
+=item C<WM_CLIENT_MACHINE>
+
+=item C<_XDE_WM_HOST>
+
+These are set to the fully qualified domain name of the host upon which
+the window manager is running.  This should be the same host as the host
+on which B<xde-watch> is running.
+
+=item C<WM_CLASS>
+
+=item C<_XDE_WM_CLASS>
+
+These are set to the resource name and class for the window manager, if
+known.
+
+=item C<_NET_WM_PID>
+
+=item C<_XDE_WM_PID>
+
+These are set to the process id of the window manager, when known.
+
+=item C<WM_COMMAND>
+
+=item C<_XDE_WM_CMDLINE>
+
+=item C<_XDE_WM_COMMAND>
+
+These are set to the command and arguments passed to the window manager
+at startup (i.e. argv array).  The difference between C<_XDE_WM_CMDLINE>
+and C<_XDE_WM_COMMAND> is that the former derives from investigation of
+the F</proc> filesystem, whereas the later derives directly from a
+C<WM_COMMAND> property set on a check window.
+
+=item C<_XDE_WM_NETWM_SUPPORT>
+
+When NetWM/EWMH support is detected, this property is set to the window
+specified in C<_NET_SUPPORTING_WM_CHECK>.
+
+=item C<_XDE_WM_WINWM_SUPPORT>
+
+When WinWM/WMH support is detected, this property is set to the window
+specified in C<_WIN_SUPPORTING_WM_CHECK>.
+
+=item C<_XDE_WM_MAKER_SUPPORT>
+
+When WindowMaker support is detected, this property is set to the window
+specified in C<_WINDOWMAKER_NOTICEBOARD>.
+
+=item C<_XDE_WM_MOTIF_SUPPORT>
+
+When Motif/CDE support is detected, this property is set to the window
+specified in C<_MOTIF_WM_INFO>.
+
+=item C<_XDE_WM_ICCCM_SUPPORT>
+
+When ICCCM 2.0 support is detected, this property is set to the window
+that owns the C<WM_S%d> selection, where C<%d> is the screen number on
+which the window manager is running.
+
+=item C<_XDE_WM_REDIR_SUPPORT>
+
+When ICCCM support is detected (a client has selected for
+C<SubstructureRedirect> events on the root window, this property is set
+to the root window.
+
+=item C<_XDE_WM_RCFILE>
+
+=item C<_XDE_WM_PRVDIR>
+
+=item C<_XDE_WM_USRDIR>
+
+=item C<_XDE_WM_SYSDIR>
+
+=item C<_XDE_WM_ETCDIR>
+
+When detected, these properties are set to the configuration of the
+window manager.  C<_XDE_WM_RCFILE> is the primary configuration file
+being used by the window manager, C<_XDE_WM_PRVDIR> is the current
+configuration directory, C<_XDE_WM_USRDIR> is the normal default
+configuration directory, C<_XDE_WM_SYSDIR> is the system configuration
+directory, and C<_XDE_WM_ETCDIR> is the global configuration directory.
+
+=item C<_XDE_WM_STYLEFILE>
+
+=item C<_XDE_WM_STYLE>
+
+=item C<_XDE_WM_STYLENAME>
+
+When detected, these properties are set to reflect the current style
+selection of the window manager.  C<_XDE_WM_STYLENAME> is the name of
+the style as the window manager prefers to see it, C<_XDE_WM_STYLE> is
+the style name, and C<_XDE_WM_STYLEFILE> is the path to the style file
+in use.
+
+=item C<_XDE_WM_MENU>
+
+When detected, this property is set to the filesystem path to the root
+menu file that is currently being used by the window manager.
+
+=item C<_XDE_WM_ICON>
+
+When detected, this is the icon to use to represent the window manager.
+The icon name follows XDG desktop entry specifications.
+
+=item C<_XDE_WM_THEME>
+
+=item C<_XDE_WM_THEMEFILE>
+
+When detected, these properties are set to reflect the XDE theme
+currently applied to the window manager.  The theme may or may not be
+the same as the window manager style.  When the window manager style
+corresponds to an XDE theme, the style and theme will be the same;
+however, a window manager can be set to a style that does not correspond
+to an XDE theme, in which case they will be different.  C<_XDE_WM_THEME>
+is the simple theme name; C<_XDE_WM_THEMEFILE> is the filesystem path
+to the XDE theme file.
+
+=back
+
+=head2 Removed Properties
+
+When the B<-R> option is specified, B<xde-watch> will remove the
+following properties under the described circumstances:
+
+=over
+
+=item 1.
+
+When the detected window manager is not L<fluxbox(1)>, the
+C<_BLACKBOX_PID> property is removed from the root window.
+
+=item 2.
+
+When the detected window manager is not L<blackbox(1)>, the C<_BB_THEME>
+property is removed from the root window.
+
+=item 3.
+
+When the detected window manager is not L<openbox(1)>, the
+C<_OPENBOX_PID> and C<_OB_THEME> properties are removed from the root
+window.
+
+=item 4.
+
+When the detected window manager is not L<i3(1)>, the C<I3_PID>,
+C<I3_CONFIG_PATH>, C<I3_SHMLOG_PATH> and C<I3_SOCKET_PATH> properties
+are removed from the root window.
+
+=item 5.
+
+When the detected window manager does not support NetWM/EWMH, the
+following properties are removed from the root window:
+
+=over
+
+=item C<_NET_ACTIVE_WINDOW>
+
+=item C<_NET_CLIENT_LIST>
+
+=item C<_NET_CLIENT_LIST_STACKING>
+
+=item C<_NET_CURRENT_DESKTOP>
+
+=item C<_NET_DESKTOP>
+
+=item C<_NET_DESKTOP_GEOMETRY>
+
+=item C<_NET_DESKTOP_LAYOUT>
+
+=item C<_NET_DESKTOP_MASK>
+
+=item C<_NET_DESKTOP_NAMES>
+
+=item C<_NET_DESKTOP_PIXMAPS>
+
+=item C<_NET_DESKTOP_VIEWPORT>
+
+=item C<_NET_FULL_PLACEMENT>
+
+=item C<_NET_FULLSCREEN_MONITORS>
+
+=item C<_NET_HANDLED_ICONS>
+
+=item C<_NET_ICON_GEOMETRY>
+
+=item C<_NET_NUMBER_OF_DESKTOPS>
+
+=item C<_NET_PROPERTIES>
+
+=item C<_NET_SHOWING_DESKTOP>
+
+=item C<_NET_SUPPORTED>
+
+=item C<_NET_SUPPORTING_WM_CHECK>
+
+=item C<_NET_VIRTUAL_POS>
+
+=item C<_NET_VIRTUAL_ROOTS>
+
+=item C<_NET_VISIBLE_DESKTOPS>
+
+=item C<_NET_WM_NAME>
+
+=item C<_NET_WM_PID>
+
+=item C<_NET_WORKAREA>
+
+=back
+
+=item 6.
+
+When the detected window manager does not support WinWM/WMH, the
+following properties are removed from the root window:
+
+=over
+
+=item C<_WIN_AREA>
+
+=item C<_WIN_AREA_COUNT>
+
+=item C<_WIN_CLIENT_LIST>
+
+=item C<_WIN_DESKTOP_BUTTON_PROXY>
+
+=item C<_WIN_FOCUS>
+
+=item C<_WIN_PROTOCOLS>
+
+=item C<_WIN_SUPPORTING_WM_CHECK>
+
+=item C<_WIN_WORKSPACE>
+
+=item C<_WIN_WORKSPACE_COUNT>
+
+=item C<_WIN_WORKSPACE_NAMES>
+
+=item C<_WIN_WORKSPACES>
+
+=back
+
+=item 7.
+
+When the detected window manager does not support WindowMaker, the
+C<_WINDOWMAKER_NOTICEBOARD> property is removed from the root window.
+
+=item 8.
+
+When the detected window manager does not support Motif/CDE, the
+C<_DT_WORKSPACE_CURRENT>, C<_DT_WORKSPACE_LIST> and C<_MOTIF_WM_INFO>
+properties are removed from the root window.
+
+=back
+
+=head1 HISTORY
+
+Originally, XDE tools used to attempt to determine the configuration,
+style and theme of the running window manager on their own.  This led to
+a lot of repeated code and was error prone because heuristics where not
+centralized.  This is why B<xde-watch> was written and most of the other
+tools were converted to watch for XDE root properties instead of
+attempting to determine these things for themselves.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@cpan.org>
+
+=head1 SEE ALSO
+
+L<xde-identify(1)>,
+L<xde-setwm(1)>.
+
+=cut
+
+# vim: sw=4 tw=72 nocin

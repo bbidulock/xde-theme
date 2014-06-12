@@ -7,7 +7,8 @@ xde_man_files = \
 	    xde-menu.man \
 	    xde-identify.man \
 	    xde-stylemon.man \
-	    xde-setwm.man
+	    xde-setwm.man \
+	    xde-watch.man
 
 nodist_man1_MANS = $(xde_man_files)
 CLEANFILES = $(xde_man_files)
@@ -20,7 +21,8 @@ EXTRA_DIST = \
 	     xde-menu.pod \
 	     xde-identify.pod \
 	     xde-stylemon.pod \
-	     xde-setwm.pod
+	     xde-setwm.pod \
+	     xde-watch.pod
 
 xde-theme.man: MANNAME = XDE-THEME
 xde-theme.man: xde-theme.pod
@@ -45,6 +47,9 @@ xde-stylemon.man: xde-stylemon.pod
 
 xde-setwm.man: MANNAME = XDE-SETWM
 xde-setwm.man: xde-setwm.pod
+
+xde-watch.man: MANNAME = XDE-WATCH
+xde-watch.man: xde-watch.pod
 
 SUFFIXES = .man .pod
 

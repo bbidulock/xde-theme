@@ -302,6 +302,7 @@ typedef struct {
 	unsigned long delay;
 	Bool areas;
 	char **files;
+	Bool remove;
 } Options;
 
 extern Display *dpy;
@@ -370,9 +371,9 @@ extern XContext ScreenContext;
 extern Options options;
 
 /* some utility functions */
-extern void xde_set_text_list(Window win, Atom prop, char **list, long n);
+extern void xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list, long n);
 extern char *xde_get_text(Window win, Atom prop);
-extern void xde_set_text(Window win, Atom prop, char *text);
+extern void xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text);
 extern long *xde_get_cardinals(Window win, Atom prop, Atom type, long *n);
 extern void xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n);
 extern Bool xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret);

@@ -82,7 +82,8 @@ Options options = {
 	.nomonitor = False,
 	.delay = 2000,
 	.areas = False,
-	.files = NULL
+	.files = NULL,
+	.remove = False,
 };
 
 static WindowManager *
@@ -173,23 +174,51 @@ Atom _XA_I3_SOCKET_PATH;
 Atom _XA_ICEWMBG_QUIT;
 Atom _XA_MANAGER;
 Atom _XA_MOTIF_WM_INFO;
+
+Atom _XA_NET_ACTIVE_WINDOW;
+Atom _XA_NET_CLIENT_LIST;
+Atom _XA_NET_CLIENT_LIST_STACKING;
 Atom _XA_NET_CURRENT_DESKTOP;
+Atom _XA_NET_DESKTOP;
+Atom _XA_NET_DESKTOP_GEOMETRY;
 Atom _XA_NET_DESKTOP_LAYOUT;
+Atom _XA_NET_DESKTOP_MASK;
+Atom _XA_NET_DESKTOP_NAMES;
 Atom _XA_NET_DESKTOP_PIXMAPS;
+Atom _XA_NET_DESKTOP_VIEWPORT;
+Atom _XA_NET_FULL_PLACEMENT;
+Atom _XA_NET_FULLSCREEN_MONITORS;
+Atom _XA_NET_HANDLED_ICONS;
+Atom _XA_NET_ICON_GEOMETRY;
 Atom _XA_NET_NUMBER_OF_DESKTOPS;
+Atom _XA_NET_PROPERTIES;
+Atom _XA_NET_SHOWING_DESKTOP;
 Atom _XA_NET_SUPPORTED;
 Atom _XA_NET_SUPPORTING_WM_CHECK;
+Atom _XA_NET_VIRTUAL_POS;
+Atom _XA_NET_VIRTUAL_ROOTS;
 Atom _XA_NET_VISIBLE_DESKTOPS;
 Atom _XA_NET_WM_NAME;
 Atom _XA_NET_WM_PID;
+Atom _XA_NET_WORKAREA;
+
 Atom _XA_OB_THEME;
 Atom _XA_OPENBOX_PID;
+
+Atom _XA_WIN_AREA;
+Atom _XA_WIN_AREA_COUNT;
+Atom _XA_WIN_CLIENT_LIST;
 Atom _XA_WIN_DESKTOP_BUTTON_PROXY;
-Atom _XA_WINDOWMAKER_NOTICEBOARD;
+Atom _XA_WIN_FOCUS;
 Atom _XA_WIN_PROTOCOLS;
 Atom _XA_WIN_SUPPORTING_WM_CHECK;
 Atom _XA_WIN_WORKSPACE;
 Atom _XA_WIN_WORKSPACE_COUNT;
+Atom _XA_WIN_WORKSPACE_NAMES;
+Atom _XA_WIN_WORKSPACES;
+
+Atom _XA_WINDOWMAKER_NOTICEBOARD;
+
 Atom _XA_WM_DESKTOP;
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XDE_WM_NAME;
@@ -232,23 +261,50 @@ static Bool handle_I3_SOCKET_PATH(const XEvent *);
 static Bool handle_ICEWMGB_QUIT(const XEvent *);
 static Bool handle_MANAGER(const XEvent *);
 static Bool handle_MOTIF_WM_INFO(const XEvent *);
+
+static Bool handle_NET_ACTIVE_WINDOW(const XEvent *);
+static Bool handle_NET_CLIENT_LIST(const XEvent *);
+static Bool handle_NET_CLIENT_LIST_STACKING(const XEvent *);
 static Bool handle_NET_CURRENT_DESKTOP(const XEvent *);
+static Bool handle_NET_DESKTOP(const XEvent *);
+static Bool handle_NET_DESKTOP_GEOMETRY(const XEvent *);
 static Bool handle_NET_DESKTOP_LAYOUT(const XEvent *);
+static Bool handle_NET_DESKTOP_MASK(const XEvent *);
+static Bool handle_NET_DESKTOP_NAMES(const XEvent *);
 static Bool handle_NET_DESKTOP_PIXMAPS(const XEvent *);
+static Bool handle_NET_DESKTOP_VIEWPORT(const XEvent *);
+static Bool handle_NET_FULL_PLACEMENT(const XEvent *);
+static Bool handle_NET_FULLSCREEN_MONITORS(const XEvent *);
+static Bool handle_NET_HANDLED_ICONS(const XEvent *);
+static Bool handle_NET_ICON_GEOMETRY(const XEvent *);
 static Bool handle_NET_NUMBER_OF_DESKTOPS(const XEvent *);
+static Bool handle_NET_PROPERTIES(const XEvent *);
+static Bool handle_NET_SHOWING_DESKTOP(const XEvent *);
 static Bool handle_NET_SUPPORTED(const XEvent *);
 static Bool handle_NET_SUPPORTING_WM_CHECK(const XEvent *);
+static Bool handle_NET_VIRTUAL_POS(const XEvent *);
+static Bool handle_NET_VIRTUAL_ROOTS(const XEvent *);
 static Bool handle_NET_VISIBLE_DESKTOPS(const XEvent *);
 static Bool handle_NET_WM_NAME(const XEvent *);
 static Bool handle_NET_WM_PID(const XEvent *);
+static Bool handle_NET_WORKAREA(const XEvent *);
+
 static Bool handle_OB_THEME(const XEvent *);
 static Bool handle_OPENBOX_PID(const XEvent *);
+
+static Bool handle_WIN_AREA(const XEvent *);
+static Bool handle_WIN_AREA_COUNT(const XEvent *);
+static Bool handle_WIN_CLIENT_LIST(const XEvent *);
 static Bool handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *);
-static Bool handle_WINDOWMAKER_NOTICEBOARD(const XEvent *);
+static Bool handle_WIN_FOCUS(const XEvent *);
 static Bool handle_WIN_PROTOCOLS(const XEvent *);
 static Bool handle_WIN_SUPPORTING_WM_CHECK(const XEvent *);
-static Bool handle_WIN_WORKSPACE_COUNT(const XEvent *);
 static Bool handle_WIN_WORKSPACE(const XEvent *);
+static Bool handle_WIN_WORKSPACE_COUNT(const XEvent *);
+static Bool handle_WIN_WORKSPACE_NAMES(const XEvent *);
+static Bool handle_WIN_WORKSPACES(const XEvent *);
+
+static Bool handle_WINDOWMAKER_NOTICEBOARD(const XEvent *);
 static Bool handle_WM_CLASS(const XEvent *);
 static Bool handle_WM_CLIENT_MACHINE(const XEvent *);
 static Bool handle_WM_COMMAND(const XEvent *);
@@ -280,23 +336,51 @@ static Atoms atoms[] = {
 	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&handle_ICEWMGB_QUIT,			None			},
 	{"MANAGER",			&_XA_MANAGER,			&handle_MANAGER,			None			},
 	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO,		&handle_MOTIF_WM_INFO,			None			},
+
+
+	{"_NET_ACTIVE_WINDOW",		&_XA_NET_ACTIVE_WINDOW,		&handle_NET_ACTIVE_WINDOW,		None			},
+	{"_NET_CLIENT_LIST",		&_XA_NET_CLIENT_LIST,		&handle_NET_CLIENT_LIST,		None			},
+	{"_NET_CLIENT_LIST_STACKING",	&_XA_NET_CLIENT_LIST_STACKING,	&handle_NET_CLIENT_LIST_STACKING,	None			},
 	{"_NET_CURRENT_DESKTOP",	&_XA_NET_CURRENT_DESKTOP,	&handle_NET_CURRENT_DESKTOP,		None			},
+	{"_NET_DESKTOP",		&_XA_NET_DESKTOP,		&handle_NET_DESKTOP,			None			},
+	{"_NET_DESKTOP_GEOMETRY",	&_XA_NET_DESKTOP_GEOMETRY,	&handle_NET_DESKTOP_GEOMETRY,		None			},
 	{"_NET_DESKTOP_LAYOUT",		&_XA_NET_DESKTOP_LAYOUT,	&handle_NET_DESKTOP_LAYOUT,		None			},
+	{"_NET_DESKTOP_MASK",		&_XA_NET_DESKTOP_MASK,		&handle_NET_DESKTOP_MASK,		None			},
+	{"_NET_DESKTOP_NAMES",		&_XA_NET_DESKTOP_NAMES,		&handle_NET_DESKTOP_NAMES,		None			},
 	{"_NET_DESKTOP_PIXMAPS",	&_XA_NET_DESKTOP_PIXMAPS,	&handle_NET_DESKTOP_PIXMAPS,		None			},
+	{"_NET_DESKTOP_VIEWPORT",	&_XA_NET_DESKTOP_VIEWPORT,	&handle_NET_DESKTOP_VIEWPORT,		None			},
+	{"_NET_FULL_PLACEMENT",		&_XA_NET_FULL_PLACEMENT,	&handle_NET_FULL_PLACEMENT,		None			},
+	{"_NET_FULLSCREEN_MONITORS",	&_XA_NET_FULLSCREEN_MONITORS,	&handle_NET_FULLSCREEN_MONITORS,	None			},
+	{"_NET_HANDLED_ICONS",		&_XA_NET_HANDLED_ICONS,		&handle_NET_HANDLED_ICONS,		None			},
+	{"_NET_ICON_GEOMETRY",		&_XA_NET_ICON_GEOMETRY,		&handle_NET_ICON_GEOMETRY,		None			},
 	{"_NET_NUMBER_OF_DESKTOPS",	&_XA_NET_NUMBER_OF_DESKTOPS,	&handle_NET_NUMBER_OF_DESKTOPS,		None			},
+	{"_NET_PROPERTIES",		&_XA_NET_PROPERTIES,		&handle_NET_PROPERTIES,			None			},
+	{"_NET_SHOWING_DESKTOP",	&_XA_NET_SHOWING_DESKTOP,	&handle_NET_SHOWING_DESKTOP,		None			},
 	{"_NET_SUPPORTED",		&_XA_NET_SUPPORTED,		&handle_NET_SUPPORTED,			None			},
 	{"_NET_SUPPORTING_WM_CHECK",	&_XA_NET_SUPPORTING_WM_CHECK,	&handle_NET_SUPPORTING_WM_CHECK,	None			},
+	{"_NET_VIRTUAL_POS",		&_XA_NET_VIRTUAL_POS,		&handle_NET_VIRTUAL_POS,		None			},
+	{"_NET_VIRTUAL_ROOTS",		&_XA_NET_VIRTUAL_ROOTS,		&handle_NET_VIRTUAL_ROOTS,		None			},
 	{"_NET_VISIBLE_DESKTOPS",	&_XA_NET_VISIBLE_DESKTOPS,	&handle_NET_VISIBLE_DESKTOPS,		None			},
 	{"_NET_WM_NAME",		&_XA_NET_WM_NAME,		&handle_NET_WM_NAME,			None			},
 	{"_NET_WM_PID",			&_XA_NET_WM_PID,		&handle_NET_WM_PID,			None			},
+	{"_NET_WORKAREA",		&_XA_NET_WORKAREA,		&handle_NET_WORKAREA,			None			},
+
 	{"_OB_THEME",			&_XA_OB_THEME,			&handle_OB_THEME,			None			},
 	{"_OPENBOX_PID",		&_XA_OPENBOX_PID,		&handle_OPENBOX_PID,			None			},
+
+	{"_WIN_AREA",			&_XA_WIN_AREA,			&handle_WIN_AREA,			None			},
+	{"_WIN_AREA_COUNT",		&_XA_WIN_AREA_COUNT,		&handle_WIN_AREA_COUNT,			None			},
+	{"_WIN_CLIENT_LIST",		&_XA_WIN_CLIENT_LIST,		&handle_WIN_CLIENT_LIST,		None			},
 	{"_WIN_DESKTOP_BUTTON_PROXY",	&_XA_WIN_DESKTOP_BUTTON_PROXY,	&handle_WIN_DESKTOP_BUTTON_PROXY,	None			},
-	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD,	&handle_WINDOWMAKER_NOTICEBOARD,	None			},
+	{"_WIN_FOCUS",			&_XA_WIN_FOCUS,			&handle_WIN_FOCUS,			None			},
 	{"_WIN_PROTOCOLS",		&_XA_WIN_PROTOCOLS,		&handle_WIN_PROTOCOLS,			None			},
 	{"_WIN_SUPPORTING_WM_CHECK",	&_XA_WIN_SUPPORTING_WM_CHECK,	&handle_WIN_SUPPORTING_WM_CHECK,	None			},
-	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	&handle_WIN_WORKSPACE_COUNT,		None			},
 	{"_WIN_WORKSPACE",		&_XA_WIN_WORKSPACE,		&handle_WIN_WORKSPACE,			None			},
+	{"_WIN_WORKSPACE_COUNT",	&_XA_WIN_WORKSPACE_COUNT,	&handle_WIN_WORKSPACE_COUNT,		None			},
+	{"_WIN_WORKSPACE_NAMES",	&_XA_WIN_WORKSPACE_NAMES,	&handle_WIN_WORKSPACE_NAMES,		None			},
+	{"_WIN_WORKSPACES",		&_XA_WIN_WORKSPACES,		&handle_WIN_WORKSPACES,			None			},
+
+	{"_WINDOWMAKER_NOTICEBOARD",	&_XA_WINDOWMAKER_NOTICEBOARD,	&handle_WINDOWMAKER_NOTICEBOARD,	None			},
 	{"WM_CLASS",			NULL,				&handle_WM_CLASS,			XA_WM_CLASS		},
 	{"WM_CLIENT_MACHINE",		NULL,				&handle_WM_CLIENT_MACHINE,		XA_WM_CLIENT_MACHINE	},
 	{"WM_COMMAND",			NULL,				&handle_WM_COMMAND,			XA_WM_COMMAND		},
@@ -481,7 +565,7 @@ string_compare(char *a, char *b)
   * @{ */
 
 void
-__xde_set_text_list(Window win, Atom prop, char **list, long n)
+__xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list, long n)
 {
 	if (!list || !n)
 		XDeleteProperty(dpy, win, prop);
@@ -494,7 +578,7 @@ __xde_set_text_list(Window win, Atom prop, char **list, long n)
 		for (i = 0; i < n; i++)
 			strings[i] = list[i] ? : "";
 
-		if (Xutf8TextListToTextProperty(dpy, strings, n, XUTF8StringStyle, &tp) != Success) {
+		if (Xutf8TextListToTextProperty(dpy, strings, n, style, &tp) != Success) {
 			EPRINTF("error converting strings\n");
 			free(strings);
 			return;
@@ -524,14 +608,14 @@ __xde_get_text(Window win, Atom prop)
 __asm__(".symver __xde_get_text,xde_get_text@@XDE_1.0");
 
 void
-__xde_set_text(Window win, Atom prop, char *text)
+__xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text)
 {
 	if (!text)
 		XDeleteProperty(dpy, win, prop);
 	else {
 		XTextProperty tp = { NULL, };
 
-		if (Xutf8TextListToTextProperty(dpy, &text, 1, XUTF8StringStyle, &tp) != Success) {
+		if (Xutf8TextListToTextProperty(dpy, &text, 1, style, &tp) != Success) {
 			EPRINTF("error converting string '%s'\n", text);
 			return;
 		}
@@ -2166,8 +2250,98 @@ xde_identify_wm_perl()
 void
 __xde_set_properties()
 {
+	if (options.remove) {
+		if (!wm || !wm->name || strcasecmp(wm->name, "fluxbox")) {
+			XDeleteProperty(dpy, scr->root, _XA_BLACKBOX_PID);
+		}
+		if (!wm || !wm->name || strcasecmp(wm->name, "blackbox")) {
+			XDeleteProperty(dpy, scr->root, _XA_BB_THEME);
+		}
+		if (!wm || !wm->name || strcasecmp(wm->name, "openbox")) {
+			XDeleteProperty(dpy, scr->root, _XA_OPENBOX_PID);
+			XDeleteProperty(dpy, scr->root, _XA_OB_THEME);
+		}
+		if (!wm || !wm->name || strcasecmp(wm->name, "i3")) {
+			XDeleteProperty(dpy, scr->root, _XA_I3_PID);
+			XDeleteProperty(dpy, scr->root, _XA_I3_CONFIG_PATH);
+			XDeleteProperty(dpy, scr->root, _XA_I3_SHMLOG_PATH);
+			XDeleteProperty(dpy, scr->root, _XA_I3_SOCKET_PATH);
+		}
+		if (!wm || !wm->netwm_check) {
+			XDeleteProperty(dpy, scr->root, _XA_NET_ACTIVE_WINDOW);
+			XDeleteProperty(dpy, scr->root, _XA_NET_CLIENT_LIST);
+			XDeleteProperty(dpy, scr->root, _XA_NET_CLIENT_LIST_STACKING);
+			XDeleteProperty(dpy, scr->root, _XA_NET_CURRENT_DESKTOP);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_GEOMETRY);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_LAYOUT);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_MASK);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_PIXMAPS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_VIEWPORT);
+			XDeleteProperty(dpy, scr->root, _XA_NET_FULL_PLACEMENT);
+			XDeleteProperty(dpy, scr->root, _XA_NET_FULLSCREEN_MONITORS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_HANDLED_ICONS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_ICON_GEOMETRY);
+			XDeleteProperty(dpy, scr->root, _XA_NET_NUMBER_OF_DESKTOPS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_PROPERTIES);
+			XDeleteProperty(dpy, scr->root, _XA_NET_SHOWING_DESKTOP);
+			XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTED);
+			XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTING_WM_CHECK);
+			XDeleteProperty(dpy, scr->root, _XA_NET_VIRTUAL_POS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_VIRTUAL_ROOTS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_VISIBLE_DESKTOPS);
+			XDeleteProperty(dpy, scr->root, _XA_NET_WM_NAME);
+			XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+			XDeleteProperty(dpy, scr->root, _XA_NET_WORKAREA);
+		}
+		if (!wm || !wm->winwm_check) {
+			XDeleteProperty(dpy, scr->root, _XA_WIN_AREA);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_AREA_COUNT);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_CLIENT_LIST);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_FOCUS);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_PROTOCOLS);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_SUPPORTING_WM_CHECK);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE_COUNT);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE_NAMES);
+			XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACES);
+		}
+		if (!wm || !wm->maker_check) {
+			XDeleteProperty(dpy, scr->root, _XA_WINDOWMAKER_NOTICEBOARD);
+		}
+		if (!wm || !wm->motif_check) {
+			XDeleteProperty(dpy, scr->root, _XA_DT_WORKSPACE_CURRENT);
+			XDeleteProperty(dpy, scr->root, _XA_DT_WORKSPACE_LIST);
+			XDeleteProperty(dpy, scr->root, _XA_MOTIF_WM_INFO);
+		}
+	}
 	if (wm) {
-		xde_set_text(scr->root, _XA_XDE_WM_NAME, wm->name);
+		xde_set_text(scr->root, XA_WM_NAME, XStringStyle, wm->name);
+		xde_set_text(scr->root, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
+		xde_set_text(scr->root, _XA_XDE_WM_NAME, XUTF8StringStyle, wm->name);
+
+		xde_set_text(scr->root, XA_WM_CLIENT_MACHINE, XStringStyle, wm->host);
+		xde_set_text(scr->root, _XA_XDE_WM_HOST, XUTF8StringStyle, wm->host);
+
+		if (wm->pid) {
+			xde_set_cardinal(scr->root, _XA_NET_WM_PID, XA_CARDINAL, wm->pid);
+			xde_set_cardinal(scr->root, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
+		} else {
+			XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
+		}
+
+		xde_set_text_list(scr->root, XA_WM_CLASS, XStringStyle, (char **) &wm->ch, 2);
+		if (wm->cargv)
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->cargv, wm->cargc);
+		else if (wm->argv)
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->argv, wm->argc);
+		else
+			XDeleteProperty(dpy, scr->root, XA_WM_COMMAND);
+
+
 		if (wm->netwm_check)
 			xde_set_window(scr->root, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW,
 				       wm->netwm_check);
@@ -2198,25 +2372,28 @@ __xde_set_properties()
 				       wm->redir_check);
 		else
 			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
-		if (wm->pid)
-			xde_set_cardinal(scr->root, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
-		else
-			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
-		xde_set_text(scr->root, _XA_XDE_WM_HOST, wm->host);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, (char **) &wm->ch, 2);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, wm->argv, wm->argc);
-		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, wm->cargv, wm->cargc);
-		xde_set_text(scr->root, _XA_XDE_WM_RCFILE, wm->rcfile);
-		xde_set_text(scr->root, _XA_XDE_WM_PRVDIR, wm->pdir);
-		xde_set_text(scr->root, _XA_XDE_WM_USRDIR, wm->udir);
-		xde_set_text(scr->root, _XA_XDE_WM_SYSDIR, wm->sdir);
-		xde_set_text(scr->root, _XA_XDE_WM_ETCDIR, wm->edir);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, wm->stylefile);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLE, wm->style);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, wm->stylename);
-		xde_set_text(scr->root, _XA_XDE_WM_MENU, wm->menu);
-		xde_set_text(scr->root, _XA_XDE_WM_ICON, wm->icon);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, XUTF8StringStyle, (char **) &wm->ch, 2);
+		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, XUTF8StringStyle, wm->cargv, wm->cargc);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, XUTF8StringStyle, wm->argv, wm->argc);
+		xde_set_text(scr->root, _XA_XDE_WM_RCFILE, XUTF8StringStyle, wm->rcfile);
+		xde_set_text(scr->root, _XA_XDE_WM_PRVDIR, XUTF8StringStyle, wm->pdir);
+		xde_set_text(scr->root, _XA_XDE_WM_USRDIR, XUTF8StringStyle, wm->udir);
+		xde_set_text(scr->root, _XA_XDE_WM_SYSDIR, XUTF8StringStyle, wm->sdir);
+		xde_set_text(scr->root, _XA_XDE_WM_ETCDIR, XUTF8StringStyle, wm->edir);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, wm->stylefile);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLE, XUTF8StringStyle, wm->style);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, wm->stylename);
+		xde_set_text(scr->root, _XA_XDE_WM_MENU, XUTF8StringStyle, wm->menu);
+		xde_set_text(scr->root, _XA_XDE_WM_ICON, XUTF8StringStyle, wm->icon);
 	} else {
+		XDeleteProperty(dpy, scr->root, XA_WM_NAME);
+		XDeleteProperty(dpy, scr->root, XA_WM_CLIENT_MACHINE);
+		XDeleteProperty(dpy, scr->root, XA_WM_CLASS);
+		XDeleteProperty(dpy, scr->root, XA_WM_COMMAND);
+
+		XDeleteProperty(dpy, scr->root, _XA_NET_WM_NAME);
+		XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+
 		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NAME);
 		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NETWM_SUPPORT);
 		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_WINWM_SUPPORT);
@@ -2240,8 +2417,8 @@ __xde_set_properties()
 		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MENU);
 		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICON);
 	}
-	xde_set_text(scr->root, _XA_XDE_WM_THEME, scr->theme);
-	xde_set_text(scr->root, _XA_XDE_WM_THEMEFILE, scr->themefile);
+	xde_set_text(scr->root, _XA_XDE_WM_THEME, XUTF8StringStyle, scr->theme);
+	xde_set_text(scr->root, _XA_XDE_WM_THEMEFILE, XUTF8StringStyle, scr->themefile);
 }
 
 __asm__(".symver __xde_set_properties,xde_set_properties@@XDE_1.0");
@@ -3174,7 +3351,7 @@ theme_replace(char *theme, char *themefile)
 		theme = strdup(theme);
 		free(scr->theme);
 		scr->theme = theme;
-		xde_set_text(scr->root, _XA_XDE_THEME_NAME, theme);
+		xde_set_text(scr->root, _XA_XDE_THEME_NAME, XUTF8StringStyle, theme);
 	} else
 		theme = scr->theme;
 	if (!string_compare(themefile, scr->themefile)) {
@@ -3390,7 +3567,7 @@ __xde_set_theme(char *name)
 	XSendEvent(dpy, scr->root, False, StructureNotifyMask |
 		   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	xde_set_text(scr->root, _XA_XDE_THEME_NAME, name);
+	xde_set_text(scr->root, _XA_XDE_THEME_NAME, XUTF8StringStyle, name);
 	return;
 }
 
@@ -4749,6 +4926,30 @@ handle_MOTIF_WM_INFO(const XEvent *e)
 	return True;
 }
 
+static Bool
+handle_NET_ACTIVE_WINDOW(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_CLIENT_LIST(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_CLIENT_LIST_STACKING(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
 /** @brief handle _NET_CURRENT_DESKTOP property change
   *
   * Handle when _NET_CURRENT_DESKTOP property changes on the root window of any
@@ -4756,6 +4957,22 @@ handle_MOTIF_WM_INFO(const XEvent *e)
   */
 static Bool
 handle_NET_CURRENT_DESKTOP(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_DESKTOP(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_DESKTOP_GEOMETRY(const XEvent *e)
 {
 	if (!is_netwm_property(e))
 		return False;
@@ -4771,6 +4988,22 @@ handle_NET_DESKTOP_LAYOUT(const XEvent *e)
 }
 
 static Bool
+handle_NET_DESKTOP_MASK(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_DESKTOP_NAMES(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
 handle_NET_DESKTOP_PIXMAPS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
@@ -4779,7 +5012,63 @@ handle_NET_DESKTOP_PIXMAPS(const XEvent *e)
 }
 
 static Bool
+handle_NET_DESKTOP_VIEWPORT(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_FULL_PLACEMENT(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_FULLSCREEN_MONITORS(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_HANDLED_ICONS(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_ICON_GEOMETRY(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
 handle_NET_NUMBER_OF_DESKTOPS(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_PROPERTIES(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_SHOWING_DESKTOP(const XEvent *e)
 {
 	if (!is_netwm_property(e))
 		return False;
@@ -4800,6 +5089,22 @@ handle_NET_SUPPORTING_WM_CHECK(const XEvent *e)
 	if (!is_netwm_property(e))
 		return False;
 	return True;
+}
+
+static Bool
+handle_NET_VIRTUAL_POS(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_NET_VIRTUAL_ROOTS(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
 }
 
 static Bool
@@ -4829,6 +5134,14 @@ handle_NET_WM_PID(const XEvent *e)
 }
 
 static Bool
+handle_NET_WORKAREA(const XEvent *e)
+{
+	if (!is_netwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
 handle_OB_THEME(const XEvent *e)
 {
 	if (!is_netwm_property(e))
@@ -4846,6 +5159,30 @@ handle_OPENBOX_PID(const XEvent *e)
 }
 
 static Bool
+handle_WIN_AREA(const XEvent *e)
+{
+	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_WIN_AREA_COUNT(const XEvent *e)
+{
+	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_WIN_CLIENT_LIST(const XEvent *e)
+{
+	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
 handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 {
 	if (!is_winwm_property(e))
@@ -4855,9 +5192,9 @@ handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 }
 
 static Bool
-handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
+handle_WIN_FOCUS(const XEvent *e)
 {
-	if (!is_maker_property(e))
+	if (!is_winwm_property(e))
 		return False;
 	return False;
 }
@@ -4881,6 +5218,14 @@ handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 }
 
 static Bool
+handle_WIN_WORKSPACE(const XEvent *e)
+{
+	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
 handle_WIN_WORKSPACE_COUNT(const XEvent *e)
 {
 	if (!is_winwm_property(e))
@@ -4889,9 +5234,25 @@ handle_WIN_WORKSPACE_COUNT(const XEvent *e)
 }
 
 static Bool
-handle_WIN_WORKSPACE(const XEvent *e)
+handle_WIN_WORKSPACE_NAMES(const XEvent *e)
 {
 	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_WIN_WORKSPACES(const XEvent *e)
+{
+	if (!is_winwm_property(e))
+		return False;
+	return False;
+}
+
+static Bool
+handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
+{
+	if (!is_maker_property(e))
 		return False;
 	return False;
 }
