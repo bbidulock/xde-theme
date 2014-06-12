@@ -208,7 +208,7 @@ Options:\n\
 Display *dpy;
 
 int
-handler(Display *display, XErrorEvent * xev)
+handler(Display *display, XErrorEvent *xev)
 {
 	if (debug) {
 		char msg[80], req[80], num[80], def[80];
@@ -407,7 +407,8 @@ main(int argc, char *argv[])
 			strcat(namever, revision);
 		}
 		XmbTextListToTextProperty(dpy, &namever, 1, XUTF8StringStyle, &xtp);
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_NET_WM_NAME", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_NET_WM_NAME", False));
 		free(namever);
 		namever = NULL;
 		if (xtp.value) {
@@ -423,7 +424,8 @@ main(int argc, char *argv[])
 		}
 		memset(&xtp, 0, sizeof(xtp));
 		XmbTextListToTextProperty(dpy, &name, 1, XUTF8StringStyle, &xtp);
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_NAME", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_XDE_WM_NAME", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;
@@ -444,7 +446,8 @@ main(int argc, char *argv[])
 		XmbTextListToTextProperty(dpy, res, 2, XUTF8StringStyle, &xtp);
 		if (xtp.value)
 			xtp.nitems++;
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_CLASS", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_XDE_WM_CLASS", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;
@@ -459,7 +462,8 @@ main(int argc, char *argv[])
 	}
 	if (revision) {
 		XmbTextListToTextProperty(dpy, &revision, 1, XUTF8StringStyle, &xtp);
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_VERSION", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_XDE_WM_VERSION", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;
@@ -483,14 +487,16 @@ main(int argc, char *argv[])
 	}
 	if (hostp) {
 		XmbTextListToTextProperty(dpy, &hostp, 1, XStdICCTextStyle, &xtp);
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "WM_CLIENT_MACHINE", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "WM_CLIENT_MACHINE", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;
 		}
 		memset(&xtp, 0, sizeof(xtp));
 		XmbTextListToTextProperty(dpy, &hostp, 1, XUTF8StringStyle, &xtp);
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_HOSTNAME", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_XDE_WM_HOSTNAME", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;
@@ -514,7 +520,8 @@ main(int argc, char *argv[])
 		XmbTextListToTextProperty(dpy, cmdv, cmdc, XUTF8StringStyle, &xtp);
 		if (xtp.value)
 			xtp.nitems++;
-		XSetTextProperty(dpy, root, &xtp, XInternAtom(dpy, "_XDE_WM_COMMAND", False));
+		XSetTextProperty(dpy, root, &xtp,
+				 XInternAtom(dpy, "_XDE_WM_COMMAND", False));
 		if (xtp.value) {
 			XFree(xtp.value);
 			xtp.value = NULL;

@@ -57,7 +57,6 @@ const char *program = NAME;
 static char **rargv;
 static int rargc;
 
-
 Atom _XA_XDE_WATCH_COMMAND;
 
 Bool foreground = False;
@@ -117,12 +116,22 @@ wm_signal(int signum)
 	return XDE_EVENT_PROPAGATE;
 }
 
+/** @brief window manager changed callback
+  *
+  * Invoked whenever the window manager changes.  Note that everything (style,
+  * menu, icon, theme) has already been updated, so we can either handle them
+  * here, or wait for the invocation of the individual callbacks, below.
+  */
 static void
 wm_changed()
 {
-	/* NOTE: everything but the theme has already been updated */
 }
 
+/** @brief window manager style change callback
+  *
+  * Invoked whenever the window manager style changes, or whenever the window
+  * manager changes (regardless of whether the style actually changed).
+  */
 static void
 wm_style_changed(char *newname, char *newstyle, char *newfile)
 {
@@ -135,6 +144,11 @@ wm_style_changed(char *newname, char *newstyle, char *newfile)
 	setting->stylefile = newfile ? strdup(newfile) : NULL;
 }
 
+/** @brief window manager root menu changed callback
+  *
+  * Invoked whenever the window manager root menu path changes, or whenever the
+  * window manager changes (regardless of whether the path actually changed).
+  */
 static void
 wm_menu_changed(char *newmenu)
 {
@@ -143,6 +157,11 @@ wm_menu_changed(char *newmenu)
 	setting->menu = newmenu ? strdup(newmenu) : NULL;
 }
 
+/** @brief window manager icon changed callback
+  *
+  * Invoked whenever the window manager icon changes, or whenever the window
+  * manager changes (regardless of whether the icon actually changed).
+  */
 static void
 wm_icon_changed(char *newicon)
 {
@@ -151,6 +170,11 @@ wm_icon_changed(char *newicon)
 	setting->icon = newicon ? strdup(newicon) : NULL;
 }
 
+/** @brief window manager (XDE really) theme changed callback
+  *
+  * Invoked whenever the theme changes, or whenever the window manager changes
+  * (regardless of whether the theme actually changed).
+  */
 static void
 wm_theme_changed(char *newtheme, char *newfile)
 {
@@ -641,3 +665,4 @@ main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
+// vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

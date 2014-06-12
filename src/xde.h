@@ -135,7 +135,8 @@ typedef struct {
 	Bool (*wm_event) (const XEvent *);	/* event handler */
 	Bool (*wm_signal) (int);	/* signal handler */
 	void (*wm_changed) (void);	/* window manager changed */
-	void (*wm_style_changed) (char *, char *, char *);	/* window manager style changed */
+	void (*wm_style_changed) (char *, char *, char *);	/* window manager style
+								   changed */
 	void (*wm_menu_changed) (char *);
 	void (*wm_icon_changed) (char *);
 	void (*wm_theme_changed) (char *, char *);	/* window manager theme changed */
@@ -378,7 +379,8 @@ extern XContext ScreenContext;
 extern Options options;
 
 /* some utility functions */
-extern void xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list, long n);
+extern void xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
+			      long n);
 extern char *xde_get_text(Window win, Atom prop);
 extern void xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text);
 extern long *xde_get_cardinals(Window win, Atom prop, Atom type, long *n);
@@ -391,7 +393,7 @@ extern Bool xde_get_window(Window win, Atom prop, Atom type, Window *win_ret);
 extern void xde_set_window(Window win, Atom prop, Atom type, Window wind);
 extern Time *xde_get_times(Window win, Atom prop, Atom type, long *n);
 extern void xde_set_times(Window win, Atom prop, Atom type, Time *times, long n);
-extern Bool xde_get_time(Window win, Atom prop, Atom type, Time * time_ret);
+extern Bool xde_get_time(Window win, Atom prop, Atom type, Time *time_ret);
 extern void xde_set_time(Window win, Atom prop, Atom type, Time time);
 extern Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
 extern void xde_set_atoms(Window win, Atom prop, Atom type, Atom *atoms, long n);
@@ -445,7 +447,8 @@ extern char *xde_get_rcfile_optarg(char *optname);
 extern void xde_get_simple_dirs(char *wmname);
 extern char *xde_find_style_simple(char *dname, char *fname, char *suffix);
 extern Bool xde_test_file(char *path);
-extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
+extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix,
+				char *style, enum ListType type);
 extern void xde_list_styles_simple(void);
 extern void xde_get_rcfile_simple(char *wmname, char *rcname, char *option);
 extern char *xde_get_menu_simple(char *fname, char *(*from_file) (char *));
@@ -457,9 +460,9 @@ extern void xde_set_style_database(char *name);
 extern void xde_get_rcfile_XTWM(char *xtwm);
 extern void xde_get_xdg_dirs(void);
 extern void xde_gen_menu_simple(void);
-extern void xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style, enum ListType type);
+extern void xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix,
+			       char *style, enum ListType type);
 extern Bool xde_check_wm(void);
 extern char *xde_get_icon_simple(const char *fallback);
 
 #endif				/* __XDE_H__ */
-

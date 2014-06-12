@@ -127,7 +127,7 @@ get_times(Window win, Atom prop, Atom type, long *n)
 }
 
 Bool
-get_time(Window win, Atom prop, Atom type, Time * time_ret)
+get_time(Window win, Atom prop, Atom type, Time *time_ret)
 {
 	return get_cardinal(win, prop, type, (long *) time_ret);
 }
@@ -151,7 +151,7 @@ get_pixmaps(Window win, Atom prop, Atom type, long *n)
 }
 
 Bool
-get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
+get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret)
 {
 	return get_cardinal(win, prop, type, (long *) pixmap_ret);
 }
@@ -517,7 +517,8 @@ get_event_screen(XEvent *e)
 		unsigned int nchildren;
 
 		/* try to find the root of the window */
-		if (XQueryTree(dpy, e->xany.window, &root, &parent, &children, &nchildren))
+		if (XQueryTree
+		    (dpy, e->xany.window, &root, &parent, &children, &nchildren))
 			if (!XFindContext(dpy, root, ScreenContext, &xptr))
 				event_scr = (WmScreen *) xptr;
 		if (children)

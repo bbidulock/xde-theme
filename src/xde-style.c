@@ -65,18 +65,22 @@ current_style()
 			scr = screens + screen;
 			root = scr->root;
 			if (!(wm = scr->wm) || !(ops = wm->ops) || !ops->get_style) {
-				EPRINTF("cannot get current style for screen %d\n", screen);
+				EPRINTF("cannot get current style for screen %d\n",
+					screen);
 				continue;
 			}
 			ops->get_style();
-			if (wm->style && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
+			if (wm->style
+			    && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
 				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
 			} else if (options.theme && xde_get_theme()) {
 				fprintf(stdout, "%s %s\n", scr->theme, scr->themefile);
 			} else if (options.theme) {
-				EPRINTF("cannot get current theme for screen %d\n", screen);
+				EPRINTF("cannot get current theme for screen %d\n",
+					screen);
 			} else {
-				EPRINTF("cannot get current style for screen %d\n", screen);
+				EPRINTF("cannot get current style for screen %d\n",
+					screen);
 			}
 		}
 	} else if (0 <= options.screen && options.screen < nscr) {

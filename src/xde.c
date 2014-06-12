@@ -455,10 +455,11 @@ error_handler(Display *display, XErrorEvent *xev)
 			msg[0] = '\0';
 		fprintf(stderr, "X error %s(0x%lx): %s\n", req, xev->resourceid, msg);
 	}
-	return(0);
+	return (0);
 }
 
-static void set_screen(WmScreen *s)
+static void
+set_screen(WmScreen *s)
 {
 	scr = s;
 	screen = scr->screen;
@@ -474,11 +475,13 @@ __xde_set_screen(int s)
 
 __asm__(".symver __xde_set_screen,xde_set_screen@@XDE_1.0");
 
-static Bool find_screen(Window window)
+static Bool
+find_screen(Window window)
 {
 	WmScreen *scrn = NULL;
 
-	if (XFindContext(dpy, window, ScreenContext, (XPointer *)&scrn) == Success && scrn)
+	if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success
+	    && scrn)
 		set_screen(scrn);
 	return (scrn != NULL) ? True : False;
 }
@@ -528,12 +531,12 @@ int
 __xde_defer_timer(void)
 {
 	if (!defer_timer) {
-		if ((defer_timer = timerfd_create(CLOCK_MONOTONIC,TFD_CLOEXEC)) == -1) {
+		if ((defer_timer = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC)) == -1) {
 			EPRINTF("timerfd_create: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	}
-	return(defer_timer);
+	return (defer_timer);
 }
 
 __asm__(".symver __xde_defer_timer,xde_defer_timer@@XDE_1.0");
@@ -542,7 +545,8 @@ __asm__(".symver __xde_defer_timer,xde_defer_timer@@XDE_1.0");
   * @param cbs - callbacks to invoke
   */
 void
-__xde_init(WmCallbacks *cbs) {
+__xde_init(WmCallbacks *cbs)
+{
 	callbacks = cbs;
 	xde_defer_timer();
 	xde_init_display();
@@ -662,7 +666,7 @@ void
 __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 {
 	XChangeProperty(dpy, win, prop, type, 32, PropModeReplace,
-			(unsigned char *)cards, n);
+			(unsigned char *) cards, n);
 }
 
 __asm__(".symver __xde_set_cardinals,xde_set_cardinals@@XDE_1.0");
@@ -703,7 +707,7 @@ __asm__(".symver __xde_get_windows,xde_get_windows@@XDE_1.0");
 void
 __xde_set_windows(Window win, Atom prop, Atom type, Window *winds, long n)
 {
-	xde_set_cardinals(win, prop, type, (long *)winds, n);
+	xde_set_cardinals(win, prop, type, (long *) winds, n);
 }
 
 __asm__(".symver __xde_set_windows,xde_set_windows@@XDE_1.0");
@@ -735,13 +739,13 @@ __asm__(".symver __xde_get_times,xde_get_times@@XDE_1.0");
 void
 __xde_set_times(Window win, Atom prop, Atom type, Time *times, long n)
 {
-	xde_set_cardinals(win, prop, type, (long *)times, n);
+	xde_set_cardinals(win, prop, type, (long *) times, n);
 }
 
 __asm__(".symver __xde_set_times,xde_set_times@@XDE_1.0");
 
 Bool
-__xde_get_time(Window win, Atom prop, Atom type, Time * time_ret)
+__xde_get_time(Window win, Atom prop, Atom type, Time *time_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) time_ret);
 }
@@ -767,7 +771,7 @@ __asm__(".symver __xde_get_atoms,xde_get_atoms@@XDE_1.0");
 void
 __xde_set_atoms(Window win, Atom prop, Atom type, Atom *atoms, long n)
 {
-	xde_set_cardinals(win, prop, type, (long *)atoms, n);
+	xde_set_cardinals(win, prop, type, (long *) atoms, n);
 }
 
 __asm__(".symver __xde_set_atoms,xde_set_atoms@@XDE_1.0");
@@ -799,13 +803,13 @@ __asm__(".symver __xde_get_pixmaps,xde_get_pixmaps@@XDE_1.0");
 void
 __xde_set_pixmaps(Window win, Atom prop, Atom type, Pixmap *pixmaps, long n)
 {
-	xde_set_cardinals(win, prop, type, (long *)pixmaps, n);
+	xde_set_cardinals(win, prop, type, (long *) pixmaps, n);
 }
 
 __asm__(".symver __xde_set_pixmaps,xde_set_pixmaps@@XDE_1.0");
 
 Bool
-__xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
+__xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) pixmap_ret);
 }
@@ -1017,7 +1021,8 @@ check_winwm()
 	int i = 0;
 
 	do {
-		wm->winwm_check = check_recursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL);
+		wm->winwm_check =
+		    check_recursive(_XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL);
 	} while (i++ < 2 && !wm->winwm_check);
 
 	if (wm->winwm_check) {
@@ -1952,9 +1957,11 @@ find_wm_prox()
 
 	if (xde_get_window(scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY, None, &wm->proxy)) {
 		/* might be left over from another wm */
-		if (wm->netwm_check && check_supported(_XA_NET_SUPPORTED, _XA_WIN_DESKTOP_BUTTON_PROXY))
+		if (wm->netwm_check
+		    && check_supported(_XA_NET_SUPPORTED, _XA_WIN_DESKTOP_BUTTON_PROXY))
 			return True;
-		if (wm->winwm_check && check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_DESKTOP_BUTTON_PROXY))
+		if (wm->winwm_check
+		    && check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_DESKTOP_BUTTON_PROXY))
 			return True;
 		DPRINTF("proxy property exists, but no support\n");
 		wm->proxy = None;
@@ -2336,14 +2343,16 @@ __xde_set_properties()
 			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
 		}
 
-		xde_set_text_list(scr->root, XA_WM_CLASS, XStringStyle, (char **) &wm->ch, 2);
+		xde_set_text_list(scr->root, XA_WM_CLASS, XStringStyle, (char **) &wm->ch,
+				  2);
 		if (wm->cargv)
-			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->cargv, wm->cargc);
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle,
+					  wm->cargv, wm->cargc);
 		else if (wm->argv)
-			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->argv, wm->argc);
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle,
+					  wm->argv, wm->argc);
 		else
 			XDeleteProperty(dpy, scr->root, XA_WM_COMMAND);
-
 
 		if (wm->netwm_check)
 			xde_set_window(scr->root, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW,
@@ -2375,17 +2384,22 @@ __xde_set_properties()
 				       wm->redir_check);
 		else
 			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, XUTF8StringStyle, (char **) &wm->ch, 2);
-		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, XUTF8StringStyle, wm->cargv, wm->cargc);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, XUTF8StringStyle, wm->argv, wm->argc);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, XUTF8StringStyle,
+				  (char **) &wm->ch, 2);
+		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, XUTF8StringStyle,
+				  wm->cargv, wm->cargc);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, XUTF8StringStyle,
+				  wm->argv, wm->argc);
 		xde_set_text(scr->root, _XA_XDE_WM_RCFILE, XUTF8StringStyle, wm->rcfile);
 		xde_set_text(scr->root, _XA_XDE_WM_PRVDIR, XUTF8StringStyle, wm->pdir);
 		xde_set_text(scr->root, _XA_XDE_WM_USRDIR, XUTF8StringStyle, wm->udir);
 		xde_set_text(scr->root, _XA_XDE_WM_SYSDIR, XUTF8StringStyle, wm->sdir);
 		xde_set_text(scr->root, _XA_XDE_WM_ETCDIR, XUTF8StringStyle, wm->edir);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, wm->stylefile);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle,
+			     wm->stylefile);
 		xde_set_text(scr->root, _XA_XDE_WM_STYLE, XUTF8StringStyle, wm->style);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, wm->stylename);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, XUTF8StringStyle,
+			     wm->stylename);
 		xde_set_text(scr->root, _XA_XDE_WM_MENU, XUTF8StringStyle, wm->menu);
 		xde_set_text(scr->root, _XA_XDE_WM_ICON, XUTF8StringStyle, wm->icon);
 	} else {
@@ -2697,7 +2711,6 @@ __asm__(".symver __xde_recheck_wm,xde_recheck_wm@@XDE_1.0");
 
 /** @} */
 
-
 /** @name themes, styles and menus
   *
   * @{ */
@@ -2829,6 +2842,7 @@ entry_compare(const void *a, const void *b)
 {
 	struct sortentry *A = (typeof(A)) a;
 	struct sortentry *B = (typeof(B)) b;
+
 	return strcmp(A->stylename, B->stylename);
 }
 
@@ -3277,12 +3291,10 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 		if (options.user && !options.system) {
 			beg = 0;
 			end = 2;
-		}
-		else if (options.system && !options.user) {
+		} else if (options.system && !options.user) {
 			beg = 2;
 			end = CHECK_DIRS;
-		}
-		else {
+		} else {
 			beg = 0;
 			end = CHECK_DIRS;
 		}
@@ -3290,8 +3302,7 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 			if (!wm->dirs[i] || !wm->dirs[i][0])
 				continue;
 			len = strlen(wm->dirs[i]) + strlen(dname) +
-			    strlen(options.style) + strlen(fname) +
-			    strlen(suffix) + 4;
+			    strlen(options.style) + strlen(fname) + strlen(suffix) + 4;
 			path = calloc(len, sizeof(*path));
 			strcpy(path, wm->dirs[i]);
 			strcat(path, "/");
@@ -3302,7 +3313,8 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 				if (suffix[0]) {
 					strcat(path, suffix);
 					if (stat(path, &st)) {
-						DPRINTF("%s: %s\n", path, strerror(errno));
+						DPRINTF("%s: %s\n", path,
+							strerror(errno));
 						free(path);
 						path = NULL;
 						continue;
@@ -3375,10 +3387,11 @@ __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 			continue;
 		}
 		if (menufile[0] != '/') {
-			/* WARNING: from_file must return a buffer large enough to add path prefix: 
-			   recommend PATH_MAX + 1 */
+			/* WARNING: from_file must return a buffer large enough to add
+			   path prefix: recommend PATH_MAX + 1 */
 			/* make absolute path */
-			memmove(menufile + strlen(wm->dirs[i]) + 1, menufile, strlen(menufile) + 1);
+			memmove(menufile + strlen(wm->dirs[i]) + 1, menufile,
+				strlen(menufile) + 1);
 			memcpy(menufile, menurc, strlen(wm->dirs[i]) + 1);
 		}
 		free(menurc);
@@ -3842,7 +3855,7 @@ __xde_get_menu_database(char *name, char *clas)
 
 		wm->menu = calloc(strlen(home) + value.size, sizeof(*wm->menu));
 		strcpy(wm->menu, home);
-		strncat(wm->menu, (char *)value.addr + 1, value.size - 1);
+		strncat(wm->menu, (char *) value.addr + 1, value.size - 1);
 	} else {
 		wm->menu = strndup((char *) value.addr, value.size);
 	}
@@ -4247,9 +4260,9 @@ __xde_get_rcfile_XTWM(char *xtwm)
 			size_t plen;
 			struct stat st;
 			char *path;
-			
+
 			plen = strlen(*dirp) + strlen(xtwm) + strlen("/system.")
-				+ strlen(xtwm) + strlen("rc") + 1;
+			    + strlen(xtwm) + strlen("rc") + 1;
 			path = calloc(plen, sizeof(*path));
 			strcpy(path, *dirp);
 			strcat(path, xtwm);
@@ -4614,16 +4627,16 @@ __asm__(".symver __xde_defer_action,xde_defer_action@@XDE_1.0");
   * same action.
   */
 Bool
-__xde_defer_once(void (*action)(XPointer), Time delay, XPointer data)
+__xde_defer_once(void (*action) (XPointer), Time delay, XPointer data)
 {
 	WmDeferred *d;
 
 	if (delay) {
-		for (d = deferred_wait; d ; d = d->next)
+		for (d = deferred_wait; d; d = d->next)
 			if (d->action == action && d->data == data)
 				return False;
 	}
-	for (d = deferred_done; d ; d = d->next)
+	for (d = deferred_done; d; d = d->next)
 		if (d->action == action && d->data == data)
 			return False;
 
@@ -4632,7 +4645,6 @@ __xde_defer_once(void (*action)(XPointer), Time delay, XPointer data)
 }
 
 __asm__(".symver __xde_defer_once,xde_defer_once@@XDE_1.0");
-
 
 static int signum;
 
@@ -4932,7 +4944,6 @@ is_root_property(const XEvent *e)
 		return False;
 	return True;
 }
-
 
 /** @brief handle _BB_THEME property notification
   *

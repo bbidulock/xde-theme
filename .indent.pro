@@ -24,6 +24,9 @@
 -ss
 -hnl
 -nbc
+-TXErrorEvent
+-TWmCallbacks
+-TTime
 -TWindowManager
 -TWmDisplay
 -TWmScreen

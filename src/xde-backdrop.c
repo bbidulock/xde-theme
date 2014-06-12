@@ -64,7 +64,6 @@ typedef struct {
 
 BdScreen *scr, *screens;
 
-
 const char *program = NAME;
 
 static enum { StartingUp, WaitForWM, WaitAfterWM, DetectWM, ShutDown } state;
@@ -197,28 +196,30 @@ static void handle_NET_WM_NAME(XEvent *);
 static void handle_NET_WM_PID(XEvent *);
 static void handle_OB_THEME(XEvent *);
 static void handle_OPENBOX_PID(XEvent *);
-static void handle_WIN_DESKTOP_BUTTON_PR(XEvent *)OXY;
-static void handle_WIN_PROTOCOLS(XEvent *);
-static void handle_WIN_SUPPORTING_WM_CHECK(XEvent *);
-static void handle_WIN_WORKSPACE_COUNT(XEvent *);
-static void handle_WIN_WORKSPACE(XEvent *);
-static void handle_WM_CLASS(XEvent *);
-static void handle_WM_CLIENT_MACHINE(XEvent *);
-static void handle_WM_COMMAND(XEvent *);
-static void handle_WM_NAME(XEvent *);
-static void handle_XDE_THEME_NAME(XEvent *);
-static void handle_XROOTMAP_ID(XEvent *);
-static void handle_XROOTPMAP_ID(XEvent *);
-static void handle_XSETROOT_ID(XEvent *);
+static void
+handle_WIN_DESKTOP_BUTTON_PR(XEvent *)
+    OXY;
+	static void handle_WIN_PROTOCOLS(XEvent *);
+	static void handle_WIN_SUPPORTING_WM_CHECK(XEvent *);
+	static void handle_WIN_WORKSPACE_COUNT(XEvent *);
+	static void handle_WIN_WORKSPACE(XEvent *);
+	static void handle_WM_CLASS(XEvent *);
+	static void handle_WM_CLIENT_MACHINE(XEvent *);
+	static void handle_WM_COMMAND(XEvent *);
+	static void handle_WM_NAME(XEvent *);
+	static void handle_XDE_THEME_NAME(XEvent *);
+	static void handle_XROOTMAP_ID(XEvent *);
+	static void handle_XROOTPMAP_ID(XEvent *);
+	static void handle_XSETROOT_ID(XEvent *);
 
-typedef struct {
-	char *name;
-	Atom *atom;
-	void (*handler) (XEvent *);
-	Atom value;
-} AtomHandler;
+	typedef struct {
+		char *name;
+		Atom *atom;
+		void (*handler) (XEvent *);
+		Atom value;
+	} AtomHandler;
 
-static AtomHandler myatoms[] = {
+	static AtomHandler myatoms[] = {
 	/* *INDENT-OFF* **/
 	{ "_BB_THEME",			&_XA_BB_THEME,			&handle_BB_THEME,			None },
 	{ "_BLACKBOX_PID",		&_XA_BLACKBOX_PID,		&handle_BLACKBOX_PID,			None },
@@ -251,7 +252,7 @@ static AtomHandler myatoms[] = {
 	{ "_XSETROOT_ID",		&_XA_XSETROOT_ID,		&handle_XSETROOT_ID,			None },
 	{ NULL,				NULL,				NULL,					None }
 	/* *INDENT-ON* **/
-};
+	};
 
 /** @brief handle _BB_THEME property notification
   *
@@ -526,7 +527,8 @@ handle_WIN_WORKSPACE_COUNT(XEvent *e)
 	if (xde_get_cardinal(scr->root, _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL, &count)) {
 		int workspaces = count;
 
-		DPRINTF("new number of workspaces %d (was %d)\n", workspaces, scr->numdesk);
+		DPRINTF("new number of workspaces %d (was %d)\n", workspaces,
+			scr->numdesk);
 
 		if (0 < workspaces && workspaces <= 64) {
 			if (workspaces != scr->numdesk) {
@@ -575,7 +577,6 @@ handle_WM_CLIENT_MACHINE(XEvent *e)
 	set_deferred_wmcheck();
 }
 
-
 static void
 handle_XDE_THEME_NAME(XEvent *e)
 {
@@ -615,7 +616,7 @@ handle_XROOTPMAP_ID(XEvent *e)
 	}
 	if (xde_get_pixmap(_XA_XROOTPMAP_ID, XA_PIXMAP, &pixmap) && pixmap) {
 		if (pixmap != scr->pmid) {
-			/*
+			/* 
 			 * FIXME: basically root out the image pixmap that is
 			 * currently referenced by the desktop on the root
 			 * monitor and replace it with this pixmap.  The old
@@ -654,7 +655,7 @@ handle_XSETROOT_ID(XEvent *e)
 		Pixmap oldid = image->pmid;
 
 		if (oldid && oldid != pixmap) {
-			/*
+			/* 
 			 * FIXME
 			 */
 		}
@@ -1166,7 +1167,8 @@ mainloop()
 				got_timeout();
 			if (pfd[1].revents & POLLIN)
 				got_xevents();
-			if ((pfd[0].revents | pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
+			if ((pfd[0].
+			     revents | pfd[1].revents) & (POLLNVAL | POLLHUP | POLLERR)) {
 				EPRINTF("fatal error on poll");
 				exit(1);
 			}
