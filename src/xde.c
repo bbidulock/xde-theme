@@ -2600,15 +2600,22 @@ __asm__(".symver __xde_action_check_wm,xde_action_check_wm@@XDE_1.0");
 void
 __xde_recheck_wm()
 {
-	WindowManager *oldwm = wm;
+	WindowManager *oldwm;
+	char *oldtheme, *oldfile;
+	Bool changed;
 
+	oldwm = wm;
 	wm = scr->wm = NULL;
 	xde_check_wm();
 	xde_get_style();
 	xde_get_menu();
 	xde_get_icon();
+	oldtheme = scr->theme ? strdup(scr->theme) : NULL;
+	oldfile = scr->themefile ? strdup(scr->themefile) : NULL;
+	xde_get_theme();
 	if (wm && oldwm) {
 		do {
+			changed = True;
 			if (wm->netwm_check != oldwm->netwm_check)
 				break;
 			if (wm->winwm_check != oldwm->winwm_check)
@@ -2627,56 +2634,63 @@ __xde_recheck_wm()
 				break;
 			if (!string_compare(wm->host, oldwm->host))
 				break;
-			goto no_wm_change;
+			changed = False;
 		} while (0);
 	} else if (!wm && oldwm) {
 		DPRINTF("window manager disappeared\n");
+		changed = True;
 	} else if (!oldwm && wm) {
 		DPRINTF("window manager appeared\n");
+		changed = True;
 	} else if (!oldwm && !wm) {
 		DPRINTF("no window manager yet, test again in 2 seconds\n");
 		xde_defer_wm_check(2000);
-		goto no_wm;
+		changed = False;
 	}
-	if (callbacks && callbacks->wm_changed)
-		(callbacks->wm_changed) (wm);
-      no_wm_change:
+	if (changed && callbacks && callbacks->wm_changed)
+		callbacks->wm_changed();
 	if (callbacks) {
 		if (wm && oldwm) {
-			if (callbacks->wm_style_changed &&
-			    (!string_compare(wm->stylename, oldwm->stylename) ||
-			     !string_compare(wm->style, oldwm->style) ||
-			     !string_compare(wm->stylefile, oldwm->stylefile)))
-				callbacks->wm_style_changed(wm->stylename,
-							    wm->style, wm->stylefile);
-			if (callbacks->wm_menu_changed &&
-			    !string_compare(wm->menu, oldwm->menu))
+			if (callbacks->wm_style_changed
+			    && (changed
+				|| !string_compare(wm->stylename, oldwm->stylename)
+				|| !string_compare(wm->style, oldwm->style)
+				|| !string_compare(wm->stylefile, oldwm->stylefile)))
+				callbacks->wm_style_changed(wm->stylename, wm->style,
+							    wm->stylefile);
+			if (callbacks->wm_menu_changed
+			    && (changed || !string_compare(wm->menu, oldwm->menu)))
 				callbacks->wm_menu_changed(wm->menu);
-			if (callbacks->wm_icon_changed &&
-			    !string_compare(wm->icon, oldwm->icon))
+			if (callbacks->wm_icon_changed
+			    && (changed || !string_compare(wm->icon, oldwm->icon)))
 				callbacks->wm_icon_changed(wm->icon);
 		} else if (!wm && oldwm) {
-			if (callbacks->wm_style_changed &&
-			    (oldwm->stylename || oldwm->style || oldwm->stylefile))
+			if (callbacks->wm_style_changed
+			    && (changed || oldwm->stylename || oldwm->style
+				|| oldwm->stylefile))
 				callbacks->wm_style_changed(NULL, NULL, NULL);
-			if (callbacks->wm_menu_changed && (oldwm->menu))
+			if (callbacks->wm_menu_changed && (changed || oldwm->menu))
 				callbacks->wm_menu_changed(NULL);
-			if (callbacks->wm_icon_changed && (oldwm->icon))
+			if (callbacks->wm_icon_changed && (changed || oldwm->icon))
 				callbacks->wm_icon_changed(NULL);
 		} else if (!oldwm && wm) {
-			if (callbacks->wm_style_changed &&
-			    (wm->stylename || wm->style || wm->stylefile))
-				callbacks->wm_style_changed(wm->stylename,
-							    wm->style, wm->stylefile);
-			if (callbacks->wm_menu_changed && (wm->menu))
+			if (callbacks->wm_style_changed
+			    && (changed || wm->stylename || wm->style || wm->stylefile))
+				callbacks->wm_style_changed(wm->stylename, wm->style,
+							    wm->stylefile);
+			if (callbacks->wm_menu_changed && (changed || wm->menu))
 				callbacks->wm_menu_changed(wm->menu);
-			if (callbacks->wm_icon_changed && (wm->icon))
+			if (callbacks->wm_icon_changed && (changed || wm->icon))
 				callbacks->wm_icon_changed(wm->icon);
 		}
+		if (callbacks->wm_theme_changed
+		    && (changed || !string_compare(scr->theme, oldtheme)
+			|| !string_compare(scr->themefile, oldfile)))
+			callbacks->wm_theme_changed(scr->theme, scr->themefile);
 	}
-      no_wm:
 	xde_wm_unref(oldwm);
-	xde_check_theme();
+	free(oldtheme);
+	free(oldfile);
 }
 
 __asm__(".symver __xde_recheck_wm,xde_recheck_wm@@XDE_1.0");
@@ -4929,9 +4943,9 @@ static Bool
 handle_BB_THEME(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_theme_check(0);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 /** @brief handle _BLACKBOX_PID property notification
@@ -4945,25 +4959,26 @@ static Bool
 handle_BLACKBOX_PID(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_DT_WORKSPACE_CURRENT(const XEvent *e)
 {
 	if (!is_motif_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_DT_WORKSPACE_LIST(const XEvent *e)
 {
 	if (!is_motif_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	xde_defer_wm_check(250);
+	return XDE_EVENT_PROPAGATE;
 }
 
 /** @brief handle ESETROOT_PMAP_ID property changes
@@ -4977,62 +4992,69 @@ static Bool
 handle_ESETROOT_PMAP_ID(const XEvent *e)
 {
 	if (!is_root_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_theme_check(0);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
+/** @brief handle _GTK_READ_RCFILES client message
+  *
+  * A _GTK_READ_RCFILES client message is sent by theme setters that want
+  * clients to update their theme from their theme rc files.  We also send this
+  * client message when changing the ~/.gtkrc-2.0.xde theme file.  An external
+  * program may have changed the theme or style, so recheck the theme now.
+  */
 static Bool
 handle_GTK_READ_RCFILES(const XEvent *e)
 {
 	if (!e || e->type != ClientMessage)
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_theme_check(0);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_I3_CONFIG_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_I3_PID(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_I3_SHMLOG_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_I3_SOCKET_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_ICEWMGB_QUIT(const XEvent *e)
 {
 	if (!e || e->type != ClientMessage)
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 /** @brief handle MANAGER client messages
@@ -5041,8 +5063,8 @@ static Bool
 handle_MANAGER(const XEvent *e)
 {
 	if (!e || e->type != ClientMessage)
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 /** @brief handle _MOTIF_WM_INFO property change
@@ -5054,33 +5076,33 @@ static Bool
 handle_MOTIF_WM_INFO(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_NET_ACTIVE_WINDOW(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_CLIENT_LIST(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_CLIENT_LIST_STACKING(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 /** @brief handle _NET_CURRENT_DESKTOP property change
@@ -5092,371 +5114,371 @@ static Bool
 handle_NET_CURRENT_DESKTOP(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_GEOMETRY(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_LAYOUT(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_MASK(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_NAMES(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_PIXMAPS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_DESKTOP_VIEWPORT(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_FULL_PLACEMENT(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_FULLSCREEN_MONITORS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_HANDLED_ICONS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_ICON_GEOMETRY(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_NUMBER_OF_DESKTOPS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_PROPERTIES(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_SHOWING_DESKTOP(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_SUPPORTED(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return True;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_NET_SUPPORTING_WM_CHECK(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return True;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_NET_VIRTUAL_POS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_VIRTUAL_ROOTS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_VISIBLE_DESKTOPS(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_NET_WM_NAME(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_NET_WM_PID(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_NET_WORKAREA(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_OB_THEME(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_OPENBOX_PID(const XEvent *e)
 {
 	if (!is_netwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_WIN_AREA(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_AREA_COUNT(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_CLIENT_LIST(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_WIN_FOCUS(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_PROTOCOLS(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_WIN_WORKSPACE(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_WORKSPACE_COUNT(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_WORKSPACE_NAMES(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WIN_WORKSPACES(const XEvent *e)
 {
 	if (!is_winwm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
 {
 	if (!is_maker_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WM_CLASS(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return False;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WM_CLIENT_MACHINE(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_WM_COMMAND(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return False;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WM_DESKTOP(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_WM_NAME(const XEvent *e)
 {
 	if (!is_wm_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_wm_check(250);
-	return True;
+	return XDE_EVENT_STOP;
 }
 
 static Bool
 handle_XDE_THEME_NAME(const XEvent *e)
 {
 	if (!is_root_property(e))
-		return False;
+		return XDE_EVENT_PROPAGATE;
 	xde_defer_theme_check(0);
-	return False;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_XROOTPMAP_ID(const XEvent *e)
 {
 	if (!is_root_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static Bool
 handle_XSETROOT_ID(const XEvent *e)
 {
 	if (!is_root_property(e))
-		return False;
-	return False;
+		return XDE_EVENT_PROPAGATE;
+	return XDE_EVENT_PROPAGATE;
 }
 
 /** @} */

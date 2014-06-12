@@ -91,17 +91,17 @@ wm_event(const XEvent *e)
 			switch (e->xclient.data.l[0]) {
 			case XDE_WATCH_RECHECK:
 				xde_defer_wm_check(0);
-				return True;
+				return XDE_EVENT_STOP;
 			case XDE_WATCH_QUIT:
 				xde_main_quit((XPointer) XDE_WATCH_QUIT);
-				return True;
+				return XDE_EVENT_STOP;
 			case XDE_WATCH_RESTART:
 				xde_main_quit((XPointer) XDE_WATCH_RESTART);
-				return True;
+				return XDE_EVENT_STOP;
 			case XDE_WATCH_ARGV:
 				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
 					xde_main_quit((XPointer) XDE_WATCH_ARGV);
-					return True;
+					return XDE_EVENT_STOP;
 				}
 				break;
 			}
@@ -114,12 +114,13 @@ wm_event(const XEvent *e)
 static Bool
 wm_signal(int signum)
 {
-	return False;
+	return XDE_EVENT_PROPAGATE;
 }
 
 static void
-wm_changed(WindowManager *new)
+wm_changed()
 {
+	/* NOTE: everything but the theme has already been updated */
 }
 
 static void

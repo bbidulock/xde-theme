@@ -126,17 +126,22 @@ typedef struct {
 typedef struct _WmScreen WmScreen;
 typedef struct _WindowManager WindowManager;
 
+enum {
+	XDE_EVENT_PROPAGATE = False,	/* continue processing */
+	XDE_EVENT_STOP = True,	/* stop processing */
+};
+
 typedef struct {
 	Bool (*wm_event) (const XEvent *);	/* event handler */
 	Bool (*wm_signal) (int);	/* signal handler */
-	void (*wm_changed) (WindowManager *);	/* window manager changed */
+	void (*wm_changed) (void);	/* window manager changed */
 	void (*wm_style_changed) (char *, char *, char *);	/* window manager style changed */
 	void (*wm_menu_changed) (char *);
 	void (*wm_icon_changed) (char *);
 	void (*wm_theme_changed) (char *, char *);	/* window manager theme changed */
-	void (*wm_desktop_changed) (WmScreen *, int, unsigned long *);
+	void (*wm_desktop_changed) (int, unsigned long *);
 	/* current desktop(s) changed */
-	void (*wm_desktops_changed) (WmScreen *, unsigned long);
+	void (*wm_desktops_changed) (unsigned long);
 	/* number of desktops changed */
 } WmCallbacks;
 
