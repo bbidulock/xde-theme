@@ -405,8 +405,8 @@ extern void xde_check_icon(void);
 extern void xde_check_theme(void);
 extern void xde_action_check_wm(XPointer);
 extern void xde_action_check_theme(XPointer);
-extern void xde_defer_wm_check(void);
-extern void xde_defer_theme_check(void);
+extern void xde_defer_wm_check(Time delay);
+extern void xde_defer_theme_check(Time delay);
 extern void xde_wm_unref(WindowManager *);
 
 /* event functions */

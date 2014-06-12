@@ -90,8 +90,7 @@ wm_event(const XEvent *e)
 		if (e->xclient.message_type == _XA_XDE_WATCH_COMMAND) {
 			switch (e->xclient.data.l[0]) {
 			case XDE_WATCH_RECHECK:
-				xde_defer_wm_check();
-				xde_defer_theme_check();
+				xde_defer_wm_check(0);
 				return True;
 			case XDE_WATCH_QUIT:
 				xde_main_quit((XPointer) XDE_WATCH_QUIT);

@@ -2634,8 +2634,8 @@ __xde_recheck_wm()
 	} else if (!oldwm && wm) {
 		DPRINTF("window manager appeared\n");
 	} else if (!oldwm && !wm) {
-		DPRINTF("no window manager yet, test again in 1 second\n");
-		xde_defer_action(xde_action_check_wm, 1000, NULL);
+		DPRINTF("no window manager yet, test again in 2 seconds\n");
+		xde_defer_wm_check(2000);
 		goto no_wm;
 	}
 	if (callbacks && callbacks->wm_changed)
@@ -4479,7 +4479,7 @@ handle_DestroyNotify(const XEvent *e)
 	}
 	return False;
       check:
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4697,9 +4697,10 @@ __xde_process_xevents()
 			    || !(callbacks->wm_event) (&ev))
 				xde_handle_event(&ev);
 		}
-		XSync(dpy, False);
+		if (deferred_done)
+			XSync(dpy, False);
 	}
-	while (XPending(dpy));
+	while (deferred_done && XPending(dpy));
 }
 
 __asm__(".symver __xde_process_xevents,xde_process_xevents@@XDE_1.0");
@@ -4821,7 +4822,7 @@ __asm__(".symver __xde_main_loop,xde_main_loop@@XDE_1.0");
 /** @brief defer a window manager recheck
   */
 void
-__xde_defer_wm_check()
+__xde_defer_wm_check(Time delay)
 {
 	xde_defer_once(xde_action_check_wm, 250, NULL);
 }
@@ -4832,9 +4833,9 @@ __asm__(".symver __xde_defer_wm_check,xde_defer_wm_check@@XDE_1.0");
   */
 
 void
-__xde_defer_theme_check()
+__xde_defer_theme_check(Time delay)
 {
-	xde_defer_once(xde_action_check_theme, 0, NULL);
+	xde_defer_once(xde_action_check_theme, delay, NULL);
 }
 
 __asm__(".symver __xde_defer_theme_check,xde_defer_theme_check@@XDE_1.0");
@@ -4862,7 +4863,7 @@ is_wm_property(const XEvent *e)
 	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
 		return False;
 	if (!wm)
-		xde_defer_wm_check();
+		xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4873,7 +4874,7 @@ is_netwm_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->netwm_check)
-			xde_defer_wm_check();
+			xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4884,7 +4885,7 @@ is_winwm_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->winwm_check)
-			xde_defer_wm_check();
+			xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4895,7 +4896,7 @@ is_maker_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->maker_check)
-			xde_defer_wm_check();
+			xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4906,7 +4907,7 @@ is_motif_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->motif_check)
-			xde_defer_wm_check();
+			xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4929,7 +4930,7 @@ handle_BB_THEME(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_theme_check();
+	xde_defer_theme_check(0);
 	return True;
 }
 
@@ -4945,7 +4946,7 @@ handle_BLACKBOX_PID(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -4977,7 +4978,7 @@ handle_ESETROOT_PMAP_ID(const XEvent *e)
 {
 	if (!is_root_property(e))
 		return False;
-	xde_defer_theme_check();
+	xde_defer_theme_check(0);
 	return True;
 }
 
@@ -4986,7 +4987,7 @@ handle_GTK_READ_RCFILES(const XEvent *e)
 {
 	if (!e || e->type != ClientMessage)
 		return False;
-	xde_defer_theme_check();
+	xde_defer_theme_check(0);
 	return True;
 }
 
@@ -4995,7 +4996,7 @@ handle_I3_CONFIG_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5004,7 +5005,7 @@ handle_I3_PID(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5013,7 +5014,7 @@ handle_I3_SHMLOG_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5022,7 +5023,7 @@ handle_I3_SOCKET_PATH(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5054,7 +5055,7 @@ handle_MOTIF_WM_INFO(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5252,7 +5253,7 @@ handle_NET_WM_NAME(const XEvent *e)
 {
 	if (!is_netwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5261,7 +5262,7 @@ handle_NET_WM_PID(const XEvent *e)
 {
 	if (!is_netwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5286,7 +5287,7 @@ handle_OPENBOX_PID(const XEvent *e)
 {
 	if (!is_netwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5319,7 +5320,7 @@ handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 {
 	if (!is_winwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5336,7 +5337,7 @@ handle_WIN_PROTOCOLS(const XEvent *e)
 {
 	if (!is_winwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5345,7 +5346,7 @@ handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 {
 	if (!is_winwm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5394,7 +5395,7 @@ handle_WM_CLASS(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return False;
 }
 
@@ -5403,7 +5404,7 @@ handle_WM_CLIENT_MACHINE(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5412,7 +5413,7 @@ handle_WM_COMMAND(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return False;
 }
 
@@ -5429,7 +5430,7 @@ handle_WM_NAME(const XEvent *e)
 {
 	if (!is_wm_property(e))
 		return False;
-	xde_defer_wm_check();
+	xde_defer_wm_check(250);
 	return True;
 }
 
@@ -5438,7 +5439,7 @@ handle_XDE_THEME_NAME(const XEvent *e)
 {
 	if (!is_root_property(e))
 		return False;
-	xde_defer_theme_check();
+	xde_defer_theme_check(0);
 	return False;
 }
 
