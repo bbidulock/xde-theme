@@ -2604,6 +2604,9 @@ __xde_recheck_wm()
 
 	wm = scr->wm = NULL;
 	xde_check_wm();
+	xde_get_style();
+	xde_get_menu();
+	xde_get_icon();
 	if (wm && oldwm) {
 		do {
 			if (wm->netwm_check != oldwm->netwm_check)
@@ -2624,8 +2627,7 @@ __xde_recheck_wm()
 				break;
 			if (!string_compare(wm->host, oldwm->host))
 				break;
-			xde_wm_unref(oldwm);
-			return;
+			goto no_wm_change;
 		} while (0);
 	} else if (!wm && oldwm) {
 		DPRINTF("window manager disappeared\n");
@@ -2634,13 +2636,47 @@ __xde_recheck_wm()
 	} else if (!oldwm && !wm) {
 		DPRINTF("no window manager yet, test again in 1 second\n");
 		xde_defer_action(xde_action_check_wm, 1000, NULL);
-		return;
+		goto no_wm;
 	}
-	if (callbacks && callbacks->wm_changed) {
-		(callbacks->wm_changed) (oldwm);
-		return;
+	if (callbacks && callbacks->wm_changed)
+		(callbacks->wm_changed) (wm);
+      no_wm_change:
+	if (callbacks) {
+		if (wm && oldwm) {
+			if (callbacks->wm_style_changed &&
+			    (!string_compare(wm->stylename, oldwm->stylename) ||
+			     !string_compare(wm->style, oldwm->style) ||
+			     !string_compare(wm->stylefile, oldwm->stylefile)))
+				callbacks->wm_style_changed(wm->stylename,
+							    wm->style, wm->stylefile);
+			if (callbacks->wm_menu_changed &&
+			    !string_compare(wm->menu, oldwm->menu))
+				callbacks->wm_menu_changed(wm->menu);
+			if (callbacks->wm_icon_changed &&
+			    !string_compare(wm->icon, oldwm->icon))
+				callbacks->wm_icon_changed(wm->icon);
+		} else if (!wm && oldwm) {
+			if (callbacks->wm_style_changed &&
+			    (oldwm->stylename || oldwm->style || oldwm->stylefile))
+				callbacks->wm_style_changed(NULL, NULL, NULL);
+			if (callbacks->wm_menu_changed && (oldwm->menu))
+				callbacks->wm_menu_changed(NULL);
+			if (callbacks->wm_icon_changed && (oldwm->icon))
+				callbacks->wm_icon_changed(NULL);
+		} else if (!oldwm && wm) {
+			if (callbacks->wm_style_changed &&
+			    (wm->stylename || wm->style || wm->stylefile))
+				callbacks->wm_style_changed(wm->stylename,
+							    wm->style, wm->stylefile);
+			if (callbacks->wm_menu_changed && (wm->menu))
+				callbacks->wm_menu_changed(wm->menu);
+			if (callbacks->wm_icon_changed && (wm->icon))
+				callbacks->wm_icon_changed(wm->icon);
+		}
 	}
+      no_wm:
 	xde_wm_unref(oldwm);
+	xde_check_theme();
 }
 
 __asm__(".symver __xde_recheck_wm,xde_recheck_wm@@XDE_1.0");
@@ -3454,34 +3490,130 @@ __xde_get_theme()
 
 __asm__(".symver __xde_get_theme,xde_get_theme@@XDE_1.0");
 
-void
-__xde_recheck_theme()
+char *
+xde_get_style()
 {
-	char *oldtheme = scr->theme ? strdup(scr->theme) : NULL;
-	char *oldthemefile = scr->themefile ? strdup(scr->themefile) : NULL;
-
-	xde_get_theme();
-
-	if (!string_compare(oldtheme, scr->theme) ||
-	    !string_compare(oldthemefile, scr->themefile)) {
-		if (callbacks && callbacks->wm_theme_changed)
-			(callbacks->wm_theme_changed)(oldtheme, oldthemefile);
-		else {
-			free(oldtheme);
-			free(oldthemefile);
-		}
-	} else {
-		free(oldtheme);
-		free(oldthemefile);
-	}
+	if (!wm || !wm->ops || !wm->ops->get_style)
+		return NULL;
+	return wm->ops->get_style();
 }
 
-__asm__(".symver __xde_recheck_theme,xde_recheck_theme@@XDE_1.0");
+__asm__(".symver __xde_get_style,xde_get_style@@XDE_1.0");
+
+char *
+xde_get_menu()
+{
+	if (!wm || !wm->ops || !wm->ops->get_menu)
+		return NULL;
+	return wm->ops->get_menu();
+}
+
+__asm__(".symver __xde_get_menu,xde_get_menu@@XDE_1.0");
+
+char *
+xde_get_icon()
+{
+	if (!wm || !wm->ops || !wm->ops->get_icon)
+		return NULL;
+	return wm->ops->get_icon();
+}
+
+__asm__(".symver __xde_get_icon,xde_get_icon@@XDE_1.0");
+
+void
+__xde_check_style()
+{
+	Bool changed;
+
+	if (!wm || !wm->ops || !wm->ops->get_style)
+		return;
+	{
+		char *oldname = wm->stylename ? strdup(wm->stylename) : NULL;
+		char *oldstyle = wm->style ? strdup(wm->style) : NULL;
+		char *oldfile = wm->stylefile ? strdup(wm->stylefile) : NULL;
+
+		wm->ops->get_style();
+
+		changed = (!string_compare(oldname, wm->stylename) ||
+			   !string_compare(oldstyle, wm->style) ||
+			   !string_compare(oldfile, wm->stylefile));
+		free(oldname);
+		free(oldstyle);
+		free(oldfile);
+	}
+	if (changed && callbacks && callbacks->wm_style_changed)
+		callbacks->wm_style_changed(wm->stylename, wm->style, wm->stylefile);
+}
+
+__asm__(".symver __xde_check_style,xde_check_style@@XDE_1.0");
+
+void
+__xde_check_menu()
+{
+	Bool changed;
+
+	if (!wm || !wm->ops || !wm->ops->get_menu)
+		return;
+	{
+		char *oldmenu = wm->menu ? strdup(wm->menu) : NULL;
+
+		wm->ops->get_menu();
+		changed = (!string_compare(oldmenu, wm->menu));
+		free(oldmenu);
+	}
+	if (changed && callbacks && callbacks->wm_menu_changed)
+		callbacks->wm_menu_changed(wm->menu);
+}
+
+__asm__(".symver __xde_check_menu,xde_check_menu@@XDE_1.0");
+
+void
+__xde_check_icon()
+{
+	Bool changed;
+
+	if (!wm || !wm->ops || !wm->ops->get_icon)
+		return;
+	{
+		char *oldicon = wm->icon ? strdup(wm->icon) : NULL;
+
+		wm->ops->get_icon();
+		changed = (!string_compare(oldicon, wm->icon));
+		free(oldicon);
+	}
+	if (changed && callbacks && callbacks->wm_icon_changed)
+		callbacks->wm_icon_changed(wm->icon);
+}
+
+__asm__(".symver __xde_check_icon,xde_check_icon@@XDE_1.0");
+
+void
+__xde_check_theme()
+{
+	Bool changed;
+
+	{
+		char *oldtheme = scr->theme ? strdup(scr->theme) : NULL;
+		char *oldfile = scr->themefile ? strdup(scr->themefile) : NULL;
+
+		xde_check_style();
+		xde_get_theme();
+
+		changed = (!string_compare(oldtheme, scr->theme) ||
+			   !string_compare(oldfile, scr->themefile));
+		free(oldtheme);
+		free(oldfile);
+	}
+	if (changed && callbacks && callbacks->wm_theme_changed)
+		(callbacks->wm_theme_changed) (scr->theme, scr->themefile);
+}
+
+__asm__(".symver __xde_check_theme,xde_check_theme@@XDE_1.0");
 
 void
 __xde_action_check_theme(XPointer dummy)
 {
-	xde_recheck_theme();
+	xde_check_theme();
 }
 
 __asm__(".symver __xde_action_check_theme,xde_action_check_theme@@XDE_1.0");

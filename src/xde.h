@@ -131,6 +131,8 @@ typedef struct {
 	Bool (*wm_signal) (int);	/* signal handler */
 	void (*wm_changed) (WindowManager *);	/* window manager changed */
 	void (*wm_style_changed) (char *, char *, char *);	/* window manager style changed */
+	void (*wm_menu_changed) (char *);
+	void (*wm_icon_changed) (char *);
 	void (*wm_theme_changed) (char *, char *);	/* window manager theme changed */
 	void (*wm_desktop_changed) (WmScreen *, int, unsigned long *);
 	/* current desktop(s) changed */
@@ -397,7 +399,10 @@ extern void xde_set_pixmap(Window win, Atom prop, Atom type, Pixmap pixmap);
 
 /* action functions */
 extern void xde_recheck_wm(void);
-extern void xde_recheck_theme(void);
+extern void xde_check_style(void);
+extern void xde_check_menu(void);
+extern void xde_check_icon(void);
+extern void xde_check_theme(void);
 extern void xde_action_check_wm(XPointer);
 extern void xde_action_check_theme(XPointer);
 extern void xde_defer_wm_check(void);
@@ -425,6 +430,9 @@ extern void xde_show_wms(void);
 extern void xde_identify_wm(void);
 extern void xde_set_properties(void);
 extern Bool xde_find_theme(char *name, char **filename);
+extern char *xde_get_style(void);
+extern char *xde_get_menu(void);
+extern char *xde_get_icon(void);
 extern char *xde_get_theme(void);
 extern void xde_set_theme(char *name);
 extern char *xde_get_proc_environ(char *name);

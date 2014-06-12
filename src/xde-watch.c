@@ -69,6 +69,19 @@ enum {
 	XDE_WATCH_ARGV,
 };
 
+typedef struct {
+	char *stylefile;
+	char *style;
+	char *stylename;
+	char *menu;
+	char *icon;
+	char *theme;
+	char *themefile;
+} WmSettings;
+
+static WmSettings *setting;
+static WmSettings *settings;
+
 static Bool
 wm_event(const XEvent *e)
 {
@@ -106,37 +119,46 @@ wm_signal(int signum)
 }
 
 static void
-wm_changed(WindowManager *old)
+wm_changed(WindowManager *new)
 {
-	xde_wm_unref(old);
-	if (wm && wm->ops) {
-		if (wm->ops->get_style)
-			wm->ops->get_style();
-		if (wm->ops->get_menu)
-			wm->ops->get_menu();
-		if (wm->ops->get_icon)
-			wm->ops->get_icon();
-	}
-	xde_get_theme();
-	xde_set_properties();
 }
 
 static void
-wm_style_changed(char *oldname, char *oldstyle, char *oldfile)
+wm_style_changed(char *newname, char *newstyle, char *newfile)
 {
-	free(oldname);
-	free(oldstyle);
-	free(oldfile);
-	xde_get_theme();
-	xde_set_properties();
+	setting = settings + scr->screen;
+	free(setting->stylename);
+	setting->stylename = newname ? strdup(newname) : NULL;
+	free(setting->style);
+	setting->style = newstyle ? strdup(newstyle) : NULL;
+	free(setting->stylefile);
+	setting->stylefile = newfile ? strdup(newfile) : NULL;
 }
 
 static void
-wm_theme_changed(char *oldtheme, char *oldfile)
+wm_menu_changed(char *newmenu)
 {
-	free(oldtheme);
-	free(oldfile);
-	xde_set_properties();
+	setting = settings + scr->screen;
+	free(setting->menu);
+	setting->menu = newmenu ? strdup(newmenu) : NULL;
+}
+
+static void
+wm_icon_changed(char *newicon)
+{
+	setting = settings + scr->screen;
+	free(setting->icon);
+	setting->icon = newicon ? strdup(newicon) : NULL;
+}
+
+static void
+wm_theme_changed(char *newtheme, char *newfile)
+{
+	setting = settings + scr->screen;
+	free(setting->theme);
+	setting->theme = newtheme ? strdup(newtheme) : NULL;
+	free(setting->themefile);
+	setting->themefile = newfile ? strdup(newfile) : NULL;
 }
 
 static WmCallbacks wm_callbacks = {
@@ -144,6 +166,8 @@ static WmCallbacks wm_callbacks = {
 	.wm_signal = wm_signal,
 	.wm_changed = wm_changed,
 	.wm_style_changed = wm_style_changed,
+	.wm_menu_changed = wm_menu_changed,
+	.wm_icon_changed = wm_icon_changed,
 	.wm_theme_changed = wm_theme_changed,
 };
 
@@ -182,19 +206,10 @@ do_startup(void)
 		/* clear file creation mask */
 		umask(0);
 	}
+	settings = calloc(nscr, sizeof(settings));
 	for (s = 0; s < nscr; s++) {
 		xde_set_screen(s);
-		xde_check_wm();
-		if (wm && wm->ops) {
-			if (wm->ops->get_style)
-				wm->ops->get_style();
-			if (wm->ops->get_menu)
-				wm->ops->get_menu();
-			if (wm->ops->get_icon)
-				wm->ops->get_icon();
-		}
-		xde_get_theme();
-		xde_set_properties();
+		xde_recheck_wm();
 	}
 	return xde_main_loop();
 }
