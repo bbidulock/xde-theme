@@ -373,6 +373,7 @@ list_styles_OPENBOX()
 
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 		break;
 	case XDE_OUTPUT_SHELL:
 		fprintf(stdout, "XDE_WM_STYLES=(\n");
@@ -386,6 +387,7 @@ list_styles_OPENBOX()
 		list_dir_OPENBOX(*dir, style, XDE_LIST_MIXED);
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 		break;
 	case XDE_OUTPUT_SHELL:
 		fprintf(stdout, ")\n");

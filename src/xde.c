@@ -117,8 +117,6 @@ delete_this_wm(WindowManager *w)
 		free(w->stylefile);
 		free(w->style);
 		free(w->stylename);
-		free(w->theme);
-		free(w->themefile);
 		free(w->menu);
 		free(w->env);
 		if (w->db)
@@ -194,6 +192,30 @@ Atom _XA_WIN_WORKSPACE;
 Atom _XA_WIN_WORKSPACE_COUNT;
 Atom _XA_WM_DESKTOP;
 Atom _XA_XDE_THEME_NAME;
+Atom _XA_XDE_WM_NAME;
+Atom _XA_XDE_WM_NETWM_SUPPORT;
+Atom _XA_XDE_WM_WINWM_SUPPORT;
+Atom _XA_XDE_WM_MAKER_SUPPORT;
+Atom _XA_XDE_WM_MOTIF_SUPPORT;
+Atom _XA_XDE_WM_ICCCM_SUPPORT;
+Atom _XA_XDE_WM_REDIR_SUPPORT;
+Atom _XA_XDE_WM_PID;
+Atom _XA_XDE_WM_HOST;
+Atom _XA_XDE_WM_CLASS;
+Atom _XA_XDE_WM_CMDLINE;
+Atom _XA_XDE_WM_COMMAND;
+Atom _XA_XDE_WM_RCFILE;
+Atom _XA_XDE_WM_PRVDIR;
+Atom _XA_XDE_WM_USRDIR;
+Atom _XA_XDE_WM_SYSDIR;
+Atom _XA_XDE_WM_ETCDIR;
+Atom _XA_XDE_WM_STYLEFILE;
+Atom _XA_XDE_WM_STYLE;
+Atom _XA_XDE_WM_STYLENAME;
+Atom _XA_XDE_WM_MENU;
+Atom _XA_XDE_WM_ICON;
+Atom _XA_XDE_WM_THEME;
+Atom _XA_XDE_WM_THEMEFILE;
 Atom _XA_XROOTPMAP_ID;
 Atom _XA_XSETROOT_ID;
 
@@ -281,6 +303,30 @@ static Atoms atoms[] = {
 	{"WM_DESKTOP",			&_XA_WM_DESKTOP,		&handle_WM_DESKTOP,			None			},
 	{"WM_NAME",			NULL,				&handle_WM_NAME,			XA_WM_NAME		},
 	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME,		&handle_XDE_THEME_NAME,			None			},
+	{"_XDE_WM_NAME",		&_XA_XDE_WM_NAME,		NULL,					None			},
+	{"_XDE_WM_NETWM_SUPPORT",	&_XA_XDE_WM_NETWM_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_WINWM_SUPPORT",	&_XA_XDE_WM_WINWM_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_MAKER_SUPPORT",	&_XA_XDE_WM_MAKER_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_MOTIF_SUPPORT",	&_XA_XDE_WM_MOTIF_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_ICCCM_SUPPORT",	&_XA_XDE_WM_ICCCM_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_REDIR_SUPPORT",	&_XA_XDE_WM_REDIR_SUPPORT,	NULL,					None			},
+	{"_XDE_WM_PID",			&_XA_XDE_WM_PID,		NULL,					None			},
+	{"_XDE_WM_HOST",		&_XA_XDE_WM_HOST,		NULL,					None			},
+	{"_XDE_WM_CLASS",		&_XA_XDE_WM_CLASS,		NULL,					None			},
+	{"_XDE_WM_CMDLINE",		&_XA_XDE_WM_CMDLINE,		NULL,					None			},
+	{"_XDE_WM_COMMAND",		&_XA_XDE_WM_COMMAND,		NULL,					None			},
+	{"_XDE_WM_RCFILE",		&_XA_XDE_WM_RCFILE,		NULL,					None			},
+	{"_XDE_WM_PRVDIR",		&_XA_XDE_WM_PRVDIR,		NULL,					None			},
+	{"_XDE_WM_USRDIR",		&_XA_XDE_WM_USRDIR,		NULL,					None			},
+	{"_XDE_WM_SYSDIR",		&_XA_XDE_WM_SYSDIR,		NULL,					None			},
+	{"_XDE_WM_ETCDIR",		&_XA_XDE_WM_ETCDIR,		NULL,					None			},
+	{"_XDE_WM_STYLEFILE",		&_XA_XDE_WM_STYLEFILE,		NULL,					None			},
+	{"_XDE_WM_STYLE",		&_XA_XDE_WM_STYLE,		NULL,					None			},
+	{"_XDE_WM_STYLENAME",		&_XA_XDE_WM_STYLENAME,		NULL,					None			},
+	{"_XDE_WM_THEME",		&_XA_XDE_WM_THEME,		NULL,					None			},
+	{"_XDE_WM_THEMEFILE",		&_XA_XDE_WM_THEMEFILE,		NULL,					None			},
+	{"_XDE_WM_MENU",		&_XA_XDE_WM_MENU,		NULL,					None			},
+	{"_XDE_WM_ICON",		&_XA_XDE_WM_ICON,		NULL,					None			},
 	{"_XROOTPMAP_ID",		&_XA_XROOTPMAP_ID,		&handle_XROOTPMAP_ID,			None			},
 	{"_XSETROOT_ID",		&_XA_XSETROOT_ID,		&handle_XSETROOT_ID,			None			},
 	{NULL,				NULL,				NULL,					None			}
@@ -417,9 +463,50 @@ __xde_init(WmCallbacks *cbs) {
 
 __asm__(".symver __xde_init,xde_init@@XDE_1.0");
 
+static Bool
+string_compare(char *a, char *b)
+{
+	if (a) {
+		if (!b)
+			return False;
+		if (strcmp(a, b))
+			return False;
+	} else if (b)
+		return False;
+	return True;
+}
+
 /** @name Property retrieval functions
   *
   * @{ */
+
+void
+__xde_set_text_list(Window win, Atom prop, char **list, long n)
+{
+	if (!list || !n)
+		XDeleteProperty(dpy, win, prop);
+	else {
+		XTextProperty tp = { NULL, };
+		char **strings;
+		int i;
+
+		strings = calloc(n, sizeof(*strings));
+		for (i = 0; i < n; i++)
+			strings[i] = list[i] ? : "";
+
+		if (Xutf8TextListToTextProperty(dpy, strings, n, XUTF8StringStyle, &tp) != Success) {
+			EPRINTF("error converting strings\n");
+			free(strings);
+			return;
+		}
+		XSetTextProperty(dpy, win, &tp, prop);
+		if (tp.value)
+			XFree(tp.value);
+		free(strings);
+	}
+}
+
+__asm__(".symver __xde_set_text_list,xde_set_text_list@@XDE_1.0");
 
 char *
 __xde_get_text(Window win, Atom prop)
@@ -435,6 +522,26 @@ __xde_get_text(Window win, Atom prop)
 }
 
 __asm__(".symver __xde_get_text,xde_get_text@@XDE_1.0");
+
+void
+__xde_set_text(Window win, Atom prop, char *text)
+{
+	if (!text)
+		XDeleteProperty(dpy, win, prop);
+	else {
+		XTextProperty tp = { NULL, };
+
+		if (Xutf8TextListToTextProperty(dpy, &text, 1, XUTF8StringStyle, &tp) != Success) {
+			EPRINTF("error converting string '%s'\n", text);
+			return;
+		}
+		XSetTextProperty(dpy, win, &tp, prop);
+		if (tp.value)
+			XFree(tp.value);
+	}
+}
+
+__asm__(".symver __xde_set_text,xde_set_text@@XDE_1.0");
 
 long *
 __xde_get_cardinals(Window win, Atom prop, Atom type, long *n)
@@ -464,6 +571,15 @@ __xde_get_cardinals(Window win, Atom prop, Atom type, long *n)
 
 __asm__(".symver __xde_get_cardinals,xde_get_cardinals@@XDE_1.0");
 
+void
+__xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
+{
+	XChangeProperty(dpy, win, prop, type, 32, PropModeReplace,
+			(unsigned char *)cards, n);
+}
+
+__asm__(".symver __xde_set_cardinals,xde_set_cardinals@@XDE_1.0");
+
 Bool
 __xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 {
@@ -481,6 +597,14 @@ __xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 
 __asm__(".symver __xde_get_cardinal,xde_get_cardinal@@XDE_1.0");
 
+void
+__xde_set_cardinal(Window win, Atom prop, Atom type, long card)
+{
+	xde_set_cardinals(win, prop, type, &card, 1);
+}
+
+__asm__(".symver __xde_set_cardinal,xde_set_cardinal@@XDE_1.0");
+
 Window *
 __xde_get_windows(Window win, Atom prop, Atom type, long *n)
 {
@@ -488,6 +612,14 @@ __xde_get_windows(Window win, Atom prop, Atom type, long *n)
 }
 
 __asm__(".symver __xde_get_windows,xde_get_windows@@XDE_1.0");
+
+void
+__xde_set_windows(Window win, Atom prop, Atom type, Window *winds, long n)
+{
+	xde_set_cardinals(win, prop, type, (long *)winds, n);
+}
+
+__asm__(".symver __xde_set_windows,xde_set_windows@@XDE_1.0");
 
 Bool
 __xde_get_window(Window win, Atom prop, Atom type, Window *win_ret)
@@ -497,6 +629,14 @@ __xde_get_window(Window win, Atom prop, Atom type, Window *win_ret)
 
 __asm__(".symver __xde_get_window,xde_get_window@@XDE_1.0");
 
+void
+__xde_set_window(Window win, Atom prop, Atom type, Window wind)
+{
+	xde_set_cardinal(win, prop, type, wind);
+}
+
+__asm__(".symver __xde_set_window,xde_set_window@@XDE_1.0");
+
 Time *
 __xde_get_times(Window win, Atom prop, Atom type, long *n)
 {
@@ -504,6 +644,14 @@ __xde_get_times(Window win, Atom prop, Atom type, long *n)
 }
 
 __asm__(".symver __xde_get_times,xde_get_times@@XDE_1.0");
+
+void
+__xde_set_times(Window win, Atom prop, Atom type, Time *times, long n)
+{
+	xde_set_cardinals(win, prop, type, (long *)times, n);
+}
+
+__asm__(".symver __xde_set_times,xde_set_times@@XDE_1.0");
 
 Bool
 __xde_get_time(Window win, Atom prop, Atom type, Time * time_ret)
@@ -513,6 +661,14 @@ __xde_get_time(Window win, Atom prop, Atom type, Time * time_ret)
 
 __asm__(".symver __xde_get_time,xde_get_time@@XDE_1.0");
 
+void
+__xde_set_time(Window win, Atom prop, Atom type, Time time)
+{
+	xde_set_cardinal(win, prop, type, time);
+}
+
+__asm__(".symver __xde_set_time,xde_set_time@@XDE_1.0");
+
 Atom *
 __xde_get_atoms(Window win, Atom prop, Atom type, long *n)
 {
@@ -520,6 +676,14 @@ __xde_get_atoms(Window win, Atom prop, Atom type, long *n)
 }
 
 __asm__(".symver __xde_get_atoms,xde_get_atoms@@XDE_1.0");
+
+void
+__xde_set_atoms(Window win, Atom prop, Atom type, Atom *atoms, long n)
+{
+	xde_set_cardinals(win, prop, type, (long *)atoms, n);
+}
+
+__asm__(".symver __xde_set_atoms,xde_set_atoms@@XDE_1.0");
 
 Bool
 __xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
@@ -529,6 +693,14 @@ __xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
 
 __asm__(".symver __xde_get_atom,xde_get_atom@@XDE_1.0");
 
+void
+__xde_set_atom(Window win, Atom prop, Atom type, Atom atom)
+{
+	xde_set_cardinal(win, prop, type, atom);
+}
+
+__asm__(".symver __xde_set_atom,xde_set_atom@@XDE_1.0");
+
 Pixmap *
 __xde_get_pixmaps(Window win, Atom prop, Atom type, long *n)
 {
@@ -537,6 +709,14 @@ __xde_get_pixmaps(Window win, Atom prop, Atom type, long *n)
 
 __asm__(".symver __xde_get_pixmaps,xde_get_pixmaps@@XDE_1.0");
 
+void
+__xde_set_pixmaps(Window win, Atom prop, Atom type, Pixmap *pixmaps, long n)
+{
+	xde_set_cardinals(win, prop, type, (long *)pixmaps, n);
+}
+
+__asm__(".symver __xde_set_pixmaps,xde_set_pixmaps@@XDE_1.0");
+
 Bool
 __xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
 {
@@ -544,6 +724,14 @@ __xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap * pixmap_ret)
 }
 
 __asm__(".symver __xde_get_pixmap,xde_get_pixmap@@XDE_1.0");
+
+void
+__xde_set_pixmap(Window win, Atom prop, Atom type, Pixmap pixmap)
+{
+	xde_set_cardinal(win, prop, type, pixmap);
+}
+
+__asm__(".symver __xde_set_pixmap,xde_set_pixmap@@XDE_1.0");
 
 /** @brief Check for recursive window properties
   * @param atom - property name
@@ -1668,6 +1856,25 @@ find_wm_proc()
 	return False;
 }
 
+/** @brief Check for window manager button proxy
+  */
+static Bool
+find_wm_prox()
+{
+	OPRINTF("finding wm button proxy for screen %d\n", screen);
+
+	if (xde_get_window(scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY, None, &wm->proxy)) {
+		/* might be left over from another wm */
+		if (wm->netwm_check && check_supported(_XA_NET_SUPPORTED, _XA_WIN_DESKTOP_BUTTON_PROXY))
+			return True;
+		if (wm->winwm_check && check_supported(_XA_WIN_PROTOCOLS, _XA_WIN_DESKTOP_BUTTON_PROXY))
+			return True;
+		DPRINTF("proxy property exists, but no support\n");
+		wm->proxy = None;
+	}
+	return False;
+}
+
 static WmOperations *get_wm_ops(void);
 
 /** @brief Check for a window manager on the current screen.
@@ -1679,35 +1886,35 @@ __xde_check_wm()
 	unref_wm();
 	ref_wm();
 
-	find_wm_comp();		/* Check for window manager compliance */
-	find_wm_name();		/* Check for window manager name */
-	find_wm_host();		/* Check for window manager host */
-	find_wm_pid();		/* Check for window manager pid */
-	find_wm_comm();		/* Check for window manager command */
-	find_wm_proc();		/* Check for window manager proc */
+	if (find_wm_comp()) {	/* Check for window manager compliance */
+		find_wm_name();	/* Check for window manager name */
+		find_wm_host();	/* Check for window manager host */
+		find_wm_pid();	/* Check for window manager pid */
+		find_wm_comm();	/* Check for window manager command */
+		find_wm_proc();	/* Check for window manager proc */
+		find_wm_prox();	/* Check for window manager button proxy */
 
-	if (wm->name)
 		wm->ops = get_wm_ops();
-	if (wm->name && wm->pid) {
-		WmScreen *s;
-		int i;
+		if (wm->pid) {
+			WmScreen *s;
+			int i;
 
-		OPRINTF("checking for duplicate wm for screen %d\n", screen);
+			OPRINTF("checking for duplicate wm for screen %d\n", screen);
 
-		for (i = 0; i < nscr; i++) {
-			if (i == screen)
-				continue;
-			s = screens + i;
-			if (!s->wm)
-				continue;
-			if ((wm->host == s->wm->host
-			     || (wm->host && s->wm->host &&
-				 !strcmp(wm->host, s->wm->host))) &&
-			    (wm->pid && s->wm->pid && wm->pid == s->wm->pid)) {
-				OPRINTF("found duplicate wm on screen %d\n", s->screen);
-				unref_wm();
-				wm = scr->wm = s->wm;
-				ref_wm();
+			for (i = 0; i < nscr; i++) {
+				if (i == screen)
+					continue;
+				s = screens + i;
+				if (!s->wm)
+					continue;
+				if (wm->pid == s->wm->pid
+				    && string_compare(wm->host, s->wm->host)) {
+					OPRINTF("found duplicate wm on screen %d\n",
+						s->screen);
+					unref_wm();
+					wm = scr->wm = s->wm;
+					ref_wm();
+				}
 			}
 		}
 		return True;
@@ -1786,14 +1993,14 @@ xde_identify_wm_human()
 		fprintf(stdout, "Style: %s\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "Style name: %s\n", wm->stylename);
-	if (wm->theme)
-		fprintf(stdout, "Theme: %s\n", wm->theme);
-	if (wm->themefile)
-		fprintf(stdout, "Theme file: %s\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "Menu file: %s\n", wm->menu);
 	if (wm->icon)
 		fprintf(stdout, "Icon name: %s\n", wm->icon);
+	if (scr->theme)
+		fprintf(stdout, "Theme: %s\n", scr->theme);
+	if (scr->themefile)
+		fprintf(stdout, "Theme file: %s\n", scr->themefile);
 }
 
 static void
@@ -1864,14 +2071,14 @@ xde_identify_wm_shell()
 		fprintf(stdout, "XDE_WM_STYLE=\"%s\"\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "XDE_WM_STYLENAME=\"%s\"\n", wm->stylename);
-	if (wm->theme)
-		fprintf(stdout, "XDE_WM_THEME=\"%s\"\n", wm->theme);
-	if (wm->themefile)
-		fprintf(stdout, "XDE_WM_THEMEFILE=\"%s\"\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "XDE_WM_MENU=\"%s\"\n", wm->menu);
 	if (wm->icon)
 		fprintf(stdout, "XDE_WM_ICON=\"%s\"\n", wm->icon);
+	if (scr->theme)
+		fprintf(stdout, "XDE_WM_THEME=\"%s\"\n", scr->theme);
+	if (scr->themefile)
+		fprintf(stdout, "XDE_WM_THEMEFILE=\"%s\"\n", scr->themefile);
 }
 
 static void
@@ -1943,15 +2150,106 @@ xde_identify_wm_perl()
 		fprintf(stdout, "\tXDE_WM_STYLE => '%s',\n", wm->style);
 	if (wm->stylename)
 		fprintf(stdout, "\tXDE_WM_STYLENAME => '%s',\n", wm->stylename);
-	if (wm->theme)
-		fprintf(stdout, "\tXDE_WM_THEME => '%s',\n", wm->theme);
-	if (wm->themefile)
-		fprintf(stdout, "\tXDE_WM_THEMEFILE => '%s',\n", wm->themefile);
 	if (wm->menu)
 		fprintf(stdout, "\tXDE_WM_MENU => '%s',\n", wm->menu);
 	if (wm->icon)
 		fprintf(stdout, "\tXDE_WM_ICON => '%s',\n", wm->icon);
+	if (scr->theme)
+		fprintf(stdout, "\tXDE_WM_THEME => '%s',\n", scr->theme);
+	if (scr->themefile)
+		fprintf(stdout, "\tXDE_WM_THEMEFILE => '%s',\n", scr->themefile);
 	fprintf(stdout, "}\n");
+}
+
+/** @brief set XDE properties on the root window for the current screen
+  */
+void
+__xde_set_properties()
+{
+	if (wm) {
+		xde_set_text(scr->root, _XA_XDE_WM_NAME, wm->name);
+		if (wm->netwm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW,
+				       wm->netwm_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+		if (wm->winwm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_WINWM_SUPPORT, XA_WINDOW,
+				       wm->winwm_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+		if (wm->maker_check)
+			xde_set_window(scr->root, _XA_XDE_WM_MAKER_SUPPORT, XA_WINDOW,
+				       wm->maker_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+		if (wm->motif_check)
+			xde_set_window(scr->root, _XA_XDE_WM_MOTIF_SUPPORT, XA_WINDOW,
+				       wm->motif_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+		if (wm->icccm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_ICCCM_SUPPORT, XA_WINDOW,
+				       wm->icccm_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+		if (wm->redir_check)
+			xde_set_window(scr->root, _XA_XDE_WM_REDIR_SUPPORT, XA_WINDOW,
+				       wm->redir_check);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+		if (wm->pid)
+			xde_set_cardinal(scr->root, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
+		else
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
+		xde_set_text(scr->root, _XA_XDE_WM_HOST, wm->host);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, (char **) &wm->ch, 2);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, wm->argv, wm->argc);
+		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, wm->cargv, wm->cargc);
+		xde_set_text(scr->root, _XA_XDE_WM_RCFILE, wm->rcfile);
+		xde_set_text(scr->root, _XA_XDE_WM_PRVDIR, wm->pdir);
+		xde_set_text(scr->root, _XA_XDE_WM_USRDIR, wm->udir);
+		xde_set_text(scr->root, _XA_XDE_WM_SYSDIR, wm->sdir);
+		xde_set_text(scr->root, _XA_XDE_WM_ETCDIR, wm->edir);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, wm->stylefile);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLE, wm->style);
+		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, wm->stylename);
+		xde_set_text(scr->root, _XA_XDE_WM_MENU, wm->menu);
+		xde_set_text(scr->root, _XA_XDE_WM_ICON, wm->icon);
+	} else {
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NAME);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_HOST);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_CLASS);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_CMDLINE);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_COMMAND);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_RCFILE);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PRVDIR);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_USRDIR);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_SYSDIR);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ETCDIR);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLEFILE);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLE);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLENAME);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MENU);
+		XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICON);
+	}
+	xde_set_text(scr->root, _XA_XDE_WM_THEME, scr->theme);
+	xde_set_text(scr->root, _XA_XDE_WM_THEMEFILE, scr->themefile);
+}
+
+__asm__(".symver __xde_set_properties,xde_set_properties@@XDE_1.0");
+
+static void
+xde_identify_wm_props()
+{
+	xde_set_properties();
 }
 
 void
@@ -1966,6 +2264,9 @@ __xde_identify_wm()
 		break;
 	case XDE_OUTPUT_PERL:
 		xde_identify_wm_perl();
+		break;
+	case XDE_OUTPUT_PROPS:
+		xde_identify_wm_props();
 		break;
 	}
 }
@@ -2038,12 +2339,14 @@ show_wm()
 		OPRINTF("%d %s: style %s\n", screen, wm->name, wm->style);
 	if (wm->stylename)
 		OPRINTF("%d %s: stylename %s\n", screen, wm->name, wm->stylename);
-	if (wm->theme)
-		OPRINTF("%d %s: theme %s\n", screen, wm->name, wm->theme);
-	if (wm->themefile)
-		OPRINTF("%d %s: themefile %s\n", screen, wm->name, wm->themefile);
+	if (wm->menu)
+		OPRINTF("%d %s: menu %s\n", screen, wm->name, wm->menu);
 	if (wm->icon)
 		OPRINTF("%d %s: icon %s\n", screen, wm->name, wm->icon);
+	if (scr->theme)
+		OPRINTF("%d %s: theme %s\n", screen, wm->name, scr->theme);
+	if (scr->themefile)
+		OPRINTF("%d %s: themefile %s\n", screen, wm->name, scr->themefile);
 }
 
 void
@@ -2114,19 +2417,6 @@ __xde_action_check_wm(XPointer dummy)
 
 __asm__(".symver __xde_action_check_wm,xde_action_check_wm@@XDE_1.0");
 
-static Bool
-string_compare(char *a, char *b)
-{
-	if (a) {
-		if (!b)
-			return False;
-		if (strcmp(a, b))
-			return False;
-	} else if (b)
-		return False;
-	return True;
-}
-
 /** @brief check whether a window manager has changed (or appeared)
   * @return Bool - true if changed
   */
@@ -2148,6 +2438,8 @@ __xde_recheck_wm()
 			if (wm->motif_check != oldwm->motif_check)
 				break;
 			if (wm->icccm_check != oldwm->icccm_check)
+				break;
+			if (wm->proxy != oldwm->proxy)
 				break;
 			if (wm->pid != oldwm->pid)
 				break;
@@ -2397,6 +2689,7 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 		qsort(entries, numb, sizeof(*entries), &entry_compare);
 		for (i = 0, entry = entries; i < numb; i++, entry++) {
 			switch (options.format) {
+			case XDE_OUTPUT_PROPS:
 			case XDE_OUTPUT_HUMAN:
 				fprintf(stdout, "%s %s%s\n",
 					entry->stylename, entry->filename,
@@ -2432,6 +2725,7 @@ __xde_list_styles_simple()
 
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 	case XDE_OUTPUT_SHELL:
 		break;
 	case XDE_OUTPUT_PERL:
@@ -2441,6 +2735,7 @@ __xde_list_styles_simple()
 	if (options.user) {
 		switch (options.format) {
 		case XDE_OUTPUT_HUMAN:
+		case XDE_OUTPUT_PROPS:
 			break;
 		case XDE_OUTPUT_SHELL:
 			fprintf(stdout, "XDE_WM_STYLES_USR=(\n");
@@ -2455,6 +2750,7 @@ __xde_list_styles_simple()
 			wm->ops->list_dir(wm->udir, style, XDE_LIST_USER);
 		switch (options.format) {
 		case XDE_OUTPUT_HUMAN:
+		case XDE_OUTPUT_PROPS:
 			break;
 		case XDE_OUTPUT_SHELL:
 			fprintf(stdout, ")\n");
@@ -2467,6 +2763,7 @@ __xde_list_styles_simple()
 	if (options.system) {
 		switch (options.format) {
 		case XDE_OUTPUT_HUMAN:
+		case XDE_OUTPUT_PROPS:
 			break;
 		case XDE_OUTPUT_SHELL:
 			fprintf(stdout, "XDE_WM_STYLES_SYS=(\n");
@@ -2481,6 +2778,7 @@ __xde_list_styles_simple()
 			wm->ops->list_dir(wm->edir, style, XDE_LIST_GLOBAL);
 		switch (options.format) {
 		case XDE_OUTPUT_HUMAN:
+		case XDE_OUTPUT_PROPS:
 			break;
 		case XDE_OUTPUT_SHELL:
 			fprintf(stdout, ")\n");
@@ -2492,6 +2790,7 @@ __xde_list_styles_simple()
 	}
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 	case XDE_OUTPUT_SHELL:
 		break;
 	case XDE_OUTPUT_PERL:
@@ -2685,22 +2984,23 @@ __xde_list_styles_nostyle()
 			seen[numb] = NULL;
 			switch (options.format) {
 			case XDE_OUTPUT_HUMAN:
+			case XDE_OUTPUT_PROPS:
 				fprintf(stdout, "%s %s%s\n",
 					stylename, file,
-					(wm->themefile
-					 && !strcmp(wm->themefile, file)) ? " *" : "");
+					(scr->themefile
+					 && !strcmp(scr->themefile, file)) ? " *" : "");
 				break;
 			case XDE_OUTPUT_SHELL:
 				fprintf(stdout, "\t\'%s\t%s\t%s\'\n",
 					stylename, file,
-					(wm->themefile
-					 && !strcmp(wm->themefile, file)) ? " *" : "");
+					(scr->themefile
+					 && !strcmp(scr->themefile, file)) ? " *" : "");
 				break;
 			case XDE_OUTPUT_PERL:
 				fprintf(stdout, "\t\t'%s' => [ '%s', %d ],\n",
 					stylename, file,
-					(wm->themefile
-					 && !strcmp(wm->themefile, file)) ? 1 : 0);
+					(scr->themefile
+					 && !strcmp(scr->themefile, file)) ? 1 : 0);
 				break;
 			}
 			free(file);
@@ -2867,6 +3167,24 @@ __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 
 __asm__(".symver __xde_get_menu_simple,xde_get_menu_simple@@XDE_1.0");
 
+static char *
+theme_replace(char *theme, char *themefile)
+{
+	if (!string_compare(theme, scr->theme)) {
+		theme = strdup(theme);
+		free(scr->theme);
+		scr->theme = theme;
+		xde_set_text(scr->root, _XA_XDE_THEME_NAME, theme);
+	} else
+		theme = scr->theme;
+	if (!string_compare(themefile, scr->themefile)) {
+		free(scr->themefile);
+		scr->themefile = themefile;
+	} else
+		free(themefile);
+	return theme;
+}
+
 /** @brief Get the current XDE theme.
   * @return char * - The name of the current theme or NULL.
   *
@@ -2878,28 +3196,18 @@ char *
 __xde_get_theme()
 {
 	char *theme = NULL, *themefile = NULL;
-	char *name, *style, *files, *end, *file;
+	char *name, *files, *end, *file;
 	int n;
 
-	style = wm->ops->get_style();
-	if (style && xde_find_theme(style, &themefile)) {
-		theme = strdup(style);
-		free(wm->theme);
-		wm->theme = theme;
-		free(wm->themefile);
-		wm->themefile = themefile;
-		return theme;
+	if (wm) {
+		char *style = wm->ops->get_style();
+
+		if (style && xde_find_theme(style, &themefile))
+			return theme_replace(style, themefile);
 	}
 	name = xde_get_text(scr->root, _XA_XDE_THEME_NAME);
-	if (name && xde_find_theme(name, &themefile)) {
-		theme = strdup(name);
-		free(wm->theme);
-		wm->theme = theme;
-		free(wm->themefile);
-		wm->themefile = themefile;
-		XFree(name);
-		return theme;
-	}
+	if (name && xde_find_theme(name, &themefile))
+		return theme_replace(name, themefile);
 	if (name)
 		XFree(name);
 	files = calloc(PATH_MAX, sizeof(*files));
@@ -2957,13 +3265,8 @@ __xde_get_theme()
 				continue;
 			*e = '\0';
 			memmove(buf, b, strlen(b) + 1);
-			if (xde_find_theme(buf, &themefile)) {
-				theme = strdup(buf);
-				free(wm->theme);
-				wm->theme = theme;
-				free(wm->themefile);
-				wm->themefile = themefile;
-			}
+			if (xde_find_theme(buf, &themefile))
+				theme = theme_replace(buf, themefile);
 		}
 		fclose(f);
 		free(buf);
@@ -2975,6 +3278,38 @@ __xde_get_theme()
 __asm__(".symver __xde_get_theme,xde_get_theme@@XDE_1.0");
 
 void
+__xde_recheck_theme()
+{
+	char *oldtheme = scr->theme ? strdup(scr->theme) : NULL;
+	char *oldthemefile = scr->themefile ? strdup(scr->themefile) : NULL;
+
+	xde_get_theme();
+
+	if (!string_compare(oldtheme, scr->theme) ||
+	    !string_compare(oldthemefile, scr->themefile)) {
+		if (callbacks && callbacks->wm_theme_changed)
+			(callbacks->wm_theme_changed)(oldtheme, oldthemefile);
+		else {
+			free(oldtheme);
+			free(oldthemefile);
+		}
+	} else {
+		free(oldtheme);
+		free(oldthemefile);
+	}
+}
+
+__asm__(".symver __xde_recheck_theme,xde_recheck_theme@@XDE_1.0");
+
+void
+__xde_action_check_theme(XPointer dummy)
+{
+	xde_recheck_theme();
+}
+
+__asm__(".symver __xde_action_check_theme,xde_action_check_theme@@XDE_1.0");
+
+void
 __xde_set_theme(char *name)
 {
 	const char *suffix = "/.gtkrc-2.0.xde";
@@ -2982,7 +3317,6 @@ __xde_set_theme(char *name)
 	int len, done = 0;
 	FILE *f;
 	XEvent xev;
-	XTextProperty xtp;
 
 	if (!xde_find_theme(name, NULL)) {
 		EPRINTF("cannot find theme %s\n", name);
@@ -3056,14 +3390,7 @@ __xde_set_theme(char *name)
 	XSendEvent(dpy, scr->root, False, StructureNotifyMask |
 		   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	memset(&xtp, 0, sizeof(xtp));
-	if (Xutf8TextListToTextProperty(dpy, &name, 1, XUTF8StringStyle, &xtp) != Success) {
-		EPRINTF("error converting string\n");
-		return;
-	}
-	XSetTextProperty(dpy, scr->root, &xtp, _XA_XDE_THEME_NAME);
-	if (xtp.value)
-		XFree(xtp.value);
+	xde_set_text(scr->root, _XA_XDE_THEME_NAME, name);
 	return;
 }
 
@@ -3782,6 +4109,11 @@ get_wm_ops()
 	char dlfile[256];
 	void *handle;
 
+	if (!wm)
+		return &wm_ops_NONE;
+	if (!wm->name)
+		return &wm_ops_UNKNOWN;
+
 	for (ops = wm_ops; *ops; ops++)
 		if (!strcmp((*ops)->name, wm->name))
 			break;
@@ -3805,18 +4137,41 @@ get_wm_ops()
 			}
 		}
 		return loaded;
-	} else
+	} else {
 		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
-
-	return NULL;
+		/* we could not load window manager specific operations by name, however, 
+		   we can still use a set of generic operations based on NetWM/EWMH
+		   support, Gnome1/WMH support, Maker, Motif or even ICCCM for that
+		   matter. */
+		return &wm_ops_UNKNOWN;
+	}
 }
 
 /** @} */
 
+/** @brief handle DestroyNotify event
+  *
+  * If we receive a destroy notification for any of the windows that are
+  * controlled by the window manager, we need to defer a check to see whether
+  * the window manager changed.
+  */
 Bool
 handle_DestroyNotify(const XEvent *e)
 {
+	if (wm) {
+		Window win = e->xdestroywindow.window;
+		int i;
+
+		for (i = 0; i < CHECK_WINS; i++)
+			if (win == wm->wins[i])
+				goto check;
+		if (win == wm->proxy)
+			goto check;
+	}
 	return False;
+      check:
+	xde_defer_wm_check();
+	return True;
 }
 
 /** @name Event Handlers
@@ -4157,248 +4512,456 @@ __asm__(".symver __xde_main_loop,xde_main_loop@@XDE_1.0");
 /** @brief defer a window manager recheck
   */
 void
-__xde_set_deferred_wmcheck()
+__xde_defer_wm_check()
 {
 	xde_defer_once(xde_action_check_wm, 250, NULL);
 }
 
-__asm__(".symver __xde_set_deferred_wmcheck,xde_set_deferred_wmcheck@@XDE_1.0");
+__asm__(".symver __xde_defer_wm_check,xde_defer_wm_check@@XDE_1.0");
+
+/** @brief defer a window manager theme check
+  */
+
+void
+__xde_defer_theme_check()
+{
+	xde_defer_once(xde_action_check_theme, 0, NULL);
+}
+
+__asm__(".symver __xde_defer_theme_check,xde_defer_theme_check@@XDE_1.0");
 
 static Bool
-handle_BB_THEME(const XEvent *e)
+is_wm_window(Window win)
 {
+	if (win == scr->root)
+		return True;
+	if (wm) {
+		int i;
+
+		for (i = 0; i < CHECK_WINS; i++)
+			if (win == wm->wins[i])
+				return True;
+		if (win == wm->proxy)
+			return True;
+	}
 	return False;
 }
 
 static Bool
+is_wm_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
+		return False;
+	if (!wm)
+		xde_defer_wm_check();
+	return True;
+}
+
+static Bool
+is_netwm_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
+		return False;
+	if (e->xproperty.state != PropertyDelete)
+		if (!wm || !wm->netwm_check)
+			xde_defer_wm_check();
+	return True;
+}
+
+static Bool
+is_winwm_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
+		return False;
+	if (e->xproperty.state != PropertyDelete)
+		if (!wm || !wm->winwm_check)
+			xde_defer_wm_check();
+	return True;
+}
+
+static Bool
+is_maker_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
+		return False;
+	if (e->xproperty.state != PropertyDelete)
+		if (!wm || !wm->maker_check)
+			xde_defer_wm_check();
+	return True;
+}
+
+static Bool
+is_motif_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
+		return False;
+	if (e->xproperty.state != PropertyDelete)
+		if (!wm || !wm->motif_check)
+			xde_defer_wm_check();
+	return True;
+}
+
+static Bool
+is_root_property(const XEvent *e)
+{
+	if (!e || e->type != PropertyNotify || e->xproperty.window != scr->root)
+		return False;
+	return True;
+}
+
+
+/** @brief handle _BB_THEME property notification
+  *
+  * Our blackbox(1) theme files have a rootCommand that changes the _BB_THEME
+  * property on the root window.  Check the theme again when it changes.
+  */
+static Bool
+handle_BB_THEME(const XEvent *e)
+{
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_theme_check();
+	return True;
+}
+
+/** @brief handle _BLACKBOX_PID property notification
+  *
+  * When fluxbox(1) restarts, it does not change the _NET_SUPPORTING_WM_CHECK
+  * window, but it does change the _BLACKBOX_PID cardinal (with our setup), even
+  * if it is just to replace it with the same value.  When restarting, recheck
+  * the theme.
+  */
+static Bool
 handle_BLACKBOX_PID(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_DT_WORKSPACE_CURRENT(const XEvent *e)
 {
+	if (!is_motif_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_DT_WORKSPACE_LIST(const XEvent *e)
 {
+	if (!is_motif_property(e))
+		return False;
 	return False;
 }
 
+/** @brief handle ESETROOT_PMAP_ID property changes
+  *
+  * We do not really process this because all proper root setters now set the
+  * _XROOTPMAP_ID property which we handle above.  However, it is used to
+  * trigger recheck of the theme needed by some window managers such as
+  * blackbox(1).  If it means we check 3 times after a theme switch, so be it.
+  */
 static Bool
 handle_ESETROOT_PMAP_ID(const XEvent *e)
 {
-	return False;
+	if (!is_root_property(e))
+		return False;
+	xde_defer_theme_check();
+	return True;
 }
 
 static Bool
 handle_GTK_READ_RCFILES(const XEvent *e)
 {
-	return False;
+	if (!e || e->type != ClientMessage)
+		return False;
+	xde_defer_theme_check();
+	return True;
 }
 
 static Bool
 handle_I3_CONFIG_PATH(const XEvent *e)
 {
-	return False;
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
 static Bool
 handle_I3_PID(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_I3_SHMLOG_PATH(const XEvent *e)
 {
-	return False;
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
 static Bool
 handle_I3_SOCKET_PATH(const XEvent *e)
 {
-	return False;
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
 static Bool
 handle_ICEWMGB_QUIT(const XEvent *e)
 {
+	if (!e || e->type != ClientMessage)
+		return False;
 	return False;
 }
 
+/** @brief handle MANAGER client messages
+  */
 static Bool
 handle_MANAGER(const XEvent *e)
 {
+	if (!e || e->type != ClientMessage)
+		return False;
 	return False;
 }
 
+/** @brief handle _MOTIF_WM_INFO property change
+  *
+  * This property is set by window managers that support Motif/MWMH.  It only
+  * changes when the window manager changes, so recheck the window manager.
+  */
 static Bool
 handle_MOTIF_WM_INFO(const XEvent *e)
 {
-	return False;
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
+/** @brief handle _NET_CURRENT_DESKTOP property change
+  *
+  * Handle when _NET_CURRENT_DESKTOP property changes on the root window of any
+  * screen.  This is how we determine that the desktop has changed.
+  */
 static Bool
 handle_NET_CURRENT_DESKTOP(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_NET_DESKTOP_LAYOUT(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_NET_DESKTOP_PIXMAPS(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_NET_NUMBER_OF_DESKTOPS(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_NET_SUPPORTED(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_netwm_property(e))
+		return False;
 	return True;
 }
 
 static Bool
 handle_NET_SUPPORTING_WM_CHECK(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_netwm_property(e))
+		return False;
 	return True;
 }
 
 static Bool
 handle_NET_VISIBLE_DESKTOPS(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_NET_WM_NAME(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_netwm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_NET_WM_PID(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_netwm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_OB_THEME(const XEvent *e)
 {
+	if (!is_netwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_OPENBOX_PID(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_netwm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 {
-	return False;
+	if (!is_winwm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
 static Bool
 handle_WINDOWMAKER_NOTICEBOARD(const XEvent *e)
 {
+	if (!is_maker_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_WIN_PROTOCOLS(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_winwm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_winwm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_WIN_WORKSPACE_COUNT(const XEvent *e)
 {
+	if (!is_winwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_WIN_WORKSPACE(const XEvent *e)
 {
+	if (!is_winwm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_WM_CLASS(const XEvent *e)
 {
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return False;
 }
 
 static Bool
 handle_WM_CLIENT_MACHINE(const XEvent *e)
 {
-	xde_set_deferred_wmcheck();
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return True;
 }
 
 static Bool
 handle_WM_COMMAND(const XEvent *e)
 {
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
 	return False;
 }
 
 static Bool
 handle_WM_DESKTOP(const XEvent *e)
 {
+	if (!is_wm_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_WM_NAME(const XEvent *e)
 {
-	return False;
+	if (!is_wm_property(e))
+		return False;
+	xde_defer_wm_check();
+	return True;
 }
 
 static Bool
 handle_XDE_THEME_NAME(const XEvent *e)
 {
+	if (!is_root_property(e))
+		return False;
+	xde_defer_theme_check();
 	return False;
 }
 
 static Bool
 handle_XROOTPMAP_ID(const XEvent *e)
 {
+	if (!is_root_property(e))
+		return False;
 	return False;
 }
 
 static Bool
 handle_XSETROOT_ID(const XEvent *e)
 {
+	if (!is_root_property(e))
+		return False;
 	return False;
 }
 

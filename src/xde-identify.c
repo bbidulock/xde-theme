@@ -153,6 +153,8 @@ Options:\n\
         output suitable for shell evaluation or source [default: human]\n\
     -p, --perl\n\
         output suitable for perl evaluation [default: human]\n\
+    -x, --xprops\n\
+	place output values into X properties [default: human]\n\
     -S, --screen SCREEN\n\
         only act on screen number SCREEN [default: all(-1)]\n\
     -D, --debug [LEVEL]\n\
@@ -177,6 +179,7 @@ main(int argc, char *argv[])
 		static struct option long_options[] = {
 			{"shell",	no_argument,		NULL, 'e'},
 			{"perl",	no_argument,		NULL, 'p'},
+			{"xprops",	no_argument,		NULL, 'x'},
 			{"screen",	required_argument,	NULL, 'S'},
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -189,10 +192,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "epS:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "epxS:nD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "epS:nDvhVC?");
+		c = getopt(argc, argv, "epxS:nDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -207,6 +210,9 @@ main(int argc, char *argv[])
 			break;
 		case 'p':	/* -p, --perl */
 			options.format = XDE_OUTPUT_PERL;
+			break;
+		case 'x':	/* -x, --xprops */
+			options.format = XDE_OUTPUT_PROPS;
 			break;
 		case 'S':	/* -S, --screen */
 			options.screen = atoi(optarg);

@@ -287,6 +287,7 @@ list_styles_METACITY()
 
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 		break;
 	case XDE_OUTPUT_SHELL:
 		fprintf(stdout, "XDE_WM_STYLES=(\n");
@@ -300,6 +301,7 @@ list_styles_METACITY()
 		list_dir_METACITY(*dir, style, XDE_LIST_MIXED);
 	switch (options.format) {
 	case XDE_OUTPUT_HUMAN:
+	case XDE_OUTPUT_PROPS:
 		break;
 	case XDE_OUTPUT_SHELL:
 		fprintf(stdout, ")\n");

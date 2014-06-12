@@ -128,10 +128,10 @@ typedef struct _WindowManager WindowManager;
 
 typedef struct {
 	Bool (*wm_event) (const XEvent *);	/* event handler */
-	Bool (*wm_signal) (int);		/* signal handler */
+	Bool (*wm_signal) (int);	/* signal handler */
 	void (*wm_changed) (WindowManager *);	/* window manager changed */
-	void (*wm_style_changed) (WmScreen *);	/* window manager style changed */
-	void (*wm_theme_changed) (WmScreen *);	/* window manager theme changed */
+	void (*wm_style_changed) (char *, char *, char *);	/* window manager style changed */
+	void (*wm_theme_changed) (char *, char *);	/* window manager theme changed */
 	void (*wm_desktop_changed) (WmScreen *, int, unsigned long *);
 	/* current desktop(s) changed */
 	void (*wm_desktops_changed) (WmScreen *, unsigned long);
@@ -160,6 +160,7 @@ struct _WindowManager {
 		};
 		Window wins[CHECK_WINS];
 	};
+	Window proxy;			/* desktop button proxy */
 	long pid;			/* window manager pid */
 	char *host;			/* window manager host */
 	char *name;			/* window manager name */
@@ -181,8 +182,6 @@ struct _WindowManager {
 	char *stylefile;		/* Window manager style file */
 	char *style;			/* WM current style */
 	char *stylename;		/* WM current style name */
-	char *theme;			/* XDE theme name */
-	char *themefile;		/* XDE theme file */
 	char *menu;			/* WM current menu */
 	Bool noenv;			/* Do we have an environment? */
 	char *env;			/* Window manager environment */
@@ -236,11 +235,12 @@ struct _WmScreen {
 	int x, y;			/* geometry in pixels */
 	unsigned int width, height;
 	Window root;			/* root window for this screen */
-	Window proxy;			/* desktop button proxy */
 	Atom selection;			/* MANAGER selection atom for screen */
 	Window selwin;			/* MANAGER selection window for screen */
 	Window owner;			/* MANAGER selection owner */
 	WindowManager *wm;		/* window manager managing this screen */
+	char *theme;			/* XDE theme name */
+	char *themefile;		/* XDE theme file */
 	struct {
 		int current;		/* current monitor/desktop */
 		unsigned int numb;	/* number monitors/desktops */
@@ -274,7 +274,8 @@ typedef struct {
 enum OutputFormat {
 	XDE_OUTPUT_HUMAN,
 	XDE_OUTPUT_SHELL,
-	XDE_OUTPUT_PERL
+	XDE_OUTPUT_PERL,
+	XDE_OUTPUT_PROPS
 };
 
 typedef struct {
@@ -369,42 +370,58 @@ extern XContext ScreenContext;
 extern Options options;
 
 /* some utility functions */
-char *xde_get_text(Window win, Atom prop);
-long *xde_get_cardinals(Window win, Atom prop, Atom type, long *n);
-Bool xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret);
-Window *xde_get_windows(Window win, Atom prop, Atom type, long *n);
-Bool xde_get_window(Window win, Atom prop, Atom type, Window *win_ret);
-Time *xde_get_times(Window win, Atom prop, Atom type, long *n);
-Bool xde_get_time(Window win, Atom prop, Atom type, Time * time_ret);
-Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
-Bool xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret);
-Pixmap *xde_get_pixmaps(Window win, Atom prop, Atom type, long *n);
-Bool xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret);
+extern void xde_set_text_list(Window win, Atom prop, char **list, long n);
+extern char *xde_get_text(Window win, Atom prop);
+extern void xde_set_text(Window win, Atom prop, char *text);
+extern long *xde_get_cardinals(Window win, Atom prop, Atom type, long *n);
+extern void xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n);
+extern Bool xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret);
+extern void xde_set_cardinal(Window win, Atom prop, Atom type, long card);
+extern Window *xde_get_windows(Window win, Atom prop, Atom type, long *n);
+extern void xde_set_windows(Window win, Atom prop, Atom type, Window *winds, long n);
+extern Bool xde_get_window(Window win, Atom prop, Atom type, Window *win_ret);
+extern void xde_set_window(Window win, Atom prop, Atom type, Window wind);
+extern Time *xde_get_times(Window win, Atom prop, Atom type, long *n);
+extern void xde_set_times(Window win, Atom prop, Atom type, Time *times, long n);
+extern Bool xde_get_time(Window win, Atom prop, Atom type, Time * time_ret);
+extern void xde_set_time(Window win, Atom prop, Atom type, Time time);
+extern Atom *xde_get_atoms(Window win, Atom prop, Atom type, long *n);
+extern void xde_set_atoms(Window win, Atom prop, Atom type, Atom *atoms, long n);
+extern Bool xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret);
+extern void xde_set_atom(Window win, Atom prop, Atom type, Atom atom);
+extern Pixmap *xde_get_pixmaps(Window win, Atom prop, Atom type, long *n);
+extern void xde_set_pixmaps(Window win, Atom prop, Atom type, Pixmap *pmaps, long n);
+extern Bool xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret);
+extern void xde_set_pixmap(Window win, Atom prop, Atom type, Pixmap pixmap);
 
 /* action functions */
-void xde_recheck_wm(void);
-void xde_action_check_wm(XPointer);
-void xde_set_deferred_wmcheck(void);
-void xde_wm_unref(WindowManager *);
+extern void xde_recheck_wm(void);
+extern void xde_recheck_theme(void);
+extern void xde_action_check_wm(XPointer);
+extern void xde_action_check_theme(XPointer);
+extern void xde_defer_wm_check(void);
+extern void xde_defer_theme_check(void);
+extern void xde_wm_unref(WindowManager *);
 
 /* event functions */
-Bool xde_handle_event(const XEvent *ev);
-void xde_defer_action(void (*)(XPointer), Time, XPointer);
-Bool xde_defer_once(void (*)(XPointer), Time, XPointer);
-void xde_sig_handler(int sig);
-void xde_main_quit(XPointer);
-void xde_process_timeouts(void);
-void xde_process_xevents(void);
-void xde_process_deferred(void);
-void xde_handle_signal(int sig);
-XPointer xde_main_loop(void);
-int xde_defer_timer(void);
-void xde_init(WmCallbacks *);
+extern Bool xde_handle_event(const XEvent *ev);
+extern void xde_defer_action(void (*)(XPointer), Time, XPointer);
+extern Bool xde_defer_once(void (*)(XPointer), Time, XPointer);
+extern void xde_sig_handler(int sig);
+extern void xde_main_quit(XPointer);
+extern void xde_process_timeouts(void);
+extern void xde_process_xevents(void);
+extern void xde_process_deferred(void);
+extern void xde_handle_signal(int sig);
+extern XPointer xde_main_loop(void);
+extern int xde_defer_timer(void);
+extern void xde_init(WmCallbacks *);
 
 extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);
 extern void xde_show_wms(void);
 extern void xde_identify_wm(void);
+extern void xde_set_properties(void);
 extern Bool xde_find_theme(char *name, char **filename);
 extern char *xde_get_theme(void);
 extern void xde_set_theme(char *name);

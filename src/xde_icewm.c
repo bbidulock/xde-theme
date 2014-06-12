@@ -513,6 +513,7 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 			if (!options.theme || xde_find_theme(name, NULL)) {
 				switch (options.format) {
 				case XDE_OUTPUT_HUMAN:
+				case XDE_OUTPUT_PROPS:
 					fprintf(stdout, "%s %s%s\n", name, file,
 						(style && !strcmp(style, file)) ? " *" : "");
 					break;

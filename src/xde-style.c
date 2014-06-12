@@ -72,7 +72,7 @@ current_style()
 			if (wm->style && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
 				fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
 			} else if (options.theme && xde_get_theme()) {
-				fprintf(stdout, "%s %s\n", wm->theme, wm->themefile);
+				fprintf(stdout, "%s %s\n", scr->theme, scr->themefile);
 			} else if (options.theme) {
 				EPRINTF("cannot get current theme for screen %d\n", screen);
 			} else {
@@ -92,7 +92,7 @@ current_style()
 		if (wm->style && (!options.theme || xde_find_theme(wm->stylename, NULL))) {
 			fprintf(stdout, "%s %s\n", wm->stylename, wm->style);
 		} else if (options.theme && xde_get_theme()) {
-			fprintf(stdout, "%s %s\n", wm->theme, wm->themefile);
+			fprintf(stdout, "%s %s\n", scr->theme, scr->themefile);
 		} else if (options.theme) {
 			EPRINTF("cannot get current theme for screen %d\n", screen);
 		} else {
