@@ -54,18 +54,48 @@
 
 const char *program = NAME;
 
+static char **rargv;
+static int rargc;
+
+
+Atom _XA_XDE_WATCH_COMMAND;
+
 Bool foreground = False;
 
 enum {
 	XDE_WATCH_QUIT,
 	XDE_WATCH_RESTART,
 	XDE_WATCH_RECHECK,
-	XDE_WATCH_COMMAND,
+	XDE_WATCH_ARGV,
 };
 
 static Bool
 wm_event(const XEvent *e)
 {
+	switch (e->type) {
+	case ClientMessage:
+		if (e->xclient.message_type == _XA_XDE_WATCH_COMMAND) {
+			switch (e->xclient.data.l[0]) {
+			case XDE_WATCH_RECHECK:
+				xde_defer_wm_check();
+				xde_defer_theme_check();
+				return True;
+			case XDE_WATCH_QUIT:
+				xde_main_quit((XPointer) XDE_WATCH_QUIT);
+				return True;
+			case XDE_WATCH_RESTART:
+				xde_main_quit((XPointer) XDE_WATCH_RESTART);
+				return True;
+			case XDE_WATCH_ARGV:
+				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
+					xde_main_quit((XPointer) XDE_WATCH_ARGV);
+					return True;
+				}
+				break;
+			}
+		}
+		break;
+	}
 	return False;
 }
 
@@ -231,9 +261,9 @@ do_run(int argc, char *argv[])
 		xcm.serial = 0;
 		xcm.display = dpy;
 		xcm.window = mine;
-		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.message_type = _XA_XDE_WATCH_COMMAND;
 		xcm.format = 32;
-		xcm.data.l[0] = XDE_WATCH_COMMAND;
+		xcm.data.l[0] = XDE_WATCH_ARGV;
 		xcm.data.l[1] = 0;
 		xcm.data.l[2] = 0;
 		xcm.data.l[3] = 0;
@@ -250,7 +280,39 @@ do_run(int argc, char *argv[])
 		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
 		XSync(dpy, False);
 	}
-	do_startup();
+	switch ((int) (long) do_startup()) {
+	case XDE_WATCH_QUIT:
+		exit(EXIT_SUCCESS);
+		break;
+	case XDE_WATCH_RESTART:
+	{
+		char **pargv = calloc(argc + 1, sizeof(*pargv));
+		int i;
+
+		for (i = 0; i < argc; i++)
+			pargv[i] = argv[i];
+		pargv[i] = 0;
+		execv(pargv[0], pargv);
+		EPRINTF("execv: %s\n", strerror(errno));
+		break;
+	}
+	case XDE_WATCH_ARGV:
+	{
+		char **pargv = calloc(rargc + 1, sizeof(*pargv));
+		int i;
+
+		for (i = 0; i < rargc; i++)
+			pargv[i] = rargv[i];
+		pargv[i] = 0;
+		execv(pargv[0], pargv);
+		EPRINTF("execv: %s\n", strerror(errno));
+		break;
+	}
+	case XDE_WATCH_RECHECK:
+		EPRINTF("should not get here\n");
+		break;
+	}
+	exit(EXIT_FAILURE);
 }
 
 static void
@@ -271,7 +333,7 @@ do_quit()
 		xcm.serial = 0;
 		xcm.display = dpy;
 		xcm.window = owner;
-		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.message_type = _XA_XDE_WATCH_COMMAND;
 		xcm.format = 32;
 		xcm.data.l[0] = XDE_WATCH_QUIT;
 		xcm.data.l[1] = 0;
@@ -293,6 +355,7 @@ do_restart()
 	Atom selection;
 	Window owner;
 
+	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 	xde_init_display();
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
@@ -304,7 +367,7 @@ do_restart()
 		xcm.serial = 0;
 		xcm.display = dpy;
 		xcm.window = owner;
-		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.message_type = _XA_XDE_WATCH_COMMAND;
 		xcm.format = 32;
 		xcm.data.l[0] = XDE_WATCH_RESTART;
 		xcm.data.l[1] = 0;
