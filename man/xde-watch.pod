@@ -65,7 +65,8 @@ dash long options are accepted.)
 
 =item B<--foreground>, B<-f>
 
-Run in the foreground, printing debugging information to standard error.
+Run in the foreground (implies B<-D>), printing debugging information to
+standard error.
 
 =item B<--remove>, B<-R>
 

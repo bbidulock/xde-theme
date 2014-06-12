@@ -54,15 +54,203 @@
 
 const char *program = NAME;
 
+Bool foreground = False;
+
 enum {
 	XDE_WATCH_QUIT,
 	XDE_WATCH_RESTART,
 	XDE_WATCH_RECHECK,
+	XDE_WATCH_COMMAND,
 };
 
-static void
-do_run()
+static Bool
+wm_event(const XEvent *e)
 {
+	return False;
+}
+
+static Bool
+wm_signal(int signum)
+{
+	return False;
+}
+
+static void
+wm_changed(WindowManager *old)
+{
+	xde_wm_unref(old);
+	if (wm && wm->ops) {
+		if (wm->ops->get_style)
+			wm->ops->get_style();
+		if (wm->ops->get_menu)
+			wm->ops->get_menu();
+		if (wm->ops->get_icon)
+			wm->ops->get_icon();
+	}
+	xde_get_theme();
+	xde_set_properties();
+}
+
+static void
+wm_style_changed(char *oldname, char *oldstyle, char *oldfile)
+{
+	free(oldname);
+	free(oldstyle);
+	free(oldfile);
+	xde_get_theme();
+	xde_set_properties();
+}
+
+static void
+wm_theme_changed(char *oldtheme, char *oldfile)
+{
+	free(oldtheme);
+	free(oldfile);
+	xde_set_properties();
+}
+
+static WmCallbacks wm_callbacks = {
+	.wm_event = wm_event,
+	.wm_signal = wm_signal,
+	.wm_changed = wm_changed,
+	.wm_style_changed = wm_style_changed,
+	.wm_theme_changed = wm_theme_changed,
+};
+
+static XPointer
+do_startup(void)
+{
+	int s;
+
+	if (!foreground) {
+		pid_t pid;
+
+		if ((pid = fork()) < 0) {
+			EPRINTF("fork: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		} else if (pid != 0) {
+			/* parent exits */
+			exit(EXIT_SUCCESS);
+		}
+		/* become a session leader */
+		setsid();
+		/* close files */
+		fclose(stdin);
+		/* fork once more for SVR4 */
+		if ((pid = fork()) < 0) {
+			EPRINTF("fork: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		} else if (pid != 0) {
+			/* parent exits */
+			exit(EXIT_SUCCESS);
+		}
+		/* release current directory */
+		if (chdir("/") < 0) {
+			EPRINTF("chdir: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+		/* clear file creation mask */
+		umask(0);
+	}
+	for (s = 0; s < nscr; s++) {
+		xde_set_screen(s);
+		xde_check_wm();
+		if (wm && wm->ops) {
+			if (wm->ops->get_style)
+				wm->ops->get_style();
+			if (wm->ops->get_menu)
+				wm->ops->get_menu();
+			if (wm->ops->get_icon)
+				wm->ops->get_icon();
+		}
+		xde_get_theme();
+		xde_set_properties();
+	}
+	return xde_main_loop();
+}
+
+static Bool
+owner_died_predicate(Display *display, XEvent *event, XPointer arg)
+{
+	Window owner = (Window) arg;
+
+	if (event->type != DestroyNotify)
+		return False;
+	if (event->xdestroywindow.window != owner)
+		return False;
+	return True;
+}
+
+static Bool
+cmd_remove_predicate(Display *display, XEvent *event, XPointer arg)
+{
+	Window mine = (Window) arg;
+
+	if (event->type != PropertyNotify)
+		return False;
+	if (event->xproperty.window != mine)
+		return False;
+	if (event->xproperty.atom != XA_WM_COMMAND)
+		return False;
+	if (event->xproperty.state != PropertyDelete)
+		return False;
+	return True;
+}
+
+static void
+do_run(int argc, char *argv[])
+{
+	char name[64] = { 0, };
+	Atom selection;
+	Window owner;
+	Window mine;
+
+	xde_init(&wm_callbacks);
+	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
+	selection = XInternAtom(dpy, name, False);
+
+	mine = XCreateSimpleWindow(dpy, scr->root, 0, 0,
+				   1, 1, 0, BlackPixel(dpy, scr->screen),
+				   BlackPixel(dpy, scr->screen));
+	XSelectInput(dpy, mine, PropertyChangeMask);
+	XSetCommand(dpy, mine, argv, argc);
+
+	XGrabServer(dpy);
+	if ((owner = XGetSelectionOwner(dpy, selection)))
+		XSelectInput(dpy, owner, StructureNotifyMask);
+	else
+		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
+	XSync(dpy, False);
+	XUngrabServer(dpy);
+
+	if (owner) {
+		XClientMessageEvent xcm;
+		XEvent xev;
+
+		xcm.type = ClientMessage;
+		xcm.serial = 0;
+		xcm.display = dpy;
+		xcm.window = mine;
+		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.format = 32;
+		xcm.data.l[0] = XDE_WATCH_COMMAND;
+		xcm.data.l[1] = 0;
+		xcm.data.l[2] = 0;
+		xcm.data.l[3] = 0;
+		xcm.data.l[4] = 0;
+
+		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+		XSync(dpy, False);
+		if (!XCheckIfEvent(dpy, &xev, owner_died_predicate, (XPointer) owner)) {
+			XIfEvent(dpy, &xev, cmd_remove_predicate, (XPointer) mine);
+			XDestroyWindow(dpy, mine);
+			XCloseDisplay(dpy);
+			exit(EXIT_SUCCESS);
+		}
+		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
+		XSync(dpy, False);
+	}
+	do_startup();
 }
 
 static void
@@ -77,21 +265,21 @@ do_quit()
 	selection = XInternAtom(dpy, name, False);
 
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XClientMessageEvent ev;
+		XClientMessageEvent xcm;
 
-		ev.type = ClientMessage;
-		ev.serial = 0;
-		ev.display = dpy;
-		ev.window = owner;
-		ev.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
-		ev.format = 32;
-		ev.data.l[0] = XDE_WATCH_QUIT;
-		ev.data.l[1] = 0;
-		ev.data.l[2] = 0;
-		ev.data.l[3] = 0;
-		ev.data.l[4] = 0;
+		xcm.type = ClientMessage;
+		xcm.serial = 0;
+		xcm.display = dpy;
+		xcm.window = owner;
+		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.format = 32;
+		xcm.data.l[0] = XDE_WATCH_QUIT;
+		xcm.data.l[1] = 0;
+		xcm.data.l[2] = 0;
+		xcm.data.l[3] = 0;
+		xcm.data.l[4] = 0;
 
-		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &ev);
+		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 	} else {
 		EPRINTF("No running instance of %s\n", NAME);
 		exit(EXIT_FAILURE);
@@ -110,21 +298,21 @@ do_restart()
 	selection = XInternAtom(dpy, name, False);
 
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XClientMessageEvent ev;
+		XClientMessageEvent xcm;
 
-		ev.type = ClientMessage;
-		ev.serial = 0;
-		ev.display = dpy;
-		ev.window = owner;
-		ev.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
-		ev.format = 32;
-		ev.data.l[0] = XDE_WATCH_RESTART;
-		ev.data.l[1] = 0;
-		ev.data.l[2] = 0;
-		ev.data.l[3] = 0;
-		ev.data.l[4] = 0;
+		xcm.type = ClientMessage;
+		xcm.serial = 0;
+		xcm.display = dpy;
+		xcm.window = owner;
+		xcm.message_type = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
+		xcm.format = 32;
+		xcm.data.l[0] = XDE_WATCH_RESTART;
+		xcm.data.l[1] = 0;
+		xcm.data.l[2] = 0;
+		xcm.data.l[3] = 0;
+		xcm.data.l[4] = 0;
 
-		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &ev);
+		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 	} else {
 		EPRINTF("No running instance of %s\n", NAME);
 		exit(EXIT_FAILURE);
@@ -227,6 +415,10 @@ Command options:\n\
         ask running instance to quit\n\
     -r, --restart\n\
         ask running instance to restart\n\
+    -R, --remove\n\
+        also remove properties when changes occur\n\
+    -f, --foreground\n\
+        run in the foreground and debug to standard error\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -254,6 +446,8 @@ main(int argc, char *argv[])
 		static struct option long_options[] = {
 			{"quit",	no_argument,		NULL, 'q'},
 			{"restart",	no_argument,		NULL, 'r'},
+			{"remove",	no_argument,		NULL, 'R'},
+			{"foreground",	no_argument,		NULL, 'f'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -265,10 +459,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrRfD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrDvhVC?");
+		c = getopt(argc, argv, "qrRfDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -285,6 +479,13 @@ main(int argc, char *argv[])
 		case 'r':	/* -r, --restart */
 			do_restart();
 			exit(EXIT_SUCCESS);
+		case 'R':	/* -R, --remove */
+			options.remove = True;
+			break;
+		case 'f':	/* -f, --foreground */
+			foreground = True;
+			options.debug = 1;
+			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
 				fprintf(stderr, "%s: increasing debug verbosity\n",
@@ -358,7 +559,7 @@ main(int argc, char *argv[])
 	}
 	if (optind < argc)
 		goto bad_nonopt;
-	do_run();
+	do_run(argc, argv);
 	exit(EXIT_SUCCESS);
 }
 

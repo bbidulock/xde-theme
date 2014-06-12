@@ -466,10 +466,13 @@ static void set_screen(WmScreen *s)
 	wm = scr->wm;
 }
 
-static void set_screen_by_numb(int s)
+void
+__xde_set_screen(int s)
 {
 	set_screen(screens + s);
 }
+
+__asm__(".symver __xde_set_screen,xde_set_screen@@XDE_1.0");
 
 static Bool find_screen(Window window)
 {
@@ -2566,10 +2569,7 @@ __xde_detect_wm()
 		int s;
 
 		for (s = 0; s < nscr; s++) {
-			screen = s;
-			scr = screens + screen;
-			root = scr->root;
-			wm = scr->wm;
+			xde_set_screen(s);
 			if (xde_check_wm()) {
 				OPRINTF("found wm %s(%ld) for screen %d\n",
 					wm->name, wm->pid, screen);
@@ -4583,7 +4583,7 @@ __xde_process_deferred(void)
 	WmDeferred *d;
 
 	while ((d = deferred_done)) {
-		set_screen_by_numb(d->screen);
+		xde_set_screen(d->screen);
 		(d->action) (d->data);
 		deferred_done = d->next;
 		free(d);

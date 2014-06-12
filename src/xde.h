@@ -418,6 +418,7 @@ extern XPointer xde_main_loop(void);
 extern int xde_defer_timer(void);
 extern void xde_init(WmCallbacks *);
 
+extern void xde_set_screen(int screennum);
 extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);
 extern void xde_show_wms(void);
