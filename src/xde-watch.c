@@ -59,6 +59,88 @@ static int rargc;
 
 Atom _XA_XDE_WATCH_COMMAND;
 
+#if 0
+Atom _XA_XDE_WM_HOST;
+Atom _XA_XDE_WM_PID;
+Atom _XA_XDE_WM_CLASS;
+Atom _XA_XDE_WM_CMDLINE;
+Atom _XA_XDE_WM_COMMAND;
+Atom _XA_XDE_WM_NETWM_SUPPORT;
+Atom _XA_XDE_WM_WINWM_SUPPORT;
+Atom _XA_XDE_WM_MAKER_SUPPORT;
+Atom _XA_XDE_WM_MOTIF_SUPPORT;
+Atom _XA_XDE_WM_ICCCM_SUPPORT;
+Atom _XA_XDE_WM_REDIR_SUPPORT;
+Atom _XA_XDE_WM_RCFILE;
+Atom _XA_XDE_WM_PRVDIR;
+Atom _XA_XDE_WM_USRDIR;
+Atom _XA_XDE_WM_SYSDIR;
+Atom _XA_XDE_WM_ETCDIR;
+Atom _XA_XDE_WM_STYLENAME;
+Atom _XA_XDE_WM_STYLE;
+Atom _XA_XDE_WM_STYLEFILE;
+Atom _XA_XDE_WM_MENU;
+Atom _XA_XDE_WM_ICON;
+Atom _XA_XDE_WM_THEME;
+Atom _XA_XDE_WM_THEMEFILE;
+
+struct atom_descrip {
+	char *name;
+	Atom *atom;
+};
+
+static struct atom_descrip atom_list[] = {
+	{"_XDE_WATCH_COMMAND", &_XA_XDE_WATCH_COMMAND},
+	{"_XDE_WM_HOST", &_XA_XDE_WM_HOST},
+	{"_XDE_WM_PID", &_XA_XDE_WM_PID},
+	{"_XDE_WM_CLASS", &_XA_XDE_WM_CLASS},
+	{"_XDE_WM_CMDLINE", &_XA_XDE_WM_CMDLINE},
+	{"_XDE_WM_COMMAND", &_XA_XDE_WM_COMMAND},
+	{"_XDE_WM_NETWM_SUPPORT", &_XA_XDE_WM_NETWM_SUPPORT},
+	{"_XDE_WM_WINWM_SUPPORT", &_XA_XDE_WM_WINWM_SUPPORT},
+	{"_XDE_WM_MAKER_SUPPORT", &_XA_XDE_WM_MAKER_SUPPORT},
+	{"_XDE_WM_MOTIF_SUPPORT", &_XA_XDE_WM_MOTIF_SUPPORT},
+	{"_XDE_WM_ICCCM_SUPPORT", &_XA_XDE_WM_ICCCM_SUPPORT},
+	{"_XDE_WM_REDIR_SUPPORT", &_XA_XDE_WM_REDIR_SUPPORT},
+	{"_XDE_WM_RCFILE", &_XA_XDE_WM_RCFILE},
+	{"_XDE_WM_PRVDIR", &_XA_XDE_WM_PRVDIR},
+	{"_XDE_WM_USRDIR", &_XA_XDE_WM_USRDIR},
+	{"_XDE_WM_SYSDIR", &_XA_XDE_WM_SYSDIR},
+	{"_XDE_WM_ETCDIR", &_XA_XDE_WM_ETCDIR},
+	{"_XDE_WM_STYLENAME", &_XA_XDE_WM_STYLENAME},
+	{"_XDE_WM_STYLE", &_XA_XDE_WM_STYLE},
+	{"_XDE_WM_STYLEFILE", &_XA_XDE_WM_STYLEFILE},
+	{"_XDE_WM_MENU", &_XA_XDE_WM_MENU},
+	{"_XDE_WM_ICON", &_XA_XDE_WM_ICON},
+	{"_XDE_WM_THEME", &_XA_XDE_WM_THEME},
+	{"_XDE_WM_THEMEFILE", &_XA_XDE_WM_THEMEFILE},
+	{NULL, NULL}
+};
+
+static void
+intern_atoms()
+{
+	int i, j, n;
+	char **atom_names;
+	Atom *atom_values;
+
+	for (i = 0, n = 0; atom_list[i].name; i++)
+		if (atom_list[i].atom)
+			n++;
+	atom_names = calloc(n + 1, sizeof(*atom_names));
+	atom_values = calloc(n + 1, sizeof(*atom_values));
+	for (i = 0, j = 0; j < n; i++)
+		if (atom_list[i].atom)
+			atom_names[j++] = atom_list[i].name;
+	XInternAtoms(dpy, atom_names, n, False, atom_values);
+	for (i = 0, j = 0; j < n; i++)
+		if (atom_list[i].atom)
+			*atom_list[i].atom = atom_values[j++];
+	free(atom_names);
+	free(atom_values);
+}
+#endif
+
 Bool foreground = False;
 
 enum {
@@ -116,6 +198,17 @@ wm_signal(int signum)
 	return XDE_EVENT_PROPAGATE;
 }
 
+static Bool
+have_property(Atom *list, int n, Atom prop)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		if (list[i] == prop)
+			return True;
+	return False;
+}
+
 /** @brief window manager changed callback
   *
   * Invoked whenever the window manager changes.  Note that everything (style,
@@ -125,6 +218,240 @@ wm_signal(int signum)
 static void
 wm_changed()
 {
+	int n = 0;
+	Atom *props;
+
+	if ((props = XListProperties(dpy, scr->root, &n))) {
+		if (!wm || !wm->name || strcasecmp(wm->name, "fluxbox"))
+			if (have_property(props, n, _XA_BLACKBOX_PID))
+				XDeleteProperty(dpy, scr->root, _XA_BLACKBOX_PID);
+		if (!wm || !wm->name || strcasecmp(wm->name, "blackbox"))
+			if (have_property(props, n, _XA_BB_THEME))
+				XDeleteProperty(dpy, scr->root, _XA_BB_THEME);
+		if (!wm || !wm->name || strcasecmp(wm->name, "openbox")) {
+			if (have_property(props, n, _XA_OPENBOX_PID))
+				XDeleteProperty(dpy, scr->root, _XA_OPENBOX_PID);
+			if (have_property(props, n, _XA_OB_THEME))
+				XDeleteProperty(dpy, scr->root, _XA_OB_THEME);
+		}
+		if (!wm || !wm->name || strcasecmp(wm->name, "i3")) {
+			if (have_property(props, n, _XA_I3_PID))
+				XDeleteProperty(dpy, scr->root, _XA_I3_PID);
+			if (have_property(props, n, _XA_I3_CONFIG_PATH))
+				XDeleteProperty(dpy, scr->root, _XA_I3_CONFIG_PATH);
+			if (have_property(props, n, _XA_I3_SHMLOG_PATH))
+				XDeleteProperty(dpy, scr->root, _XA_I3_SHMLOG_PATH);
+			if (have_property(props, n, _XA_I3_SOCKET_PATH))
+				XDeleteProperty(dpy, scr->root, _XA_I3_SOCKET_PATH);
+		}
+		if (!wm || !wm->netwm_check) {
+			if (have_property(props, n, _XA_NET_ACTIVE_WINDOW))
+				XDeleteProperty(dpy, scr->root, _XA_NET_ACTIVE_WINDOW);
+			if (have_property(props, n, _XA_NET_CLIENT_LIST))
+				XDeleteProperty(dpy, scr->root, _XA_NET_CLIENT_LIST);
+			if (have_property(props, n, _XA_NET_CLIENT_LIST_STACKING))
+				XDeleteProperty(dpy, scr->root, _XA_NET_CLIENT_LIST_STACKING);
+			if (have_property(props, n, _XA_NET_CURRENT_DESKTOP))
+				XDeleteProperty(dpy, scr->root, _XA_NET_CURRENT_DESKTOP);
+			if (have_property(props, n, _XA_NET_DESKTOP))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP);
+			if (have_property(props, n, _XA_NET_DESKTOP_GEOMETRY))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_GEOMETRY);
+			if (have_property(props, n, _XA_NET_DESKTOP_LAYOUT))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_LAYOUT);
+			if (have_property(props, n, _XA_NET_DESKTOP_MASK))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_MASK);
+			if (have_property(props, n, _XA_NET_DESKTOP_NAMES))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES);
+			if (have_property(props, n, _XA_NET_DESKTOP_PIXMAPS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_PIXMAPS);
+			if (have_property(props, n, _XA_NET_DESKTOP_VIEWPORT))
+				XDeleteProperty(dpy, scr->root, _XA_NET_DESKTOP_VIEWPORT);
+			if (have_property(props, n, _XA_NET_FULL_PLACEMENT))
+				XDeleteProperty(dpy, scr->root, _XA_NET_FULL_PLACEMENT);
+			if (have_property(props, n, _XA_NET_FULLSCREEN_MONITORS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_FULLSCREEN_MONITORS);
+			if (have_property(props, n, _XA_NET_HANDLED_ICONS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_HANDLED_ICONS);
+			if (have_property(props, n, _XA_NET_ICON_GEOMETRY))
+				XDeleteProperty(dpy, scr->root, _XA_NET_ICON_GEOMETRY);
+			if (have_property(props, n, _XA_NET_NUMBER_OF_DESKTOPS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_NUMBER_OF_DESKTOPS);
+			if (have_property(props, n, _XA_NET_PROPERTIES))
+				XDeleteProperty(dpy, scr->root, _XA_NET_PROPERTIES);
+			if (have_property(props, n, _XA_NET_SHOWING_DESKTOP))
+				XDeleteProperty(dpy, scr->root, _XA_NET_SHOWING_DESKTOP);
+			if (have_property(props, n, _XA_NET_SUPPORTED))
+				XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTED);
+			if (have_property(props, n, _XA_NET_SUPPORTING_WM_CHECK))
+				XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTING_WM_CHECK);
+			if (have_property(props, n, _XA_NET_VIRTUAL_POS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_VIRTUAL_POS);
+			if (have_property(props, n, _XA_NET_VIRTUAL_ROOTS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_VIRTUAL_ROOTS);
+			if (have_property(props, n, _XA_NET_VISIBLE_DESKTOPS))
+				XDeleteProperty(dpy, scr->root, _XA_NET_VISIBLE_DESKTOPS);
+			if (have_property(props, n, _XA_NET_WM_NAME))
+				XDeleteProperty(dpy, scr->root, _XA_NET_WM_NAME);
+			if (have_property(props, n, _XA_NET_WM_PID))
+				XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+			if (have_property(props, n, _XA_NET_WORKAREA))
+				XDeleteProperty(dpy, scr->root, _XA_NET_WORKAREA);
+		}
+		if (!wm || !wm->winwm_check) {
+			if (have_property(props, n, _XA_WIN_AREA))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_AREA);
+			if (have_property(props, n, _XA_WIN_AREA_COUNT))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_AREA_COUNT);
+			if (have_property(props, n, _XA_WIN_CLIENT_LIST))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_CLIENT_LIST);
+			if (have_property(props, n, _XA_WIN_DESKTOP_BUTTON_PROXY))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY);
+			if (have_property(props, n, _XA_WIN_FOCUS))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_FOCUS);
+			if (have_property(props, n, _XA_WIN_PROTOCOLS))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_PROTOCOLS);
+			if (have_property(props, n, _XA_WIN_SUPPORTING_WM_CHECK))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_SUPPORTING_WM_CHECK);
+			if (have_property(props, n, _XA_WIN_WORKSPACE))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE);
+			if (have_property(props, n, _XA_WIN_WORKSPACE_COUNT))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE_COUNT);
+			if (have_property(props, n, _XA_WIN_WORKSPACE_NAMES))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACE_NAMES);
+			if (have_property(props, n, _XA_WIN_WORKSPACES))
+				XDeleteProperty(dpy, scr->root, _XA_WIN_WORKSPACES);
+		}
+		if (!wm || !wm->maker_check) {
+			if (have_property(props, n, _XA_WINDOWMAKER_NOTICEBOARD))
+				XDeleteProperty(dpy, scr->root, _XA_WINDOWMAKER_NOTICEBOARD);
+		}
+		if (!wm || !wm->motif_check) {
+			if (have_property(props, n, _XA_DT_WORKSPACE_CURRENT))
+				XDeleteProperty(dpy, scr->root, _XA_DT_WORKSPACE_CURRENT);
+			if (have_property(props, n, _XA_DT_WORKSPACE_LIST))
+				XDeleteProperty(dpy, scr->root, _XA_DT_WORKSPACE_LIST);
+			if (have_property(props, n, _XA_MOTIF_WM_INFO))
+				XDeleteProperty(dpy, scr->root, _XA_MOTIF_WM_INFO);
+		}
+	}
+	if (wm) {
+		xde_set_text(scr->root, XA_WM_NAME, XStringStyle, wm->name);
+		xde_set_text(scr->root, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
+
+		xde_set_text(scr->root, XA_WM_CLIENT_MACHINE, XStringStyle, wm->host);
+		xde_set_text(scr->root, _XA_XDE_WM_HOST, XUTF8StringStyle, wm->host);
+
+		if (wm->pid) {
+			xde_set_cardinal(scr->root, _XA_NET_WM_PID, XA_CARDINAL, wm->pid);
+			xde_set_cardinal(scr->root, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
+		} else {
+			if (have_property(props, n, _XA_NET_WM_PID))
+				XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+			if (have_property(props, n, _XA_XDE_WM_PID))
+				XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
+		}
+
+		xde_set_text_list(scr->root, XA_WM_CLASS, XStringStyle, (char **)&wm->ch, 2);
+		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, XUTF8StringStyle, (char **) &wm->ch, 2);
+
+		if (wm->cargv)
+			xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, XUTF8StringStyle, wm->cargv, wm->cargc);
+		if (wm->argv)
+			xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, XUTF8StringStyle, wm->argv, wm->argc);
+		if (wm->cargv)
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->cargv, wm->cargc);
+		else if (wm->argv)
+			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->argv, wm->argc);
+		else if (have_property(props, n, XA_WM_COMMAND))
+			XDeleteProperty(dpy, scr->root, XA_WM_COMMAND);
+
+		if (wm->netwm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW, wm->netwm_check);
+		else if (have_property(props, n, _XA_XDE_WM_NETWM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+		if (wm->winwm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_WINWM_SUPPORT, XA_WINDOW, wm->winwm_check);
+		else if (have_property(props, n, _XA_XDE_WM_WINWM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+		if (wm->maker_check)
+			xde_set_window(scr->root, _XA_XDE_WM_MAKER_SUPPORT, XA_WINDOW, wm->maker_check);
+		else if (have_property(props, n, _XA_XDE_WM_MAKER_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+		if (wm->motif_check)
+			xde_set_window(scr->root, _XA_XDE_WM_MOTIF_SUPPORT, XA_WINDOW, wm->motif_check);
+		else if (have_property(props, n, _XA_XDE_WM_MOTIF_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+		if (wm->icccm_check)
+			xde_set_window(scr->root, _XA_XDE_WM_ICCCM_SUPPORT, XA_WINDOW, wm->icccm_check);
+		else if (have_property(props, n, _XA_XDE_WM_ICCCM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+		if (wm->redir_check)
+			xde_set_window(scr->root, _XA_XDE_WM_REDIR_SUPPORT, XA_WINDOW, wm->redir_check);
+		else if (have_property(props, n, _XA_XDE_WM_REDIR_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+
+	} else {
+		if (have_property(props, n, XA_WM_NAME))
+			XDeleteProperty(dpy, scr->root, XA_WM_NAME);
+		if (have_property(props, n, XA_WM_CLIENT_MACHINE))
+			XDeleteProperty(dpy, scr->root, XA_WM_CLIENT_MACHINE);
+		if (have_property(props, n, XA_WM_CLASS))
+			XDeleteProperty(dpy, scr->root, XA_WM_CLASS);
+		if (have_property(props, n, XA_WM_COMMAND))
+			XDeleteProperty(dpy, scr->root, XA_WM_COMMAND);
+
+		if (have_property(props, n, _XA_NET_WM_NAME))
+			XDeleteProperty(dpy, scr->root, _XA_NET_WM_NAME);
+		if (have_property(props, n, _XA_NET_WM_PID))
+			XDeleteProperty(dpy, scr->root, _XA_NET_WM_PID);
+		if (have_property(props, n, _XA_XDE_WM_NAME))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NAME);
+		if (have_property(props, n, _XA_XDE_WM_NETWM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_WINWM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_MAKER_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_MOTIF_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_ICCCM_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_REDIR_SUPPORT))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_PID))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PID);
+		if (have_property(props, n, _XA_XDE_WM_HOST))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_HOST);
+		if (have_property(props, n, _XA_XDE_WM_CLASS))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_CLASS);
+		if (have_property(props, n, _XA_XDE_WM_CMDLINE))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_CMDLINE);
+		if (have_property(props, n, _XA_XDE_WM_COMMAND))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_COMMAND);
+		if (have_property(props, n, _XA_XDE_WM_RCFILE))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_RCFILE);
+		if (have_property(props, n, _XA_XDE_WM_PRVDIR))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_PRVDIR);
+		if (have_property(props, n, _XA_XDE_WM_USRDIR))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_USRDIR);
+		if (have_property(props, n, _XA_XDE_WM_SYSDIR))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_SYSDIR);
+		if (have_property(props, n, _XA_XDE_WM_ETCDIR))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ETCDIR);
+		if (have_property(props, n, _XA_XDE_WM_STYLEFILE))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLEFILE);
+		if (have_property(props, n, _XA_XDE_WM_STYLE))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLE);
+		if (have_property(props, n, _XA_XDE_WM_STYLENAME))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_STYLENAME);
+		if (have_property(props, n, _XA_XDE_WM_MENU))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_MENU);
+		if (have_property(props, n, _XA_XDE_WM_ICON))
+			XDeleteProperty(dpy, scr->root, _XA_XDE_WM_ICON);
+	}
+	if (props)
+		XFree(props);
 }
 
 /** @brief window manager style change callback
@@ -274,6 +601,7 @@ do_run(int argc, char *argv[])
 	Window owner;
 	Window mine;
 
+//	intern_atoms();
 	xde_init(&wm_callbacks);
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
