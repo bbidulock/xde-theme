@@ -104,12 +104,24 @@ wm_event(const XEvent *e)
 			case XDE_WATCH_ARGV:
 				DPRINTF("got _XDE_WATCH_COMMAND(Argv)\n");
 				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
-					XDeleteProperty(dpy, e->xclient.window, XA_WM_COMMAND);
+					XDeleteProperty(dpy, e->xclient.window,
+							XA_WM_COMMAND);
 					xde_main_quit((XPointer) XDE_WATCH_ARGV);
 					return XDE_EVENT_STOP;
 				}
 				break;
 			}
+		}
+		break;
+	case SelectionClear:
+		if (e->xselectionclear.window == scr->selwin
+		    && e->xselectionclear.selection == scr->selection) {
+			DPRINTF("%s selection cleared\n",
+				XGetAtomName(dpy, scr->selection));
+			xde_del_properties();
+			xde_main_quit((XPointer) XDE_WATCH_QUIT);
+			return XDE_EVENT_STOP;
+
 		}
 		break;
 	}
@@ -142,6 +154,9 @@ wm_changed()
 static void
 wm_style_changed(char *newname, char *newstyle, char *newfile)
 {
+	Window win, wins[2] = { scr->selwin, scr->root };
+	int i;
+
 	setting = settings + scr->screen;
 	free(setting->stylename);
 	setting->stylename = newname ? strdup(newname) : NULL;
@@ -149,9 +164,13 @@ wm_style_changed(char *newname, char *newstyle, char *newfile)
 	setting->style = newstyle ? strdup(newstyle) : NULL;
 	free(setting->stylefile);
 	setting->stylefile = newfile ? strdup(newfile) : NULL;
-	xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, newname);
-	xde_set_text(scr->root, _XA_XDE_WM_STYLE, XUTF8StringStyle, newstyle);
-	xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, newfile);
+	for (i = 0; i < 2; i++) {
+		if (!(win = wins[i]))
+			continue;
+		xde_set_text(win, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, newname);
+		xde_set_text(win, _XA_XDE_WM_STYLE, XUTF8StringStyle, newstyle);
+		xde_set_text(win, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, newfile);
+	}
 }
 
 /** @brief window manager root menu changed callback
@@ -162,10 +181,17 @@ wm_style_changed(char *newname, char *newstyle, char *newfile)
 static void
 wm_menu_changed(char *newmenu)
 {
+	Window win, wins[2] = { scr->selwin, scr->root };
+	int i;
+
 	setting = settings + scr->screen;
 	free(setting->menu);
 	setting->menu = newmenu ? strdup(newmenu) : NULL;
-	xde_set_text(scr->root, _XA_XDE_WM_MENU, XUTF8StringStyle, newmenu);
+	for (i = 0; i < 2; i++) {
+		if (!(win = wins[i]))
+			continue;
+		xde_set_text(win, _XA_XDE_WM_MENU, XUTF8StringStyle, newmenu);
+	}
 }
 
 /** @brief window manager icon changed callback
@@ -176,10 +202,17 @@ wm_menu_changed(char *newmenu)
 static void
 wm_icon_changed(char *newicon)
 {
+	Window win, wins[2] = { scr->selwin, scr->root };
+	int i;
+
 	setting = settings + scr->screen;
 	free(setting->icon);
 	setting->icon = newicon ? strdup(newicon) : NULL;
-	xde_set_text(scr->root, _XA_XDE_WM_ICON, XUTF8StringStyle, newicon);
+	for (i = 0; i < 2; i++) {
+		if (!(win = wins[i]))
+			continue;
+		xde_set_text(win, _XA_XDE_WM_ICON, XUTF8StringStyle, newicon);
+	}
 }
 
 /** @brief window manager (XDE really) theme changed callback
@@ -190,13 +223,20 @@ wm_icon_changed(char *newicon)
 static void
 wm_theme_changed(char *newtheme, char *newfile)
 {
+	Window win, wins[2] = { scr->selwin, scr->root };
+	int i;
+
 	setting = settings + scr->screen;
 	free(setting->theme);
 	setting->theme = newtheme ? strdup(newtheme) : NULL;
 	free(setting->themefile);
 	setting->themefile = newfile ? strdup(newfile) : NULL;
-	xde_set_text(scr->root, _XA_XDE_WM_THEME, XUTF8StringStyle, newtheme);
-	xde_set_text(scr->root, _XA_XDE_WM_THEMEFILE, XUTF8StringStyle, newfile);
+	for (i = 0; i < 2; i++) {
+		if (!(win = wins[i]))
+			continue;
+		xde_set_text(win, _XA_XDE_WM_THEME, XUTF8StringStyle, newtheme);
+		xde_set_text(win, _XA_XDE_WM_THEMEFILE, XUTF8StringStyle, newfile);
+	}
 
 	if (!options.dryrun) {
 		XClientMessageEvent xcm;
@@ -215,11 +255,10 @@ wm_theme_changed(char *newtheme, char *newfile)
 		xcm.data.l[4] = 0;
 
 		DPRINTF("sending %s to 0x%08lx\n",
-				XGetAtomName(dpy, _XA_GTK_READ_RCFILES),
-				scr->root);
+			XGetAtomName(dpy, _XA_GTK_READ_RCFILES), scr->root);
 		XSendEvent(dpy, scr->root, False, StructureNotifyMask |
-				SubstructureRedirectMask | SubstructureNotifyMask,
-				(XEvent *)&xcm);
+			   SubstructureRedirectMask | SubstructureNotifyMask,
+			   (XEvent *) &xcm);
 	} else
 		OPRINTF("would send _GTK_READ_RCFILES client message\n");
 
@@ -280,6 +319,7 @@ do_startup(void)
 	return xde_main_loop();
 }
 
+#if 0
 static Bool
 owner_died_predicate(Display *display, XEvent *event, XPointer arg)
 {
@@ -291,7 +331,9 @@ owner_died_predicate(Display *display, XEvent *event, XPointer arg)
 		return False;
 	return True;
 }
+#endif
 
+#if 0
 static Bool
 cmd_remove_predicate(Display *display, XEvent *event, XPointer arg)
 {
@@ -307,37 +349,84 @@ cmd_remove_predicate(Display *display, XEvent *event, XPointer arg)
 		return False;
 	return True;
 }
+#endif
+
+static Bool
+selectionreleased(Display *display, XEvent *event, XPointer arg)
+{
+	if (event->type != DestroyNotify)
+		return False;
+	if (event->xdestroywindow.window != (Window) arg)
+		return False;
+	return True;
+}
 
 static void
 do_run(int argc, char *argv[])
 {
-	char name[64] = { 0, };
-	Atom selection;
-	Window owner;
-	Window mine;
-
 	xde_init(&wm_callbacks);
 	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
-	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
-	selection = XInternAtom(dpy, name, False);
+	for (screen = 0; screen < nscr; screen++) {
+		char name[64] = { 0, };
 
-	mine = XCreateSimpleWindow(dpy, scr->root, 0, 0,
-				   1, 1, 0, BlackPixel(dpy, scr->screen),
-				   BlackPixel(dpy, scr->screen));
-	XSelectInput(dpy, mine, PropertyChangeMask);
-	XSaveContext(dpy, mine, ScreenContext, (XPointer) scr);
+		xde_set_screen(screen);
+		snprintf(name, sizeof(name), "_XDE_WATCH_S%d", screen);
+		scr->selection = XInternAtom(dpy, name, False);
+		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
+						  DisplayWidth(dpy, screen),
+						  DisplayHeight(dpy, screen), 1, 1, 0,
+						  BlackPixel(dpy, screen),
+						  BlackPixel(dpy, screen));
+		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
+		XSelectInput(dpy, scr->selwin, StructureNotifyMask | PropertyChangeMask);
 
-	XGrabServer(dpy);
-	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XSelectInput(dpy, owner, PropertyChangeMask | StructureNotifyMask);
-		XSaveContext(dpy, owner, ScreenContext, (XPointer) scr);
-	} else {
-		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
+		XGrabServer(dpy);
+		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
+			XSelectInput(dpy, scr->owner,
+				     StructureNotifyMask | PropertyChangeMask);
+			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
+			XSync(dpy, False);
+		}
+		XUngrabServer(dpy);
+
+		if (!scr->owner || options.replace)
+			XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+		else {
+			EPRINTF("another instance of %s already on screen %d\n",
+			     NAME, scr->screen);
+			exit(EXIT_FAILURE);
+		}
 	}
-	XSync(dpy, False);
-	XUngrabServer(dpy);
+	for (screen = 0; screen < nscr; screen++) {
+		XEvent ev;
 
-	if (owner) {
+		xde_set_screen(screen);
+		if (scr->owner && options.replace) {
+			XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
+			scr->owner = None;
+		}
+		xde_set_window(scr->selwin, _XA_XDE_WM_INFO, XA_WINDOW, scr->selwin);
+		xde_set_window(scr->root, _XA_XDE_WM_INFO, XA_WINDOW, scr->selwin);
+
+		ev.xclient.type = ClientMessage;
+		ev.xclient.serial = 0;
+		ev.xclient.send_event = False;
+		ev.xclient.display = dpy;
+		ev.xclient.window = scr->root;
+		ev.xclient.message_type = _XA_MANAGER;
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = CurrentTime;	/* FIXME */
+		ev.xclient.data.l[1] = scr->selection;
+		ev.xclient.data.l[2] = scr->selwin;
+		ev.xclient.data.l[3] = 2;
+		ev.xclient.data.l[4] = 0;
+
+		XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &ev);
+		XSync(dpy, False);
+	}
+
+#if 0
+	if (scr->owner && !options.replace) {
 		XEvent xev;
 		XClientMessageEvent xcm;
 
@@ -356,8 +445,7 @@ do_run(int argc, char *argv[])
 		xcm.data.l[4] = 0;
 
 		DPRINTF("sending %s Argv to 0x%08lx\n",
-				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-				owner);
+			XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 		XSync(dpy, False);
 		if (!XCheckIfEvent(dpy, &xev, owner_died_predicate, (XPointer) owner)) {
@@ -369,6 +457,7 @@ do_run(int argc, char *argv[])
 		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
 		XSync(dpy, False);
 	}
+#endif
 	switch ((int) (long) do_startup()) {
 	case XDE_WATCH_QUIT:
 		exit(EXIT_SUCCESS);
@@ -433,13 +522,11 @@ do_quit()
 			xcm.data.l[4] = 0;
 
 			DPRINTF("sending %s Quit to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 		} else
 			OPRINTF("would send %s Quit to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
@@ -479,13 +566,11 @@ do_restart()
 			xcm.data.l[4] = 0;
 
 			DPRINTF("sending %s Restart to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 		} else
 			OPRINTF("would send %s Restart to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
 		exit(EXIT_SUCCESS);
@@ -524,13 +609,11 @@ do_recheck()
 			xcm.data.l[4] = 0;
 
 			DPRINTF("sending %s Recheck to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 		} else
 			OPRINTF("would send %s Recheck to 0x%08lx\n",
-					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
-					owner);
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND), owner);
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
 		exit(EXIT_SUCCESS);
@@ -613,7 +696,10 @@ usage(int argc, char *argv[])
 		return;
 	(void) fprintf(stderr, "\
 Usage:\n\
-    %1$s [command option] [options] [FILE [FILE ...]]\n\
+    %1$s [options] [-l,--replace]\n\
+    %1$s [options] {-q,--quit}\n\
+    %1$s [options] {-r,--restart}\n\
+    %1$s [options] {-c,--recheck}\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
@@ -627,7 +713,10 @@ help(int argc, char *argv[])
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
-    %1$s [options]\n\
+    %1$s [options] [{-l,--replace}]\n\
+    %1$s [options] {-q,--quit}\n\
+    %1$s [options] {-r,--restart}\n\
+    %1$s [options] {-c,--recheck}\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
@@ -636,6 +725,10 @@ Command options:\n\
         ask running instance to quit\n\
     -r, --restart\n\
         ask running instance to restart\n\
+    -c, --recheck\n\
+        ask running instance to recheck everything\n\
+    -l, --replace\n\
+        replace running instance with this one\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -673,6 +766,7 @@ main(int argc, char *argv[])
 			{"remove",	no_argument,		NULL, 'R'},
 			{"foreground",	no_argument,		NULL, 'f'},
 			{"dryrun",	no_argument,		NULL, 'n'},
+			{"replace",	no_argument,		NULL, 'l'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -684,10 +778,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRfnlD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnDvhVC?");
+		c = getopt(argc, argv, "qrcRfnlDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -718,6 +812,9 @@ main(int argc, char *argv[])
 			options.dryrun = True;
 			if (options.output < 2)
 				options.output = 2;
+			break;
+		case 'l':	/* -l, --replace */
+			options.replace = True;
 			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)

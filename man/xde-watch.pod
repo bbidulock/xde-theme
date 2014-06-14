@@ -6,9 +6,10 @@ xde-watch -- watch for window manager, style and theme changes
 
 =head1 SYNOPSIS
 
- xde-watch [OPTIONS]
+ xde-watch [OPTIONS] [-l,--replace]
  xde-watch [OPTIONS] {-q,--quit}
  xde-watch [OPTIONS] {-r,--restart}
+ xde-watch [OPTIONS] {-c,--recheck}
  xde-watch [OPTIONS] {-h,--help}
  xde-watch {-V,--version}
  xde-watch {-C,--copying}
@@ -39,6 +40,14 @@ Ask a running instance of B<xde-watch> to quit.
 =item B<--restart>, B<-r>
 
 Ask a running instance of B<xde-watch> to restart.
+
+=item B<--recheck>, B<-c>
+
+Ask a running instance of B<xde-watch> to recheck everything.
+
+=item B<--replace>, B<-l>
+
+Replace a running instance of B<xde-watch> with this instance.
 
 =item B<--help>, B<-h>
 

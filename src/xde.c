@@ -84,6 +84,7 @@ Options options = {
 	.areas = False,
 	.files = NULL,
 	.remove = False,
+	.replace = False,
 };
 
 static WindowManager *
@@ -221,6 +222,7 @@ Atom _XA_WINDOWMAKER_NOTICEBOARD;
 
 Atom _XA_WM_DESKTOP;
 Atom _XA_XDE_THEME_NAME;
+Atom _XA_XDE_WM_INFO;
 Atom _XA_XDE_WM_NAME;
 Atom _XA_XDE_WM_NETWM_SUPPORT;
 Atom _XA_XDE_WM_WINWM_SUPPORT;
@@ -387,6 +389,7 @@ static Atoms atoms[] = {
 	{"WM_DESKTOP",			&_XA_WM_DESKTOP,		&handle_WM_DESKTOP,			None			},
 	{"WM_NAME",			NULL,				&handle_WM_NAME,			XA_WM_NAME		},
 	{"_XDE_THEME_NAME",		&_XA_XDE_THEME_NAME,		&handle_XDE_THEME_NAME,			None			},
+	{"_XDE_WM_INFO",		&_XA_XDE_WM_INFO,		NULL,					None			},
 	{"_XDE_WM_NAME",		&_XA_XDE_WM_NAME,		NULL,					None			},
 	{"_XDE_WM_NETWM_SUPPORT",	&_XA_XDE_WM_NETWM_SUPPORT,	NULL,					None			},
 	{"_XDE_WM_WINWM_SUPPORT",	&_XA_XDE_WM_WINWM_SUPPORT,	NULL,					None			},
@@ -659,7 +662,8 @@ __xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text)
 		if (tp.value)
 			XFree(tp.value);
 	} else {
-		OPRINTF("would set on 0x%lx %s = '%s'\n", win, XGetAtomName(dpy, prop), text);
+		OPRINTF("would set on 0x%lx %s = '%s'\n", win, XGetAtomName(dpy, prop),
+			text);
 	}
 }
 
@@ -707,7 +711,7 @@ __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 			fprintf(stderr, "%ld", cards[i]);
 			if (i != n - 1)
 				fputs(",", stderr);
-			fputs(" ",  stderr);
+			fputs(" ", stderr);
 		}
 		fputs("\n", stderr);
 		fflush(stderr);
@@ -2308,7 +2312,7 @@ have_property(Atom *list, int n, Atom prop)
 {
 	int i;
 
-	if (list) 
+	if (list)
 		for (i = 0; i < n; i++)
 			if (list[i] == prop)
 				return True;
@@ -2318,264 +2322,368 @@ have_property(Atom *list, int n, Atom prop)
 /** @brief set XDE properties on the root window for the current screen
   */
 void
-__xde_set_properties()
+__xde_set_properties_on(Window win)
 {
 	int n = 0;
 	Atom *props;
 
-	if ((props = XListProperties(dpy, scr->root, &n)) && options.remove) {
+	if ((props = XListProperties(dpy, win, &n)) && options.remove) {
 		if (!wm || !wm->name || strcasecmp(wm->name, "fluxbox"))
 			if (have_property(props, n, _XA_BLACKBOX_PID))
-				xde_delete_property(scr->root, _XA_BLACKBOX_PID);
+				xde_delete_property(win, _XA_BLACKBOX_PID);
 		if (!wm || !wm->name || strcasecmp(wm->name, "blackbox"))
 			if (have_property(props, n, _XA_BB_THEME))
-				xde_delete_property(scr->root, _XA_BB_THEME);
+				xde_delete_property(win, _XA_BB_THEME);
 		if (!wm || !wm->name || strcasecmp(wm->name, "openbox")) {
 			if (have_property(props, n, _XA_OPENBOX_PID))
-				xde_delete_property(scr->root, _XA_OPENBOX_PID);
+				xde_delete_property(win, _XA_OPENBOX_PID);
 			if (have_property(props, n, _XA_OB_THEME))
-				xde_delete_property(scr->root, _XA_OB_THEME);
+				xde_delete_property(win, _XA_OB_THEME);
 		}
 		if (!wm || !wm->name || strcasecmp(wm->name, "i3")) {
 			if (have_property(props, n, _XA_I3_PID))
-				xde_delete_property(scr->root, _XA_I3_PID);
+				xde_delete_property(win, _XA_I3_PID);
 			if (have_property(props, n, _XA_I3_CONFIG_PATH))
-				xde_delete_property(scr->root, _XA_I3_CONFIG_PATH);
+				xde_delete_property(win, _XA_I3_CONFIG_PATH);
 			if (have_property(props, n, _XA_I3_SHMLOG_PATH))
-				xde_delete_property(scr->root, _XA_I3_SHMLOG_PATH);
+				xde_delete_property(win, _XA_I3_SHMLOG_PATH);
 			if (have_property(props, n, _XA_I3_SOCKET_PATH))
-				xde_delete_property(scr->root, _XA_I3_SOCKET_PATH);
+				xde_delete_property(win, _XA_I3_SOCKET_PATH);
 		}
 		if (!wm || !wm->netwm_check) {
 			if (have_property(props, n, _XA_NET_ACTIVE_WINDOW))
-				xde_delete_property(scr->root, _XA_NET_ACTIVE_WINDOW);
+				xde_delete_property(win, _XA_NET_ACTIVE_WINDOW);
 			if (have_property(props, n, _XA_NET_CLIENT_LIST))
-				xde_delete_property(scr->root, _XA_NET_CLIENT_LIST);
+				xde_delete_property(win, _XA_NET_CLIENT_LIST);
 			if (have_property(props, n, _XA_NET_CLIENT_LIST_STACKING))
-				xde_delete_property(scr->root, _XA_NET_CLIENT_LIST_STACKING);
+				xde_delete_property(win, _XA_NET_CLIENT_LIST_STACKING);
 			if (have_property(props, n, _XA_NET_CURRENT_DESKTOP))
-				xde_delete_property(scr->root, _XA_NET_CURRENT_DESKTOP);
+				xde_delete_property(win, _XA_NET_CURRENT_DESKTOP);
 			if (have_property(props, n, _XA_NET_DESKTOP))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP);
+				xde_delete_property(win, _XA_NET_DESKTOP);
 			if (have_property(props, n, _XA_NET_DESKTOP_GEOMETRY))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_GEOMETRY);
+				xde_delete_property(win, _XA_NET_DESKTOP_GEOMETRY);
 			if (have_property(props, n, _XA_NET_DESKTOP_LAYOUT))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_LAYOUT);
+				xde_delete_property(win, _XA_NET_DESKTOP_LAYOUT);
 			if (have_property(props, n, _XA_NET_DESKTOP_MASK))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_MASK);
+				xde_delete_property(win, _XA_NET_DESKTOP_MASK);
 			if (have_property(props, n, _XA_NET_DESKTOP_NAMES))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_NAMES);
+				xde_delete_property(win, _XA_NET_DESKTOP_NAMES);
 			if (have_property(props, n, _XA_NET_DESKTOP_PIXMAPS))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_PIXMAPS);
+				xde_delete_property(win, _XA_NET_DESKTOP_PIXMAPS);
 			if (have_property(props, n, _XA_NET_DESKTOP_VIEWPORT))
-				xde_delete_property(scr->root, _XA_NET_DESKTOP_VIEWPORT);
+				xde_delete_property(win, _XA_NET_DESKTOP_VIEWPORT);
 			if (have_property(props, n, _XA_NET_FULL_PLACEMENT))
-				xde_delete_property(scr->root, _XA_NET_FULL_PLACEMENT);
+				xde_delete_property(win, _XA_NET_FULL_PLACEMENT);
 			if (have_property(props, n, _XA_NET_FULLSCREEN_MONITORS))
-				xde_delete_property(scr->root, _XA_NET_FULLSCREEN_MONITORS);
+				xde_delete_property(win, _XA_NET_FULLSCREEN_MONITORS);
 			if (have_property(props, n, _XA_NET_HANDLED_ICONS))
-				xde_delete_property(scr->root, _XA_NET_HANDLED_ICONS);
+				xde_delete_property(win, _XA_NET_HANDLED_ICONS);
 			if (have_property(props, n, _XA_NET_ICON_GEOMETRY))
-				xde_delete_property(scr->root, _XA_NET_ICON_GEOMETRY);
+				xde_delete_property(win, _XA_NET_ICON_GEOMETRY);
 			if (have_property(props, n, _XA_NET_NUMBER_OF_DESKTOPS))
-				xde_delete_property(scr->root, _XA_NET_NUMBER_OF_DESKTOPS);
+				xde_delete_property(win, _XA_NET_NUMBER_OF_DESKTOPS);
 			if (have_property(props, n, _XA_NET_PROPERTIES))
-				xde_delete_property(scr->root, _XA_NET_PROPERTIES);
+				xde_delete_property(win, _XA_NET_PROPERTIES);
 			if (have_property(props, n, _XA_NET_SHOWING_DESKTOP))
-				xde_delete_property(scr->root, _XA_NET_SHOWING_DESKTOP);
+				xde_delete_property(win, _XA_NET_SHOWING_DESKTOP);
 			if (have_property(props, n, _XA_NET_SUPPORTED))
-				xde_delete_property(scr->root, _XA_NET_SUPPORTED);
+				xde_delete_property(win, _XA_NET_SUPPORTED);
 			if (have_property(props, n, _XA_NET_SUPPORTING_WM_CHECK))
-				xde_delete_property(scr->root, _XA_NET_SUPPORTING_WM_CHECK);
+				xde_delete_property(win, _XA_NET_SUPPORTING_WM_CHECK);
 			if (have_property(props, n, _XA_NET_VIRTUAL_POS))
-				xde_delete_property(scr->root, _XA_NET_VIRTUAL_POS);
+				xde_delete_property(win, _XA_NET_VIRTUAL_POS);
 			if (have_property(props, n, _XA_NET_VIRTUAL_ROOTS))
-				xde_delete_property(scr->root, _XA_NET_VIRTUAL_ROOTS);
+				xde_delete_property(win, _XA_NET_VIRTUAL_ROOTS);
 			if (have_property(props, n, _XA_NET_VISIBLE_DESKTOPS))
-				xde_delete_property(scr->root, _XA_NET_VISIBLE_DESKTOPS);
+				xde_delete_property(win, _XA_NET_VISIBLE_DESKTOPS);
 			if (have_property(props, n, _XA_NET_WM_NAME))
-				xde_delete_property(scr->root, _XA_NET_WM_NAME);
+				xde_delete_property(win, _XA_NET_WM_NAME);
 			if (have_property(props, n, _XA_NET_WM_PID))
-				xde_delete_property(scr->root, _XA_NET_WM_PID);
+				xde_delete_property(win, _XA_NET_WM_PID);
 			if (have_property(props, n, _XA_NET_WORKAREA))
-				xde_delete_property(scr->root, _XA_NET_WORKAREA);
+				xde_delete_property(win, _XA_NET_WORKAREA);
 		}
 		if (!wm || !wm->winwm_check) {
 			if (have_property(props, n, _XA_WIN_AREA))
-				xde_delete_property(scr->root, _XA_WIN_AREA);
+				xde_delete_property(win, _XA_WIN_AREA);
 			if (have_property(props, n, _XA_WIN_AREA_COUNT))
-				xde_delete_property(scr->root, _XA_WIN_AREA_COUNT);
+				xde_delete_property(win, _XA_WIN_AREA_COUNT);
 			if (have_property(props, n, _XA_WIN_CLIENT_LIST))
-				xde_delete_property(scr->root, _XA_WIN_CLIENT_LIST);
+				xde_delete_property(win, _XA_WIN_CLIENT_LIST);
 			if (have_property(props, n, _XA_WIN_DESKTOP_BUTTON_PROXY))
-				xde_delete_property(scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY);
+				xde_delete_property(win, _XA_WIN_DESKTOP_BUTTON_PROXY);
 			if (have_property(props, n, _XA_WIN_FOCUS))
-				xde_delete_property(scr->root, _XA_WIN_FOCUS);
+				xde_delete_property(win, _XA_WIN_FOCUS);
 			if (have_property(props, n, _XA_WIN_PROTOCOLS))
-				xde_delete_property(scr->root, _XA_WIN_PROTOCOLS);
+				xde_delete_property(win, _XA_WIN_PROTOCOLS);
 			if (have_property(props, n, _XA_WIN_SUPPORTING_WM_CHECK))
-				xde_delete_property(scr->root, _XA_WIN_SUPPORTING_WM_CHECK);
+				xde_delete_property(win, _XA_WIN_SUPPORTING_WM_CHECK);
 			if (have_property(props, n, _XA_WIN_WORKSPACE))
-				xde_delete_property(scr->root, _XA_WIN_WORKSPACE);
+				xde_delete_property(win, _XA_WIN_WORKSPACE);
 			if (have_property(props, n, _XA_WIN_WORKSPACE_COUNT))
-				xde_delete_property(scr->root, _XA_WIN_WORKSPACE_COUNT);
+				xde_delete_property(win, _XA_WIN_WORKSPACE_COUNT);
 			if (have_property(props, n, _XA_WIN_WORKSPACE_NAMES))
-				xde_delete_property(scr->root, _XA_WIN_WORKSPACE_NAMES);
+				xde_delete_property(win, _XA_WIN_WORKSPACE_NAMES);
 			if (have_property(props, n, _XA_WIN_WORKSPACES))
-				xde_delete_property(scr->root, _XA_WIN_WORKSPACES);
+				xde_delete_property(win, _XA_WIN_WORKSPACES);
 		}
 		if (!wm || !wm->maker_check) {
 			if (have_property(props, n, _XA_WINDOWMAKER_NOTICEBOARD))
-				xde_delete_property(scr->root, _XA_WINDOWMAKER_NOTICEBOARD);
+				xde_delete_property(win, _XA_WINDOWMAKER_NOTICEBOARD);
 		}
 		if (!wm || !wm->motif_check) {
 			if (have_property(props, n, _XA_DT_WORKSPACE_CURRENT))
-				xde_delete_property(scr->root, _XA_DT_WORKSPACE_CURRENT);
+				xde_delete_property(win, _XA_DT_WORKSPACE_CURRENT);
 			if (have_property(props, n, _XA_DT_WORKSPACE_LIST))
-				xde_delete_property(scr->root, _XA_DT_WORKSPACE_LIST);
+				xde_delete_property(win, _XA_DT_WORKSPACE_LIST);
 			if (have_property(props, n, _XA_MOTIF_WM_INFO))
-				xde_delete_property(scr->root, _XA_MOTIF_WM_INFO);
+				xde_delete_property(win, _XA_MOTIF_WM_INFO);
 		}
 	}
 	if (wm) {
-		xde_set_text(scr->root, XA_WM_NAME, XStringStyle, wm->name);
-		xde_set_text(scr->root, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
-		xde_set_text(scr->root, _XA_XDE_WM_NAME, XUTF8StringStyle, wm->name);
+		xde_set_text(win, XA_WM_NAME, XStringStyle, wm->name);
+		xde_set_text(win, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
+		xde_set_text(win, _XA_XDE_WM_NAME, XUTF8StringStyle, wm->name);
 
-		xde_set_text(scr->root, XA_WM_CLIENT_MACHINE, XStringStyle, wm->host);
-		xde_set_text(scr->root, _XA_XDE_WM_HOST, XUTF8StringStyle, wm->host);
+		xde_set_text(win, XA_WM_CLIENT_MACHINE, XStringStyle, wm->host);
+		xde_set_text(win, _XA_XDE_WM_HOST, XUTF8StringStyle, wm->host);
 
 		if (wm->pid) {
-			xde_set_cardinal(scr->root, _XA_NET_WM_PID, XA_CARDINAL, wm->pid);
-			xde_set_cardinal(scr->root, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
+			xde_set_cardinal(win, _XA_NET_WM_PID, XA_CARDINAL, wm->pid);
+			xde_set_cardinal(win, _XA_XDE_WM_PID, XA_CARDINAL, wm->pid);
 		} else {
 			if (have_property(props, n, _XA_NET_WM_PID))
-				xde_delete_property(scr->root, _XA_NET_WM_PID);
+				xde_delete_property(win, _XA_NET_WM_PID);
 			if (have_property(props, n, _XA_XDE_WM_PID))
-				xde_delete_property(scr->root, _XA_XDE_WM_PID);
+				xde_delete_property(win, _XA_XDE_WM_PID);
 		}
 
-		xde_set_text_list(scr->root, XA_WM_CLASS, XStringStyle, (char **) &wm->ch, 2);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CLASS, XUTF8StringStyle, (char **) &wm->ch, 2);
+		xde_set_text_list(win, XA_WM_CLASS, XStringStyle, (char **) &wm->ch, 2);
+		xde_set_text_list(win, _XA_XDE_WM_CLASS, XUTF8StringStyle,
+				  (char **) &wm->ch, 2);
 
-		xde_set_text_list(scr->root, _XA_XDE_WM_COMMAND, XUTF8StringStyle, wm->cargv, wm->cargc);
-		xde_set_text_list(scr->root, _XA_XDE_WM_CMDLINE, XUTF8StringStyle, wm->argv, wm->argc);
+		xde_set_text_list(win, _XA_XDE_WM_COMMAND, XUTF8StringStyle, wm->cargv,
+				  wm->cargc);
+		xde_set_text_list(win, _XA_XDE_WM_CMDLINE, XUTF8StringStyle, wm->argv,
+				  wm->argc);
 		if (wm->cargv)
-			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->cargv, wm->cargc);
+			xde_set_text_list(win, XA_WM_COMMAND, XStringStyle, wm->cargv,
+					  wm->cargc);
 		else if (wm->argv)
-			xde_set_text_list(scr->root, XA_WM_COMMAND, XStringStyle, wm->argv, wm->argc);
+			xde_set_text_list(win, XA_WM_COMMAND, XStringStyle, wm->argv,
+					  wm->argc);
 		else if (have_property(props, n, XA_WM_COMMAND))
-			xde_delete_property(scr->root, XA_WM_COMMAND);
+			xde_delete_property(win, XA_WM_COMMAND);
 
 		if (wm->netwm_check)
-			xde_set_window(scr->root, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_NETWM_SUPPORT, XA_WINDOW,
 				       wm->netwm_check);
 		else if (have_property(props, n, _XA_XDE_WM_NETWM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_NETWM_SUPPORT);
 		if (wm->winwm_check)
-			xde_set_window(scr->root, _XA_XDE_WM_WINWM_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_WINWM_SUPPORT, XA_WINDOW,
 				       wm->winwm_check);
 		else if (have_property(props, n, _XA_XDE_WM_WINWM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_WINWM_SUPPORT);
 		if (wm->maker_check)
-			xde_set_window(scr->root, _XA_XDE_WM_MAKER_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_MAKER_SUPPORT, XA_WINDOW,
 				       wm->maker_check);
 		else if (have_property(props, n, _XA_XDE_WM_MAKER_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_MAKER_SUPPORT);
 		if (wm->motif_check)
-			xde_set_window(scr->root, _XA_XDE_WM_MOTIF_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_MOTIF_SUPPORT, XA_WINDOW,
 				       wm->motif_check);
 		else if (have_property(props, n, _XA_XDE_WM_MOTIF_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_MOTIF_SUPPORT);
 		if (wm->icccm_check)
-			xde_set_window(scr->root, _XA_XDE_WM_ICCCM_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_ICCCM_SUPPORT, XA_WINDOW,
 				       wm->icccm_check);
 		else if (have_property(props, n, _XA_XDE_WM_ICCCM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_ICCCM_SUPPORT);
 		if (wm->redir_check)
-			xde_set_window(scr->root, _XA_XDE_WM_REDIR_SUPPORT, XA_WINDOW,
+			xde_set_window(win, _XA_XDE_WM_REDIR_SUPPORT, XA_WINDOW,
 				       wm->redir_check);
 		else if (have_property(props, n, _XA_XDE_WM_REDIR_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_REDIR_SUPPORT);
 
-		xde_set_text(scr->root, _XA_XDE_WM_RCFILE, XUTF8StringStyle, wm->rcfile);
-		xde_set_text(scr->root, _XA_XDE_WM_PRVDIR, XUTF8StringStyle, wm->pdir);
-		xde_set_text(scr->root, _XA_XDE_WM_USRDIR, XUTF8StringStyle, wm->udir);
-		xde_set_text(scr->root, _XA_XDE_WM_SYSDIR, XUTF8StringStyle, wm->sdir);
-		xde_set_text(scr->root, _XA_XDE_WM_ETCDIR, XUTF8StringStyle, wm->edir);
+		xde_set_text(win, _XA_XDE_WM_RCFILE, XUTF8StringStyle, wm->rcfile);
+		xde_set_text(win, _XA_XDE_WM_PRVDIR, XUTF8StringStyle, wm->pdir);
+		xde_set_text(win, _XA_XDE_WM_USRDIR, XUTF8StringStyle, wm->udir);
+		xde_set_text(win, _XA_XDE_WM_SYSDIR, XUTF8StringStyle, wm->sdir);
+		xde_set_text(win, _XA_XDE_WM_ETCDIR, XUTF8StringStyle, wm->edir);
 
-		xde_set_text(scr->root, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, wm->stylefile);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLE, XUTF8StringStyle, wm->style);
-		xde_set_text(scr->root, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, wm->stylename);
+		xde_set_text(win, _XA_XDE_WM_STYLEFILE, XUTF8StringStyle, wm->stylefile);
+		xde_set_text(win, _XA_XDE_WM_STYLE, XUTF8StringStyle, wm->style);
+		xde_set_text(win, _XA_XDE_WM_STYLENAME, XUTF8StringStyle, wm->stylename);
 
-		xde_set_text(scr->root, _XA_XDE_WM_MENU, XUTF8StringStyle, wm->menu);
-		xde_set_text(scr->root, _XA_XDE_WM_ICON, XUTF8StringStyle, wm->icon);
+		xde_set_text(win, _XA_XDE_WM_MENU, XUTF8StringStyle, wm->menu);
+		xde_set_text(win, _XA_XDE_WM_ICON, XUTF8StringStyle, wm->icon);
 	} else {
 		if (have_property(props, n, XA_WM_NAME))
-			xde_delete_property(scr->root, XA_WM_NAME);
+			xde_delete_property(win, XA_WM_NAME);
 		if (have_property(props, n, XA_WM_CLIENT_MACHINE))
-			xde_delete_property(scr->root, XA_WM_CLIENT_MACHINE);
+			xde_delete_property(win, XA_WM_CLIENT_MACHINE);
 		if (have_property(props, n, XA_WM_CLASS))
-			xde_delete_property(scr->root, XA_WM_CLASS);
+			xde_delete_property(win, XA_WM_CLASS);
 		if (have_property(props, n, XA_WM_COMMAND))
-			xde_delete_property(scr->root, XA_WM_COMMAND);
+			xde_delete_property(win, XA_WM_COMMAND);
 
 		if (have_property(props, n, _XA_NET_WM_NAME))
-			xde_delete_property(scr->root, _XA_NET_WM_NAME);
+			xde_delete_property(win, _XA_NET_WM_NAME);
 		if (have_property(props, n, _XA_NET_WM_PID))
-			xde_delete_property(scr->root, _XA_NET_WM_PID);
+			xde_delete_property(win, _XA_NET_WM_PID);
 		if (have_property(props, n, _XA_XDE_WM_NAME))
-			xde_delete_property(scr->root, _XA_XDE_WM_NAME);
+			xde_delete_property(win, _XA_XDE_WM_NAME);
 		if (have_property(props, n, _XA_XDE_WM_NETWM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_NETWM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_NETWM_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_WINWM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_WINWM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_WINWM_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_MAKER_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_MAKER_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_MAKER_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_MOTIF_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_MOTIF_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_MOTIF_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_ICCCM_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_ICCCM_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_ICCCM_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_REDIR_SUPPORT))
-			xde_delete_property(scr->root, _XA_XDE_WM_REDIR_SUPPORT);
+			xde_delete_property(win, _XA_XDE_WM_REDIR_SUPPORT);
 		if (have_property(props, n, _XA_XDE_WM_PID))
-			xde_delete_property(scr->root, _XA_XDE_WM_PID);
+			xde_delete_property(win, _XA_XDE_WM_PID);
 		if (have_property(props, n, _XA_XDE_WM_HOST))
-			xde_delete_property(scr->root, _XA_XDE_WM_HOST);
+			xde_delete_property(win, _XA_XDE_WM_HOST);
 		if (have_property(props, n, _XA_XDE_WM_CLASS))
-			xde_delete_property(scr->root, _XA_XDE_WM_CLASS);
+			xde_delete_property(win, _XA_XDE_WM_CLASS);
 		if (have_property(props, n, _XA_XDE_WM_CMDLINE))
-			xde_delete_property(scr->root, _XA_XDE_WM_CMDLINE);
+			xde_delete_property(win, _XA_XDE_WM_CMDLINE);
 		if (have_property(props, n, _XA_XDE_WM_COMMAND))
-			xde_delete_property(scr->root, _XA_XDE_WM_COMMAND);
+			xde_delete_property(win, _XA_XDE_WM_COMMAND);
 		if (have_property(props, n, _XA_XDE_WM_RCFILE))
-			xde_delete_property(scr->root, _XA_XDE_WM_RCFILE);
+			xde_delete_property(win, _XA_XDE_WM_RCFILE);
 		if (have_property(props, n, _XA_XDE_WM_PRVDIR))
-			xde_delete_property(scr->root, _XA_XDE_WM_PRVDIR);
+			xde_delete_property(win, _XA_XDE_WM_PRVDIR);
 		if (have_property(props, n, _XA_XDE_WM_USRDIR))
-			xde_delete_property(scr->root, _XA_XDE_WM_USRDIR);
+			xde_delete_property(win, _XA_XDE_WM_USRDIR);
 		if (have_property(props, n, _XA_XDE_WM_SYSDIR))
-			xde_delete_property(scr->root, _XA_XDE_WM_SYSDIR);
+			xde_delete_property(win, _XA_XDE_WM_SYSDIR);
 		if (have_property(props, n, _XA_XDE_WM_ETCDIR))
-			xde_delete_property(scr->root, _XA_XDE_WM_ETCDIR);
+			xde_delete_property(win, _XA_XDE_WM_ETCDIR);
 		if (have_property(props, n, _XA_XDE_WM_STYLEFILE))
-			xde_delete_property(scr->root, _XA_XDE_WM_STYLEFILE);
+			xde_delete_property(win, _XA_XDE_WM_STYLEFILE);
 		if (have_property(props, n, _XA_XDE_WM_STYLE))
-			xde_delete_property(scr->root, _XA_XDE_WM_STYLE);
+			xde_delete_property(win, _XA_XDE_WM_STYLE);
 		if (have_property(props, n, _XA_XDE_WM_STYLENAME))
-			xde_delete_property(scr->root, _XA_XDE_WM_STYLENAME);
+			xde_delete_property(win, _XA_XDE_WM_STYLENAME);
 		if (have_property(props, n, _XA_XDE_WM_MENU))
-			xde_delete_property(scr->root, _XA_XDE_WM_MENU);
+			xde_delete_property(win, _XA_XDE_WM_MENU);
 		if (have_property(props, n, _XA_XDE_WM_ICON))
-			xde_delete_property(scr->root, _XA_XDE_WM_ICON);
+			xde_delete_property(win, _XA_XDE_WM_ICON);
 	}
-	xde_set_text(scr->root, _XA_XDE_WM_THEME, XUTF8StringStyle, scr->theme);
-	xde_set_text(scr->root, _XA_XDE_WM_THEMEFILE, XUTF8StringStyle, scr->themefile);
+	xde_set_text(win, _XA_XDE_WM_THEME, XUTF8StringStyle, scr->theme);
+	xde_set_text(win, _XA_XDE_WM_THEMEFILE, XUTF8StringStyle, scr->themefile);
 	if (props)
 		XFree(props);
 }
 
+__asm__(".symver __xde_set_properties_on,xde_set_properties_on@@XDE_1.0");
+
+void
+__xde_set_properties(void)
+{
+	Window win, wins[2] = { scr->selwin, scr->root };
+	int i;
+
+	for (i = 0; i < 2; i++) {
+		if (!(win = wins[i]))
+			continue;
+		xde_set_properties_on(win);
+	}
+}
+
 __asm__(".symver __xde_set_properties,xde_set_properties@@XDE_1.0");
+
+void
+__xde_del_properties_from(Window win)
+{
+	int n = 0;
+	Atom *props;
+
+	if ((props = XListProperties(dpy, win, &n))) {
+		if (have_property(props, n, XA_WM_NAME))
+			xde_delete_property(win, XA_WM_NAME);
+		if (have_property(props, n, XA_WM_CLIENT_MACHINE))
+			xde_delete_property(win, XA_WM_CLIENT_MACHINE);
+		if (have_property(props, n, XA_WM_CLASS))
+			xde_delete_property(win, XA_WM_CLASS);
+		if (have_property(props, n, XA_WM_COMMAND))
+			xde_delete_property(win, XA_WM_COMMAND);
+
+		if (have_property(props, n, _XA_NET_WM_NAME))
+			xde_delete_property(win, _XA_NET_WM_NAME);
+		if (have_property(props, n, _XA_NET_WM_PID))
+			xde_delete_property(win, _XA_NET_WM_PID);
+		if (have_property(props, n, _XA_XDE_WM_NAME))
+			xde_delete_property(win, _XA_XDE_WM_NAME);
+		if (have_property(props, n, _XA_XDE_WM_NETWM_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_NETWM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_WINWM_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_WINWM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_MAKER_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_MAKER_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_MOTIF_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_MOTIF_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_ICCCM_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_ICCCM_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_REDIR_SUPPORT))
+			xde_delete_property(win, _XA_XDE_WM_REDIR_SUPPORT);
+		if (have_property(props, n, _XA_XDE_WM_PID))
+			xde_delete_property(win, _XA_XDE_WM_PID);
+		if (have_property(props, n, _XA_XDE_WM_HOST))
+			xde_delete_property(win, _XA_XDE_WM_HOST);
+		if (have_property(props, n, _XA_XDE_WM_CLASS))
+			xde_delete_property(win, _XA_XDE_WM_CLASS);
+		if (have_property(props, n, _XA_XDE_WM_CMDLINE))
+			xde_delete_property(win, _XA_XDE_WM_CMDLINE);
+		if (have_property(props, n, _XA_XDE_WM_COMMAND))
+			xde_delete_property(win, _XA_XDE_WM_COMMAND);
+		if (have_property(props, n, _XA_XDE_WM_RCFILE))
+			xde_delete_property(win, _XA_XDE_WM_RCFILE);
+		if (have_property(props, n, _XA_XDE_WM_PRVDIR))
+			xde_delete_property(win, _XA_XDE_WM_PRVDIR);
+		if (have_property(props, n, _XA_XDE_WM_USRDIR))
+			xde_delete_property(win, _XA_XDE_WM_USRDIR);
+		if (have_property(props, n, _XA_XDE_WM_SYSDIR))
+			xde_delete_property(win, _XA_XDE_WM_SYSDIR);
+		if (have_property(props, n, _XA_XDE_WM_ETCDIR))
+			xde_delete_property(win, _XA_XDE_WM_ETCDIR);
+		if (have_property(props, n, _XA_XDE_WM_STYLEFILE))
+			xde_delete_property(win, _XA_XDE_WM_STYLEFILE);
+		if (have_property(props, n, _XA_XDE_WM_STYLE))
+			xde_delete_property(win, _XA_XDE_WM_STYLE);
+		if (have_property(props, n, _XA_XDE_WM_STYLENAME))
+			xde_delete_property(win, _XA_XDE_WM_STYLENAME);
+		if (have_property(props, n, _XA_XDE_WM_MENU))
+			xde_delete_property(win, _XA_XDE_WM_MENU);
+		if (have_property(props, n, _XA_XDE_WM_ICON))
+			xde_delete_property(win, _XA_XDE_WM_ICON);
+
+		if (have_property(props, n, _XA_XDE_WM_THEME))
+			xde_delete_property(win, _XA_XDE_WM_THEME);
+		if (have_property(props, n, _XA_XDE_WM_THEMEFILE))
+			xde_delete_property(win, _XA_XDE_WM_THEMEFILE);
+	}
+	if (props)
+		XFree(props);
+}
+
+__asm__(".symver __xde_del_properties_from,xde_del_properties_from@@XDE_1.0");
+
+void
+__xde_del_properties(void)
+{
+	xde_del_properties_from(scr->root);
+}
+
+__asm__(".symver __xde_del_properties,xde_del_properties@@XDE_1.0");
 
 static void
 xde_identify_wm_props()
@@ -4682,7 +4790,8 @@ __xde_handle_event(const XEvent *ev)
 	}
 	switch (ev->type) {
 	case PropertyNotify:
-		XPRINTF("handling PropertyNotify event for %s\n", XGetAtomName(dpy, ev->xproperty.atom));
+		XPRINTF("handling PropertyNotify event for %s\n",
+			XGetAtomName(dpy, ev->xproperty.atom));
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xproperty.atom) {
 				if (atoms[i].handler)
@@ -4692,7 +4801,8 @@ __xde_handle_event(const XEvent *ev)
 		}
 		break;
 	case ClientMessage:
-		XPRINTF("handling ClientMessage event for %s\n", XGetAtomName(dpy, ev->xclient.message_type));
+		XPRINTF("handling ClientMessage event for %s\n",
+			XGetAtomName(dpy, ev->xclient.message_type));
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xclient.message_type) {
 				if (atoms[i].handler)
@@ -4715,7 +4825,7 @@ WmDeferred *deferred_done;
 WmDeferred **deferred_tail = &deferred_done;
 
 void
-set_timer(WmDeferred *d)
+set_timer(WmDeferred * d)
 {
 	struct itimerspec when;
 
@@ -4861,7 +4971,8 @@ __xde_process_timeouts()
 
 	DPRINTF("processing timeouts\n");
 	DPRINTF("reading %d bytes\n", (int) sizeof(count));
-	while((bytes = read(defer_timer, &count, sizeof(count))) >= 0 && (total += bytes) < sizeof(count)) ;
+	while ((bytes = read(defer_timer, &count, sizeof(count))) >= 0
+	       && (total += bytes) < sizeof(count)) ;
 	DPRINTF("got %d bytes\n", (int) total);
 	if (bytes == -1) {
 		EPRINTF("read: %s\n", strerror(errno));
@@ -5012,7 +5123,7 @@ __xde_main_loop(void)
 			if (pfd[1].revents & (POLLIN | POLLPRI))
 				xde_process_xevents();
 			if ((pfd[0].revents | pfd[1].revents)
-					& (POLLNVAL | POLLHUP | POLLERR)) {
+			    & (POLLNVAL | POLLHUP | POLLERR)) {
 				EPRINTF("fatal error on poll\n");
 				exit(EXIT_FAILURE);
 			}

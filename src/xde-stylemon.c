@@ -355,7 +355,7 @@ startup(char *previous_id)
 	cbs.die.client_data = (SmPointer) NULL;
 	cbs.save_complete.callback = xde_save_complete;
 	cbs.save_complete.client_data = (SmPointer) NULL;
-	cbs.shutdown_cancelled.callback = xde_shutdown_cacnelled;
+	cbs.shutdown_cancelled.callback = xde_shutdown_cancelled;
 	cbs.shutdown_cancalled.client_data = (SmPointer) NULL;
 
 	smcconn =

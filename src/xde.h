@@ -311,6 +311,7 @@ typedef struct {
 	Bool areas;
 	char **files;
 	Bool remove;
+	Bool replace;
 } Options;
 
 extern Display *dpy;
@@ -401,6 +402,7 @@ extern Atom _XA_WINDOWMAKER_NOTICEBOARD;
 
 extern Atom _XA_WM_DESKTOP;
 extern Atom _XA_XDE_THEME_NAME;
+extern Atom _XA_XDE_WM_INFO;
 extern Atom _XA_XDE_WM_NAME;
 extern Atom _XA_XDE_WM_NETWM_SUPPORT;
 extern Atom _XA_XDE_WM_WINWM_SUPPORT;
@@ -490,7 +492,10 @@ extern void xde_init_display(void);
 extern Bool xde_detect_wm(void);
 extern void xde_show_wms(void);
 extern void xde_identify_wm(void);
+extern void xde_set_properties_on(Window win);
 extern void xde_set_properties(void);
+extern void xde_del_properties_from(Window win);
+extern void xde_del_properties(void);
 extern Bool xde_find_theme(char *name, char **filename);
 extern char *xde_get_style(void);
 extern char *xde_get_menu(void);
