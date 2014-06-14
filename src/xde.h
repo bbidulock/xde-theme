@@ -324,6 +324,7 @@ extern unsigned int nscr;
 extern WmImage *images;
 extern WmDesktop *dsk;
 
+#define XPRINTF(args...) do { } while (0)
 #define OPRINTF(args...) do { if (options.output > 1) { \
 	fprintf(stderr, "I: "); \
 	fprintf(stderr, args); \
@@ -432,6 +433,7 @@ extern XContext ScreenContext;
 extern Options options;
 
 /* some utility functions */
+extern void xde_delete_property(Window win, Atom prop);
 extern void xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
 			      long n);
 extern char *xde_get_text(Window win, Atom prop);
