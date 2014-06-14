@@ -87,18 +87,24 @@ wm_event(const XEvent *e)
 	switch (e->type) {
 	case ClientMessage:
 		if (e->xclient.message_type == _XA_XDE_WATCH_COMMAND) {
+			DPRINTF("got _XDE_WATCH_COMMAND\n");
 			switch (e->xclient.data.l[0]) {
 			case XDE_WATCH_RECHECK:
+				DPRINTF("got _XDE_WATCH_COMMAND(Recheck)\n");
 				xde_defer_wm_check(0);
 				return XDE_EVENT_STOP;
 			case XDE_WATCH_QUIT:
+				DPRINTF("got _XDE_WATCH_COMMAND(Quit)\n");
 				xde_main_quit((XPointer) XDE_WATCH_QUIT);
 				return XDE_EVENT_STOP;
 			case XDE_WATCH_RESTART:
+				DPRINTF("got _XDE_WATCH_COMMAND(Restart)\n");
 				xde_main_quit((XPointer) XDE_WATCH_RESTART);
 				return XDE_EVENT_STOP;
 			case XDE_WATCH_ARGV:
+				DPRINTF("got _XDE_WATCH_COMMAND(Argv)\n");
 				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
+					XDeleteProperty(dpy, e->xclient.window, XA_WM_COMMAND);
 					xde_main_quit((XPointer) XDE_WATCH_ARGV);
 					return XDE_EVENT_STOP;
 				}
@@ -207,6 +213,10 @@ wm_theme_changed(char *newtheme, char *newfile)
 		xcm.data.l[2] = 0;
 		xcm.data.l[3] = 0;
 		xcm.data.l[4] = 0;
+
+		DPRINTF("sending %s to 0x%08lx\n",
+				XGetAtomName(dpy, _XA_GTK_READ_RCFILES),
+				scr->root);
 		XSendEvent(dpy, scr->root, False, StructureNotifyMask |
 				SubstructureRedirectMask | SubstructureNotifyMask,
 				(XEvent *)&xcm);
@@ -307,6 +317,7 @@ do_run(int argc, char *argv[])
 	Window mine;
 
 	xde_init(&wm_callbacks);
+	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
 
@@ -315,11 +326,10 @@ do_run(int argc, char *argv[])
 				   BlackPixel(dpy, scr->screen));
 	XSelectInput(dpy, mine, PropertyChangeMask);
 	XSaveContext(dpy, mine, ScreenContext, (XPointer) scr);
-	XSetCommand(dpy, mine, argv, argc);
 
 	XGrabServer(dpy);
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XSelectInput(dpy, owner, StructureNotifyMask);
+		XSelectInput(dpy, owner, PropertyChangeMask | StructureNotifyMask);
 		XSaveContext(dpy, owner, ScreenContext, (XPointer) scr);
 	} else {
 		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
@@ -328,13 +338,15 @@ do_run(int argc, char *argv[])
 	XUngrabServer(dpy);
 
 	if (owner) {
-		XClientMessageEvent xcm;
 		XEvent xev;
+		XClientMessageEvent xcm;
+
+		XSetCommand(dpy, owner, argv, argc);
 
 		xcm.type = ClientMessage;
 		xcm.serial = 0;
 		xcm.display = dpy;
-		xcm.window = mine;
+		xcm.window = owner;
 		xcm.message_type = _XA_XDE_WATCH_COMMAND;
 		xcm.format = 32;
 		xcm.data.l[0] = XDE_WATCH_ARGV;
@@ -343,10 +355,13 @@ do_run(int argc, char *argv[])
 		xcm.data.l[3] = 0;
 		xcm.data.l[4] = 0;
 
+		DPRINTF("sending %s Argv to 0x%08lx\n",
+				XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+				owner);
 		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
 		XSync(dpy, False);
 		if (!XCheckIfEvent(dpy, &xev, owner_died_predicate, (XPointer) owner)) {
-			XIfEvent(dpy, &xev, cmd_remove_predicate, (XPointer) mine);
+			XIfEvent(dpy, &xev, cmd_remove_predicate, (XPointer) owner);
 			XDestroyWindow(dpy, mine);
 			XCloseDisplay(dpy);
 			exit(EXIT_SUCCESS);
@@ -397,26 +412,35 @@ do_quit()
 	Window owner;
 
 	xde_init_display();
+	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
-	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XClientMessageEvent xcm;
+		if (!options.dryrun) {
+			XClientMessageEvent xcm;
 
-		xcm.type = ClientMessage;
-		xcm.serial = 0;
-		xcm.display = dpy;
-		xcm.window = owner;
-		xcm.message_type = _XA_XDE_WATCH_COMMAND;
-		xcm.format = 32;
-		xcm.data.l[0] = XDE_WATCH_QUIT;
-		xcm.data.l[1] = 0;
-		xcm.data.l[2] = 0;
-		xcm.data.l[3] = 0;
-		xcm.data.l[4] = 0;
+			xcm.type = ClientMessage;
+			xcm.serial = 0;
+			xcm.display = dpy;
+			xcm.window = owner;
+			xcm.message_type = _XA_XDE_WATCH_COMMAND;
+			xcm.format = 32;
+			xcm.data.l[0] = XDE_WATCH_QUIT;
+			xcm.data.l[1] = 0;
+			xcm.data.l[2] = 0;
+			xcm.data.l[3] = 0;
+			xcm.data.l[4] = 0;
 
-		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+			DPRINTF("sending %s Quit to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
+			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+		} else
+			OPRINTF("would send %s Quit to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
+
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
 		exit(EXIT_SUCCESS);
@@ -434,26 +458,34 @@ do_restart()
 	Window owner;
 
 	xde_init_display();
+	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
-	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XClientMessageEvent xcm;
+		if (!options.dryrun) {
+			XClientMessageEvent xcm;
 
-		xcm.type = ClientMessage;
-		xcm.serial = 0;
-		xcm.display = dpy;
-		xcm.window = owner;
-		xcm.message_type = _XA_XDE_WATCH_COMMAND;
-		xcm.format = 32;
-		xcm.data.l[0] = XDE_WATCH_RESTART;
-		xcm.data.l[1] = 0;
-		xcm.data.l[2] = 0;
-		xcm.data.l[3] = 0;
-		xcm.data.l[4] = 0;
+			xcm.type = ClientMessage;
+			xcm.serial = 0;
+			xcm.display = dpy;
+			xcm.window = owner;
+			xcm.message_type = _XA_XDE_WATCH_COMMAND;
+			xcm.format = 32;
+			xcm.data.l[0] = XDE_WATCH_RESTART;
+			xcm.data.l[1] = 0;
+			xcm.data.l[2] = 0;
+			xcm.data.l[3] = 0;
+			xcm.data.l[4] = 0;
 
-		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+			DPRINTF("sending %s Restart to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
+			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+		} else
+			OPRINTF("would send %s Restart to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
 		exit(EXIT_SUCCESS);
@@ -471,26 +503,34 @@ do_recheck()
 	Window owner;
 
 	xde_init_display();
+	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_WATCH_S%d", scr->screen);
 	selection = XInternAtom(dpy, name, False);
-	_XA_XDE_WATCH_COMMAND = XInternAtom(dpy, "_XDE_WATCH_COMMAND", False);
 
 	if ((owner = XGetSelectionOwner(dpy, selection))) {
-		XClientMessageEvent xcm;
+		if (!options.dryrun) {
+			XClientMessageEvent xcm;
 
-		xcm.type = ClientMessage;
-		xcm.serial = 0;
-		xcm.display = dpy;
-		xcm.window = owner;
-		xcm.message_type = _XA_XDE_WATCH_COMMAND;
-		xcm.format = 32;
-		xcm.data.l[0] = XDE_WATCH_RECHECK;
-		xcm.data.l[1] = 0;
-		xcm.data.l[2] = 0;
-		xcm.data.l[3] = 0;
-		xcm.data.l[4] = 0;
+			xcm.type = ClientMessage;
+			xcm.serial = 0;
+			xcm.display = dpy;
+			xcm.window = owner;
+			xcm.message_type = _XA_XDE_WATCH_COMMAND;
+			xcm.format = 32;
+			xcm.data.l[0] = XDE_WATCH_RECHECK;
+			xcm.data.l[1] = 0;
+			xcm.data.l[2] = 0;
+			xcm.data.l[3] = 0;
+			xcm.data.l[4] = 0;
 
-		XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+			DPRINTF("sending %s Recheck to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
+			XSendEvent(dpy, owner, False, NoEventMask, (XEvent *) &xcm);
+		} else
+			OPRINTF("would send %s Recheck to 0x%08lx\n",
+					XGetAtomName(dpy, _XA_XDE_WATCH_COMMAND),
+					owner);
 		XSync(dpy, False);
 		XCloseDisplay(dpy);
 		exit(EXIT_SUCCESS);
