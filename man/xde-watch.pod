@@ -84,6 +84,13 @@ properties that do not correspond to the running window manager.  This
 option can be used to clean up after window managers that do not remove
 their root window properties on exit, or window managers that crash.
 
+=item B<--assist>, B<-a>
+
+While running, assist a non-conforming NetWM/EWMH or WinWM/WMH window
+manager by setting known and missing properties on the respective check
+windows.  This helps utilities such as L<libwnck(3)> find the necessary
+information for non-conforming NetWM/EWMH window managers.
+
 =item B<--verbose>, B<-v> [I<LEVEL>]
 
 Print verbose information on standard error while running.

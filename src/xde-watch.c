@@ -756,6 +756,8 @@ Command options:\n\
 Options:\n\
     -R, --remove\n\
         also remove properties when changes occur\n\
+    -a, --assist\n\
+        assist a non-conforming window manager\n\
     -f, --foreground\n\
         run in the foreground and debug to standard error\n\
     -n, --dryrun\n\
@@ -785,6 +787,7 @@ main(int argc, char *argv[])
 			{"foreground",	no_argument,		NULL, 'f'},
 			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
+			{"assist",	no_argument,		NULL, 'a'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -796,10 +799,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnlD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRfnlaD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnlDvhVC?");
+		c = getopt(argc, argv, "qrcRfnlaDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -833,6 +836,9 @@ main(int argc, char *argv[])
 			break;
 		case 'l':	/* -l, --replace */
 			options.replace = True;
+			break;
+		case 'a':	/* -a, --assist */
+			options.assist = True;
 			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)

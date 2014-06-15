@@ -312,6 +312,7 @@ typedef struct {
 	char **files;
 	Bool remove;
 	Bool replace;
+	Bool assist;
 } Options;
 
 extern Display *dpy;

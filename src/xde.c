@@ -85,6 +85,7 @@ Options options = {
 	.files = NULL,
 	.remove = False,
 	.replace = False,
+	.assist = False,
 };
 
 static WindowManager *
@@ -107,10 +108,8 @@ delete_this_wm(WindowManager *w)
 		free(w->argv);
 		if (w->cargv)
 			XFreeStringList(w->cargv);
-		if (w->ch.res_name)
-			XFree(w->ch.res_name);
-		if (w->ch.res_class)
-			XFree(w->ch.res_class);
+		free(w->ch.res_name);
+		free(w->ch.res_class);
 		free(w->rcfile);
 		free(w->pdir);
 		free(w->udir);
@@ -594,12 +593,22 @@ __asm__(".symver __xde_delete_property,xde_delete_property@@XDE_1.0");
 void
 __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list, long n)
 {
-	if (!list || !n)
+	int i;
+
+	if (!list || !n) {
 		xde_delete_property(win, prop);
-	else if (!options.dryrun) {
+		return;
+	}
+	for (i = 0; i < n; i++)
+		if (list[i])
+			break;
+	if (i == n) {
+		xde_delete_property(win, prop);
+		return;
+	}
+	if (!options.dryrun) {
 		XTextProperty tp = { NULL, };
 		char **strings;
-		int i;
 
 		strings = calloc(n, sizeof(*strings));
 		for (i = 0; i < n; i++)
@@ -615,7 +624,6 @@ __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
 			XFree(tp.value);
 		free(strings);
 	} else if (options.output > 1) {
-		int i;
 
 		OPRINTF("would set on 0x%lx %s = [ ", win, XGetAtomName(dpy, prop));
 		for (i = 0; i < n; i++) {
@@ -708,7 +716,7 @@ __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 
 		OPRINTF("would set on 0x%lx %s = ", win, XGetAtomName(dpy, prop));
 		for (i = 0; i < n; i++) {
-			fprintf(stderr, "%ld", cards[i]);
+			fprintf(stderr, "0x%lx (%ld)", cards[i], cards[i]);
 			if (i != n - 1)
 				fputs(",", stderr);
 			fputs(" ", stderr);
@@ -1455,6 +1463,7 @@ __asm__(".symver __xde_find_theme,xde_find_theme@@XDE_1.0");
 static char *
 check_name(Window check)
 {
+	XClassHint ch = { NULL, NULL };
 	char *name;
 
 	OPRINTF("checking wm name on window 0x%lx\n", check);
@@ -1469,19 +1478,19 @@ check_name(Window check)
 		goto got_it_xfree;
 	if (name)
 		XFree(name);
-	if (wm->ch.res_name) {
-		XFree(wm->ch.res_name);
-		wm->ch.res_name = NULL;
-	}
-	if (wm->ch.res_class) {
-		XFree(wm->ch.res_class);
-		wm->ch.res_class = NULL;
-	}
-	if (XGetClassHint(dpy, check, &wm->ch)) {
-		if ((name = wm->ch.res_name) && name[0])
+	if (XGetClassHint(dpy, check, &ch)) {
+		if ((name = ch.res_name) && name[0])
 			goto got_it;
-		if ((name = wm->ch.res_class) && name[0])
+		if ((name = ch.res_class) && name[0])
 			goto got_it;
+		if (ch.res_name) {
+			XFree(ch.res_name);
+			ch.res_name = NULL;
+		}
+		if (ch.res_class) {
+			XFree(ch.res_class);
+			ch.res_class = NULL;
+		}
 	}
 	if (wm->cargv) {
 		XFreeStringList(wm->cargv);
@@ -1502,6 +1511,10 @@ check_name(Window check)
 	return NULL;
       got_it:
 	wm->name = strdup(name);
+	if (ch.res_name)
+		XFree(ch.res_name);
+	if (ch.res_class)
+		XFree(ch.res_class);
 	goto first_word;
       got_it_xfree:
 	wm->name = strdup(name);
@@ -2012,6 +2025,65 @@ find_wm_proc()
 	return False;
 }
 
+static char *
+check_class(Window check)
+{
+	XClassHint ch = { NULL, NULL };
+
+	OPRINTF("checking wm resource class on window 0x%lx\n", check);
+
+	if (!check)
+		return NULL;
+	if (XGetClassHint(dpy, check, &ch)) {
+		if (ch.res_name && !ch.res_name[0]) {
+			XFree(ch.res_name);
+			ch.res_name = NULL;
+		}
+		if (ch.res_class && !ch.res_class[0]) {
+			XFree(ch.res_class);
+			ch.res_class = NULL;
+		}
+		if (ch.res_name) {
+			wm->ch.res_name = strdup(ch.res_name);
+			XFree(ch.res_name);
+		}
+		if (ch.res_class) {
+			wm->ch.res_class = strdup(ch.res_class);
+			XFree(ch.res_class);
+		}
+	}
+	return (wm->ch.res_name ? : wm->ch.res_class);
+}
+
+/** @brief check for window manager resource name and class
+  */
+static char *
+find_wm_clas()
+{
+	int i;
+
+	OPRINTF("finding wm resource namd and class for screen %d\n", screen);
+
+	free(wm->ch.res_name);
+	wm->ch.res_name = NULL;
+	free(wm->ch.res_class);
+	wm->ch.res_class = NULL;
+
+	for (i = 0; i < CHECK_WINS; i++)
+		if (check_class(wm->wins[i]))
+			break;
+	if (!wm->ch.res_name && wm->name)
+		wm->ch.res_name = strdup(wm->name);
+	if (!wm->ch.res_class && wm->ch.res_name) {
+		wm->ch.res_class = strdup(wm->ch.res_name);
+		if (wm->ch.res_class[0])
+			wm->ch.res_class[0] = toupper(wm->ch.res_class[0]);
+	}
+	if (!wm->ch.res_name)
+		OPRINTF("could not find wm resource name on screen %d\n", screen);
+	return wm->ch.res_name;
+}
+
 /** @brief Check for window manager button proxy
   */
 static Bool
@@ -2050,6 +2122,7 @@ __xde_check_wm()
 		find_wm_pid();	/* Check for window manager pid */
 		find_wm_comm();	/* Check for window manager command */
 		find_wm_proc();	/* Check for window manager proc */
+		find_wm_clas(); /* Check for window manager class */
 		find_wm_prox();	/* Check for window manager button proxy */
 
 		wm->ops = get_wm_ops();
@@ -2103,10 +2176,10 @@ xde_identify_wm_human()
 		fprintf(stdout, "Process Id: %ld\n", wm->pid);
 	if (wm->host)
 		fprintf(stdout, "Hostname: %s\n", wm->host);
-	if (wm->ch.res_class)
-		fprintf(stdout, "Resource class: %s\n", wm->ch.res_class);
 	if (wm->ch.res_name)
 		fprintf(stdout, "Resource name:  %s\n", wm->ch.res_name);
+	if (wm->ch.res_class)
+		fprintf(stdout, "Resource class: %s\n", wm->ch.res_class);
 	if (wm->argv && wm->argc) {
 		int i, len;
 		char *cmd;
@@ -2181,10 +2254,16 @@ xde_identify_wm_shell()
 		fprintf(stdout, "XDE_WM_PID=%ld\n", wm->pid);
 	if (wm->host)
 		fprintf(stdout, "XDE_WM_HOST=\"%s\"\n", wm->host);
+#if 1
+	if (wm->ch.res_name)
+		fprintf(stdout, "XDE_WM_CLASS=('%s' '%s')\n", wm->ch.res_name,
+			wm->ch.res_class ? : "");
+#else
 	if (wm->ch.res_name)
 		fprintf(stdout, "XDE_WM_RES_NAME=\"%s\"\n", wm->ch.res_name);
 	if (wm->ch.res_class)
 		fprintf(stdout, "XDE_WM_RES_CLASS=\"%s\"\n", wm->ch.res_class);
+#endif
 	if (wm->argv && wm->argc) {
 		int i, len;
 		char *cmd;
@@ -2260,10 +2339,17 @@ xde_identify_wm_perl()
 		fprintf(stdout, "\tXDE_WM_PID => %ld,\n", wm->pid);
 	if (wm->host)
 		fprintf(stdout, "\tXDE_WM_HOST => '%s',\n", wm->host);
+#if 1
+	if (wm->ch.res_name)
+		fprintf(stdout, "\tXDE_WM_CLASS => ['%s', '%s'],\n", wm->ch.res_name,
+			wm->ch.res_class ? : "");
+#else
+
 	if (wm->ch.res_name)
 		fprintf(stdout, "\tXDE_WM_RES_NAME => '%s',\n", wm->ch.res_name);
 	if (wm->ch.res_class)
 		fprintf(stdout, "\tXDE_WM_RES_CLASS => '%s',\n", wm->ch.res_class);
+#endif
 	if (wm->argv && wm->argc) {
 		int i, len;
 		char *cmd;
@@ -2317,6 +2403,37 @@ xde_identify_wm_perl()
 	if (scr->themefile)
 		fprintf(stdout, "\tXDE_WM_THEMEFILE => '%s',\n", scr->themefile);
 	fprintf(stdout, "}\n");
+}
+
+static Bool
+was_destroyed(Display *display, XEvent *event, XPointer arg)
+{
+	Window win = (typeof(win)) arg;
+
+	if (event->type != DestroyNotify)
+		return False;
+	if (event->xdestroywindow.window != win)
+		return False;
+	return True;
+}
+
+static Atom *
+list_properties(Window *win, int *np)
+{
+	Atom *props = NULL;
+
+	if (!*win)
+		return (props);
+	*np = 0;
+	if (!(props = XListProperties(dpy, *win, np))) {
+		XEvent ev;
+		XPointer arg = (XPointer) *win;
+
+		XSync(dpy, False);
+		if (XCheckIfEvent(dpy, &ev, was_destroyed, arg))
+			*win = None;
+	}
+	return (props);
 }
 
 static Bool
@@ -2599,15 +2716,56 @@ __xde_set_properties_on(Window win)
 __asm__(".symver __xde_set_properties_on,xde_set_properties_on@@XDE_1.0");
 
 void
+set_basic_props(Window win, Atom *props, int n)
+{
+	if (wm->name && !have_property(props, n, XA_WM_NAME))
+		xde_set_text(win, XA_WM_NAME, XStringStyle, wm->name);
+	if ((wm->ch.res_name || wm->ch.res_class)
+	    && !have_property(props, n, XA_WM_CLASS))
+		xde_set_text_list(win, XA_WM_CLASS, XStringStyle, (char **) &wm->ch, 2);
+	if (wm->host && !have_property(props, n, XA_WM_CLIENT_MACHINE))
+		xde_set_text(win, XA_WM_CLIENT_MACHINE, XStringStyle, wm->host);
+	if (!have_property(props, n, XA_WM_COMMAND)) {
+		if (wm->cargv && wm->cargc)
+			xde_set_text_list(win, XA_WM_COMMAND, XStringStyle, wm->cargv,
+					  wm->cargc);
+		else if (wm->argv && wm->argc)
+			xde_set_text_list(win, XA_WM_COMMAND, XStringStyle, wm->argv,
+					  wm->argc);
+	}
+}
+
+void
 __xde_set_properties(void)
 {
 	Window win, wins[2] = { scr->selwin, scr->root };
-	int i;
+	int i, n = 0;
+	Atom *props;
 
 	for (i = 0; i < 2; i++) {
 		if (!(win = wins[i]))
 			continue;
 		xde_set_properties_on(win);
+	}
+	if (!options.assist)
+		return;
+	props = list_properties(&wm->netwm_check, &n);
+	if ((win = wm->netwm_check)) {
+		set_basic_props(win, props, n);
+		if (wm->name && !have_property(props, n, _XA_NET_WM_NAME))
+			xde_set_text(win, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
+		if (wm->pid && !have_property(props, n, _XA_NET_WM_PID))
+			xde_set_cardinal(win, _XA_NET_WM_PID, XA_CARDINAL, wm->pid);
+	}
+	props = list_properties(&wm->winwm_check, &n);
+	if ((win = wm->winwm_check)) {
+		props = XListProperties(dpy, win, &n);
+		set_basic_props(win, props, n);
+	}
+	props = list_properties(&wm->icccm_check, &n);
+	if ((win = wm->icccm_check)) {
+		props = XListProperties(dpy, win, &n);
+		set_basic_props(win, props, n);
 	}
 }
 
@@ -4809,10 +4967,14 @@ handle_DestroyNotify(const XEvent *e)
 		int i;
 
 		for (i = 0; i < CHECK_WINS; i++)
-			if (win == wm->wins[i])
+			if (win == wm->wins[i]) {
+				wm->wins[i] = None;
 				goto check;
-		if (win == wm->proxy)
+			}
+		if (win == wm->proxy) {
+			wm->proxy = None;
 			goto check;
+		}
 	}
 	return False;
       check:
