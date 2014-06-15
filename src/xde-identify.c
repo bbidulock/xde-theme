@@ -155,8 +155,12 @@ Options:\n\
         output suitable for perl evaluation [default: human]\n\
     -x, --xprops\n\
 	place output values into X properties [default: human]\n\
+    -a, --assist\n\
+        also place properties to assist non-compliant window managers\n\
     -S, --screen SCREEN\n\
         only act on screen number SCREEN [default: all(-1)]\n\
+    -n, --dryrun\n\
+        do not change anything, just output what would be done\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -181,6 +185,7 @@ main(int argc, char *argv[])
 			{"perl",	no_argument,		NULL, 'p'},
 			{"xprops",	no_argument,		NULL, 'x'},
 			{"screen",	required_argument,	NULL, 'S'},
+			{"assist",	no_argument,		NULL, 'a'},
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -192,10 +197,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "epxS:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "epxS:anD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "epxS:nDvhVC?");
+		c = getopt(argc, argv, "epxS:anDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -217,7 +222,12 @@ main(int argc, char *argv[])
 		case 'S':	/* -S, --screen */
 			options.screen = atoi(optarg);
 			break;
+		case 'a':	/* -a, --assist */
+			options.assist = True;
+			break;
 		case 'n':	/* -n, --dry-run */
+			if (options.output < 2)
+				options.output = 2;
 			options.dryrun = True;
 			break;
 		case 'D':	/* -D, --debug [level] */

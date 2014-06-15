@@ -70,6 +70,14 @@ Place output information into X properties on the root window.  The
 default is to provide printed output in a human-readable format.  See
 L</WINDOW MANAGERS> for example properties.
 
+=item B<-a>, B<--assist>
+
+When placing properties on the root window, also assist non-compliant
+window managers by placing appropriate information on the window manager
+check windows where possible.  This can assist toolkits unaware of
+non-compliant window managers (such as L<libwnck(3)>).  This option is
+only useful when used in conjunction with option B<--xprops>.
+
 =item B<-S>, B<--screen> I<SCREEN>
 
 Only act on the screen number, I<SCREEN>.  The default, C<-1>, is to act
