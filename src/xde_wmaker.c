@@ -118,17 +118,17 @@ find_style_WMAKER()
 		len = strlen(path);
 		pos = path + len;
 		snprintf(pos, PATH_MAX - len, "/Themes/%s.themed/style", options.style);
-		if (xde_test_file(path)) {
+		if (xde_check_file(path)) {
 			res = strdup(path);
 			break;
 		}
 		snprintf(pos, PATH_MAX - len, "/Themes/%s.style", options.style);
-		if (xde_test_file(path)) {
+		if (xde_check_file(path)) {
 			res = strdup(path);
 			break;
 		}
 		snprintf(pos, PATH_MAX - len, "/Styles/%s.style", options.style);
-		if (xde_test_file(path)) {
+		if (xde_check_file(path)) {
 			res = strdup(path);
 			break;
 		}

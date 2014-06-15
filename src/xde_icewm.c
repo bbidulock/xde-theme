@@ -162,7 +162,7 @@ find_style_ICEWM()
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		snprintf(path, PATH_MAX, "%s/themes/%s", wm->dirs[i], file);
-		if (xde_test_file(path))
+		if (xde_check_file(path))
 			break;
 	}
 	if (i < end) {
@@ -267,7 +267,7 @@ get_style_ICEWM()
 		if (!wm->dirs[i] || !wm->dirs[i][0])
 			continue;
 		snprintf(stylefile, PATH_MAX, "%s/themes/%s", wm->dirs[i], wm->stylename);
-		if (xde_test_file(stylefile))
+		if (xde_check_file(stylefile))
 			break;
 	}
 	if (i < end) {
@@ -454,7 +454,7 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 	strcpy(dirname, xdir);
 	strcat(dirname, "/themes");
 	if (!(dir = opendir(dirname))) {
-		EPRINTF("%s: %s\n", dirname, strerror(errno));
+		DPRINTF("%s: %s\n", dirname, strerror(errno));
 		free(dirname);
 		return;
 	}

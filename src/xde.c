@@ -1383,8 +1383,8 @@ __asm__(".symver __xde_get_xdg_dirs,xde_get_xdg_dirs@@XDE_1.0");
 Bool
 __xde_find_theme(char *name, char **filename)
 {
-	char **dir, *file;
-	int len, nlen;
+	char **dir, *file, *theme, *p, *copy;
+	int len, tlen;
 	struct stat st;
 	static char *suffix = "/xde/theme.ini";
 	static char *subdir = "/themes/";
@@ -1396,15 +1396,25 @@ __xde_find_theme(char *name, char **filename)
 		return False;
 	}
 
-	nlen = strlen(subdir) + strlen(name) + strlen(suffix);
-
 	DPRINTF("searching for style '%s'\n", name);
+
+	/* careful, icewm stylenames may have a path component */
+	copy = theme = strdup(name);
+	if ((p = strrchr(theme, '/')))
+		*p = '\0';
+	if ((p = strchr(theme, '/')))
+		theme = p + 1;
+
+	DPRINTF("searching for theme '%s'\n", theme);
+
+	tlen = strlen(subdir) + strlen(theme) + strlen(suffix);
+
 	for (dir = wm->xdg_dirs; *dir; dir++) {
-		len = strlen(*dir) + nlen + 1;
+		len = strlen(*dir) + tlen + 1;
 		file = calloc(len, sizeof(*file));
 		strcpy(file, *dir);
 		strcat(file, subdir);
-		strcat(file, name);
+		strcat(file, theme);
 		strcat(file, suffix);
 		if (stat(file, &st)) {
 			DPRINTF("%s: %s\n", file, strerror(errno));
@@ -1420,8 +1430,10 @@ __xde_find_theme(char *name, char **filename)
 			*filename = file;
 		else
 			free(file);
+		free(copy);
 		return True;
 	}
+	free(copy);
 	return False;
 }
 
@@ -3653,8 +3665,18 @@ __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 __asm__(".symver __xde_get_menu_simple,xde_get_menu_simple@@XDE_1.0");
 
 static char *
-theme_replace(char *theme, char *themefile)
+theme_replace(char *stylename, char *themefile)
 {
+	char *theme, *p, *copy;
+
+	/* we must be careful because stylename can be a style name and icewm uses a path 
+	   in the style name */
+	copy = theme = strdup(stylename);
+	if ((p = strrchr(theme, '/')))
+		*p = '\0';
+	if ((p = strchr(theme, '/')))
+		theme = p + 1;
+
 	if (!string_compare(theme, scr->theme)) {
 		theme = strdup(theme);
 		free(scr->theme);
@@ -3667,6 +3689,7 @@ theme_replace(char *theme, char *themefile)
 		scr->themefile = themefile;
 	} else
 		free(themefile);
+	free(copy);
 	return theme;
 }
 
@@ -4398,6 +4421,33 @@ __xde_get_icon_simple(const char *fallback)
 }
 
 __asm__(".symver __xde_get_icon_simple,xde_get_icon_simple@@XDE_1.0");
+
+Bool
+__xde_check_file(char *path)
+{
+	struct stat st;
+
+	if (!path) {
+		DPRINTF("%s", "null path\n");
+		return False;
+	}
+
+	OPRINTF("testing file '%s' for existence\n", path);
+
+	if (!stat(path, &st)) {
+		if (S_ISREG(st.st_mode)) {
+			if (!access(path, R_OK))
+				return True;
+			else
+				DPRINTF("cannot read %s\n", path);
+		} else
+			DPRINTF("%s not regular file\n", path);
+	} else
+		DPRINTF("%s: %s\n", path, strerror(errno));
+	return False;
+}
+
+__asm__(".symver __xde_check_file,xde_check_file@@XDE_1.0");
 
 Bool
 __xde_test_file(char *path)

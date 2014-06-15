@@ -118,7 +118,6 @@ wm_event(const XEvent *e)
 		    && e->xselectionclear.selection == scr->selection) {
 			DPRINTF("%s selection cleared\n",
 				XGetAtomName(dpy, scr->selection));
-			xde_del_properties();
 			xde_main_quit((XPointer) XDE_WATCH_QUIT);
 			return XDE_EVENT_STOP;
 
@@ -131,7 +130,25 @@ wm_event(const XEvent *e)
 static Bool
 wm_signal(int signum)
 {
-	return XDE_EVENT_PROPAGATE;
+	switch (signum)
+	{
+	case SIGINT:
+		DPRINTF("got SIGINT, shutting down\n");
+		break;
+	case SIGHUP:
+		DPRINTF("got SIGHUP, shutting down\n");
+		break;
+	case SIGTERM:
+		DPRINTF("got SIGTERM, shutting down\n");
+		break;
+	case SIGQUIT:
+		DPRINTF("got SIGQUIT, shutting down\n");
+		break;
+	default:
+		return XDE_EVENT_PROPAGATE;
+	}
+	xde_main_quit((XPointer) XDE_WATCH_QUIT);
+	return XDE_EVENT_STOP;
 }
 
 /** @brief window manager changed callback
@@ -460,8 +477,8 @@ do_run(int argc, char *argv[])
 #endif
 	switch ((int) (long) do_startup()) {
 	case XDE_WATCH_QUIT:
+		xde_del_properties();
 		exit(EXIT_SUCCESS);
-		break;
 	case XDE_WATCH_RESTART:
 	{
 		char **pargv = calloc(argc + 1, sizeof(*pargv));
@@ -490,6 +507,7 @@ do_run(int argc, char *argv[])
 		EPRINTF("should not get here\n");
 		break;
 	}
+	xde_del_properties();
 	exit(EXIT_FAILURE);
 }
 

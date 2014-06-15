@@ -507,6 +507,7 @@ extern char *xde_get_rcfile_optarg(char *optname);
 extern void xde_get_simple_dirs(char *wmname);
 extern char *xde_find_style_simple(char *dname, char *fname, char *suffix);
 extern Bool xde_test_file(char *path);
+extern Bool xde_check_file(char *path);
 extern void xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix,
 				char *style, enum ListType type);
 extern void xde_list_styles_simple(void);
