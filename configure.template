@@ -52,6 +52,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul])
 
 PKG_CHECK_MODULES([X11],[x11])
+PKG_CHECK_MODULES([SM],[sm])
 PKG_CHECK_MODULES([GDK],[gdk-pixbuf-xlib-2.0])
 PKG_CHECK_MODULES([GLIB],[glib-2.0])
 PKG_CHECK_MODULES([GOBJ],[gobject-2.0])
