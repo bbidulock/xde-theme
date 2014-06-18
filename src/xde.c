@@ -2754,7 +2754,7 @@ __xde_set_properties(void)
 	if ((win = wm->netwm_check)) {
 		set_basic_props(win, props, n);
 		if (!have_property(props, n, _XA_NET_SUPPORTING_WM_CHECK))
-			xde_set_window(win, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, win)
+			xde_set_window(win, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, win);
 		if (wm->name && !have_property(props, n, _XA_NET_WM_NAME))
 			xde_set_text(win, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
 		if (wm->pid && !have_property(props, n, _XA_NET_WM_PID))
