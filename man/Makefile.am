@@ -6,8 +6,9 @@ xde_man_files = \
 	    xde-actions.man \
 	    xde-menu.man \
 	    xde-identify.man \
-	    xde-stylemon.man \
+	    xde-setbg.man \
 	    xde-setwm.man \
+	    xde-stylemon.man \
 	    xde-watch.man
 
 nodist_man1_MANS = $(xde_man_files)
@@ -20,8 +21,9 @@ EXTRA_DIST = \
 	     xde-actions.pod \
 	     xde-menu.pod \
 	     xde-identify.pod \
-	     xde-stylemon.pod \
+	     xde-setbg.pod \
 	     xde-setwm.pod \
+	     xde-stylemon.pod \
 	     xde-watch.pod
 
 xde-theme.man: MANNAME = XDE-THEME
@@ -42,11 +44,14 @@ xde-menu.man: xde-menu.pod
 xde-identify.man: MANNAME = XDE-IDENTIFY
 xde-identify.man: xde-identify.pod
 
-xde-stylemon.man: MANNAME = XDE-STYLEMON
-xde-stylemon.man: xde-stylemon.pod
-
 xde-setwm.man: MANNAME = XDE-SETWM
 xde-setwm.man: xde-setwm.pod
+
+xde-setbg.man: MANNAME = XDE-SETBG
+xde-setbg.man: xde-setbg.pod
+
+xde-stylemon.man: MANNAME = XDE-STYLEMON
+xde-stylemon.man: xde-stylemon.pod
 
 xde-watch.man: MANNAME = XDE-WATCH
 xde-watch.man: xde-watch.pod

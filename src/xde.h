@@ -313,6 +313,7 @@ typedef struct {
 	Bool remove;
 	Bool replace;
 	Bool assist;
+	unsigned long wait;
 } Options;
 
 extern Display *dpy;

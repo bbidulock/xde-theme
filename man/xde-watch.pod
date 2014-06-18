@@ -72,11 +72,6 @@ dash long options are accepted.)
 
 =over
 
-=item B<--foreground>, B<-f>
-
-Run in the foreground (implies B<-D>), printing debugging information to
-standard error.
-
 =item B<--remove>, B<-R>
 
 When altering properties on the root windows of the X Display, delete
@@ -90,6 +85,32 @@ While running, assist a non-conforming NetWM/EWMH or WinWM/WMH window
 manager by setting known and missing properties on the respective check
 windows.  This helps utilities such as L<libwnck(3)> find the necessary
 information for non-conforming NetWM/EWMH window managers.
+
+=item B<--foreground>, B<-f>
+
+Run in the foreground (implies B<-D>), printing debugging information to
+standard error.
+
+=item B<--dryrun>, B<-n>
+
+Do not change anything, just print to standard output what would be
+changed.  Used for debugging.  Useful in conjunction with B<-f>.
+
+=item B<--wait>, B<-w> I<WAIT>
+
+Wait I<WAIT> milliseconds after it has been detected that a window
+manager has appeared or changed before detecting and applying themes or
+styles.  This permits the window manager to fully start up and complete
+its style settings before the theme is applied.  The default is 2000
+milliseconds (2 seconds).  The default should be adequate for most
+purposes.
+
+=item B<--delay>, B<-d> I<DELAY>
+
+Delay I<DELAY> milliseconds after a theme change is detected before
+finalizing and applying the theme.  This permits window managers to
+complete their style change before interrogating files.  The default is
+200 milliseconds.  The default should be adequate for most purposes.
 
 =item B<--verbose>, B<-v> [I<LEVEL>]
 

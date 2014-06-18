@@ -86,6 +86,7 @@ Options options = {
 	.remove = False,
 	.replace = False,
 	.assist = False,
+	.wait = 200,
 };
 
 static WindowManager *
@@ -2752,6 +2753,8 @@ __xde_set_properties(void)
 	props = list_properties(&wm->netwm_check, &n);
 	if ((win = wm->netwm_check)) {
 		set_basic_props(win, props, n);
+		if (!have_property(props, n, _XA_NET_SUPPORTING_WM_CHECK))
+			xde_set_window(win, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, win)
 		if (wm->name && !have_property(props, n, _XA_NET_WM_NAME))
 			xde_set_text(win, _XA_NET_WM_NAME, XUTF8StringStyle, wm->name);
 		if (wm->pid && !have_property(props, n, _XA_NET_WM_PID))
@@ -2759,6 +2762,8 @@ __xde_set_properties(void)
 	}
 	props = list_properties(&wm->winwm_check, &n);
 	if ((win = wm->winwm_check)) {
+		if (!have_property(props, n, _XA_WIN_SUPPORTING_WM_CHECK))
+			xde_set_window(win, _XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL, win);
 		props = XListProperties(dpy, win, &n);
 		set_basic_props(win, props, n);
 	}
@@ -4978,7 +4983,7 @@ handle_DestroyNotify(const XEvent *e)
 	}
 	return False;
       check:
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5355,7 +5360,7 @@ void
 __xde_defer_wm_check(Time delay)
 {
 	DPRINTF("deferring window manager check %d milliseconds\n", (int) delay);
-	xde_defer_once(xde_action_check_wm, 250, NULL);
+	xde_defer_once(xde_action_check_wm, delay, NULL);
 }
 
 __asm__(".symver __xde_defer_wm_check,xde_defer_wm_check@@XDE_1.0");
@@ -5395,7 +5400,7 @@ is_wm_property(const XEvent *e)
 	if (!e || e->type != PropertyNotify || !is_wm_window(e->xproperty.window))
 		return False;
 	if (!wm)
-		xde_defer_wm_check(250);
+		xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5406,7 +5411,7 @@ is_netwm_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->netwm_check)
-			xde_defer_wm_check(250);
+			xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5417,7 +5422,7 @@ is_winwm_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->winwm_check)
-			xde_defer_wm_check(250);
+			xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5428,7 +5433,7 @@ is_maker_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->maker_check)
-			xde_defer_wm_check(250);
+			xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5439,7 +5444,7 @@ is_motif_property(const XEvent *e)
 		return False;
 	if (e->xproperty.state != PropertyDelete)
 		if (!wm || !wm->motif_check)
-			xde_defer_wm_check(250);
+			xde_defer_wm_check(options.wait);
 	return True;
 }
 
@@ -5462,7 +5467,7 @@ handle_BB_THEME(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_theme_check(100);
+	xde_defer_theme_check(options.delay);
 	return XDE_EVENT_STOP;
 }
 
@@ -5479,7 +5484,7 @@ handle_BLACKBOX_PID(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5498,7 +5503,7 @@ handle_DT_WORKSPACE_LIST(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_motif_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_PROPAGATE;
 }
 
@@ -5515,7 +5520,7 @@ handle_ESETROOT_PMAP_ID(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_root_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_theme_check(100);
+	xde_defer_theme_check(options.delay);
 	return XDE_EVENT_STOP;
 }
 
@@ -5532,7 +5537,7 @@ handle_GTK_READ_RCFILES(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xclient.message_type));
 	if (!e || e->type != ClientMessage)
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_theme_check(100);
+	xde_defer_theme_check(options.delay);
 	return XDE_EVENT_STOP;
 }
 
@@ -5542,7 +5547,7 @@ handle_I3_CONFIG_PATH(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5552,7 +5557,7 @@ handle_I3_PID(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5562,7 +5567,7 @@ handle_I3_SHMLOG_PATH(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5572,7 +5577,7 @@ handle_I3_SOCKET_PATH(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5607,7 +5612,7 @@ handle_MOTIF_WM_INFO(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5829,7 +5834,7 @@ handle_NET_WM_NAME(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_netwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5839,7 +5844,7 @@ handle_NET_WM_PID(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_netwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5867,7 +5872,7 @@ handle_OPENBOX_PID(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_netwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5904,7 +5909,7 @@ handle_WIN_DESKTOP_BUTTON_PROXY(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_winwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5923,7 +5928,7 @@ handle_WIN_PROTOCOLS(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_winwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5933,7 +5938,7 @@ handle_WIN_SUPPORTING_WM_CHECK(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_winwm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -5988,7 +5993,7 @@ handle_WM_CLASS(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_PROPAGATE;
 }
 
@@ -5998,7 +6003,7 @@ handle_WM_CLIENT_MACHINE(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -6008,7 +6013,7 @@ handle_WM_COMMAND(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_PROPAGATE;
 }
 
@@ -6027,7 +6032,7 @@ handle_WM_NAME(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_wm_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_wm_check(250);
+	xde_defer_wm_check(options.wait);
 	return XDE_EVENT_STOP;
 }
 
@@ -6037,7 +6042,7 @@ handle_XDE_THEME_NAME(const XEvent *e)
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xproperty.atom));
 	if (!is_root_property(e))
 		return XDE_EVENT_PROPAGATE;
-	xde_defer_theme_check(100);
+	xde_defer_theme_check(options.delay);
 	return XDE_EVENT_PROPAGATE;
 }
 

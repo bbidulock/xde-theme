@@ -762,6 +762,12 @@ Options:\n\
         run in the foreground and debug to standard error\n\
     -n, --dryrun\n\
         do not change anything, just print what would be done\n\
+    -d, --delay DELAY\n\
+	delete DELAY milliseconds after a theme changes before\n\
+	applying the theme\n\
+    -w, --wait WAIT\n\
+        wait WAIT milliseconds after window manager appears or\n\
+	changes before applying themes\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -788,6 +794,8 @@ main(int argc, char *argv[])
 			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
 			{"assist",	no_argument,		NULL, 'a'},
+			{"delay",	required_argument,	NULL, 'd'},
+			{"wait",	required_argument,	NULL, 'w'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -799,10 +807,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnlaD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRfnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnlaDvhVC?");
+		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -839,6 +847,12 @@ main(int argc, char *argv[])
 			break;
 		case 'a':	/* -a, --assist */
 			options.assist = True;
+			break;
+		case 'd':	/* -d, --delay */
+			options.delay = strtoul(optarg, NULL, 0);
+			break;
+		case 'w':	/* -w, --wait */
+			options.wait = strtoul(optarg, NULL, 0);
 			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
