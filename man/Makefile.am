@@ -6,7 +6,6 @@ xde_man_files = \
 	    xde-actions.man \
 	    xde-menu.man \
 	    xde-identify.man \
-	    xde-setbg.man \
 	    xde-setwm.man \
 	    xde-stylemon.man \
 	    xde-watch.man
@@ -21,7 +20,6 @@ EXTRA_DIST = \
 	     xde-actions.pod \
 	     xde-menu.pod \
 	     xde-identify.pod \
-	     xde-setbg.pod \
 	     xde-setwm.pod \
 	     xde-stylemon.pod \
 	     xde-watch.pod

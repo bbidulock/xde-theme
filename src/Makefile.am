@@ -23,7 +23,6 @@ bin_PROGRAMS = \
 	xde-theme \
 	xde-style \
 	xde-identify \
-	xde-setbg \
 	xde-setwm \
 	xde-watch
 
@@ -50,10 +49,10 @@ xde_backdrop_SOURCES = xde-backdrop.c xde.h
 xde_backdrop_LDADD = libxde.la $(X11_LIBS)
 xde_backdrop_LDFLAGS = $(runtime_search) -ldl
 
-xde_setbg_CPPFLAGS = -DNAME=\"xde-setbg\"
-xde_setbg_SOURCES = xde-setbg.c xde.h
-xde_setbg_LDADD = libxde.la $(X11_LIBS)
-xde_setbg_LDFLAGS = $(runtime_search) -ldl
+#xde_setbg_CPPFLAGS = -DNAME=\"xde-setbg\"
+#xde_setbg_SOURCES = xde-setbg.c xde.h
+#xde_setbg_LDADD = libxde.la $(X11_LIBS)
+#xde_setbg_LDFLAGS = $(runtime_search) -ldl
 
 xde_setwm_CPPFLAGS = -DNAME=\"xde-setwm\"
 xde_setwm_SOURCES = xde-setwm.c xde.h
