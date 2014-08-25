@@ -249,7 +249,7 @@ main(int argc, char *argv[])
 			{"class",	required_argument,	NULL, 'K'},
 			{"pid",		required_argument,	NULL, 'p'},
 			{"revision",	required_argument,	NULL, 'r'},
-			{"command",	required_argument,	NULL, 'c'},
+			{"command",	no_argument,		NULL, 'c'},
 			{"screen",	required_argument,	NULL, 'S'},
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -261,10 +261,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "N:K:p:r:c:S:nD::v::hVCH?",
+		c = getopt_long_only(argc, argv, "N:K:p:r:cS:nD::v::hVCH?",
 				     long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "N:K:p:r:c:S:nDvhVC?");
+		c = getopt(argc, argv, "N:K:p:r:cS:nDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (debug)
@@ -289,8 +289,8 @@ main(int argc, char *argv[])
 			revision = strdup(optarg);
 			break;
 		case 'c':	/* -c, --command PROGRAM [ARG [ARG ...]] */
-			cmdv = &argv[optind - 1];
-			cmdc = argc - optind + 1;
+			cmdv = &argv[optind];
+			cmdc = argc - optind;
 			break;
 		case 'S':	/* -S, --screen SCREEN */
 			screen = atoi(optarg);
