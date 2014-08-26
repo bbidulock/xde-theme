@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=XDE Watch
+GenericName=
+Comment=Watches light-weight window managers for changes.
+Icon=system-monitor
+TryExec=/usr/bin/xde-watch
+Exec=xde-watch -a
+Terminal=false
+Categories=XDE;System;Settings;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=xde-watch
+X-GNOME-Autostart-enabled=true

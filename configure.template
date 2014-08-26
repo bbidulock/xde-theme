@@ -91,20 +91,32 @@ AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+
 sharedir="$datadir"
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""
-
 AC_SUBST([sharedir])
 
-xdemoddir='${libdir}/xde/modules'
+xdgconfdir="$sysconfdir"
+eval "xdgconfdir=\"$xdgconfdir\""
+eval "xdgconfdir=\"$xdgconfdir\""
+eval "xdgconfdir=\"$xdgconfdir\""
+AC_SUBST([xdgconfdir])
 
+xdgdatadir="$prefix"
+eval "xdgdatadir=\"$xdgdatadir\""
+eval "xdgdatadir=\"$xdgdatadir\""
+eval "xdgdatadir=\"$xdgdatadir\""
+AC_SUBST([xdgdatadir])
+
+xdemoddir='${libdir}/xde/modules'
 AC_SUBST([xdemoddir])
 
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 man/Makefile
+		 data/Makefile
 		 ])
 AC_OUTPUT
 
