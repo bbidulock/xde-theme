@@ -80,13 +80,13 @@ Options options = {
 	.grab = False,
 	.setroot = False,
 	.nomonitor = False,
-	.delay = 2000,
+	.delay = 200,
 	.areas = False,
 	.files = NULL,
 	.remove = False,
 	.replace = False,
 	.assist = False,
-	.wait = 200,
+	.wait = 2000,
 };
 
 static WindowManager *

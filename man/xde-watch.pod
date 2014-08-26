@@ -67,7 +67,7 @@ Print the program copying information to standard output and exit.
 =head2 GENERAL OPTIONS
 
 B<xde-watch> recognizes the following options: (Because
-L<Getopt::Long(3pm)> is used, non-ambiguous abbreviations and single
+L<getopt_long_only(3)> is used, non-ambiguous abbreviations and single
 dash long options are accepted.)
 
 =over
