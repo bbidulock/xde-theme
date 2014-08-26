@@ -583,6 +583,7 @@ void
 __xde_delete_property(Window win, Atom prop)
 {
 	if (!options.dryrun) {
+		DPRINTF("deleting from 0x%lx %s\n", win, XGetAtomName(dpy, prop));
 		XDeleteProperty(dpy, win, prop);
 		return;
 	}
@@ -619,6 +620,17 @@ __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
 			EPRINTF("error converting strings\n");
 			free(strings);
 			return;
+		}
+		if (options.debug > 0) {
+			DPRINTF("setting on 0x%lx %s = [ ", win, XGetAtomName(dpy, prop));
+			for (i = 0; i < n; i++) {
+				fprintf(stderr, "'%s'", list[i]);
+				if (i + 1 < n)
+					fputs(",", stderr);
+				fputs(" ", stderr);
+			}
+			fputs("]\n", stderr);
+			fflush(stderr);
 		}
 		XSetTextProperty(dpy, win, &tp, prop);
 		if (tp.value)
@@ -667,6 +679,8 @@ __xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text)
 			EPRINTF("error converting string '%s'\n", text);
 			return;
 		}
+		DPRINTF("setting on 0x%lx %s = '%s'\n", win, XGetAtomName(dpy, prop),
+			text);
 		XSetTextProperty(dpy, win, &tp, prop);
 		if (tp.value)
 			XFree(tp.value);
@@ -709,12 +723,23 @@ __asm__(".symver __xde_get_cardinals,xde_get_cardinals@@XDE_1.0");
 void
 __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 {
+	long i;
+
 	if (!options.dryrun) {
+		if (options.debug > 0) {
+			DPRINTF("setting on 0x%lx %s = ", win, XGetAtomName(dpy, prop));
+			for (i = 0; i < n; i++) {
+				fprintf(stderr, "0x%lx (%ld)", cards[i], cards[i]);
+				if (i != n - 1)
+					fputs(",", stderr);
+				fputs(" ", stderr);
+			}
+			fputs("\n", stderr);
+			fflush(stderr);
+		}
 		XChangeProperty(dpy, win, prop, type, 32, PropModeReplace,
 				(unsigned char *) cards, n);
 	} else if (options.output > 1) {
-		long i;
-
 		OPRINTF("would set on 0x%lx %s = ", win, XGetAtomName(dpy, prop));
 		for (i = 0; i < n; i++) {
 			fprintf(stderr, "0x%lx (%ld)", cards[i], cards[i]);
@@ -1435,6 +1460,7 @@ __xde_find_theme(char *name, char **filename)
 			free(file);
 			continue;
 		}
+		DPRINTF("found theme file %s\n", file);
 		if (filename)
 			*filename = file;
 		else
@@ -3327,6 +3353,7 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 				continue;
 			}
 		}
+		DPRINTF("got file name %s\n", file);
 		stylename = strdup(d->d_name);
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
@@ -3523,6 +3550,7 @@ __xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *s
 				continue;
 			}
 		}
+		DPRINTF("got file name %s\n", file);
 		stylename = strdup(d->d_name);
 		if (suffix[0] && (p = strstr(d->d_name, suffix))
 		    && !p[strlen(suffix)])
@@ -3638,6 +3666,7 @@ __xde_list_styles_nostyle()
 					break;
 			if (*saw)
 				continue;
+			DPRINTF("got file name %s\n", d->d_name);
 			stylename = strdup(d->d_name);
 			numb++;
 			seen = realloc(seen, (numb + 1) * sizeof(*seen));
@@ -3766,6 +3795,7 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 				path = NULL;
 				continue;
 			}
+			DPRINTF("got path %s\n", path);
 			break;
 		}
 	}
@@ -3848,6 +3878,7 @@ theme_replace(char *stylename, char *themefile)
 	} else
 		theme = scr->theme;
 	if (!string_compare(themefile, scr->themefile)) {
+		DPRINTF("themefile changed '%s' to '%s\n", scr->themefile, themefile);
 		free(scr->themefile);
 		scr->themefile = themefile;
 	} else
@@ -3873,7 +3904,7 @@ __xde_get_theme()
 	style = xde_get_style();
 	if (style && xde_find_theme(wm->stylename, &themefile)) {
 		OPRINTF("found theme from style %s\n", style);
-		return theme_replace(style, themefile);
+		return theme_replace(wm->stylename, themefile);
 	}
 	name = xde_get_text(scr->root, _XA_XDE_THEME_NAME);
 	if (name && xde_find_theme(name, &themefile)) {
@@ -3912,6 +3943,7 @@ __xde_get_theme()
 			DPRINTF("%s: %s\n", file, strerror(errno));
 			continue;
 		}
+		DPRINTF("got file %s\n", file);
 		buf = calloc(PATH_MAX + 1, sizeof(*buf));
 		while (fgets(buf, PATH_MAX, f)) {
 			b = buf;
@@ -3950,6 +3982,8 @@ __xde_get_theme()
 	free(files);
 	if (!theme)
 		DPRINTF("could not find theme\n");
+	else
+		DPRINTF("found theme %s\n", theme);
 	return theme;
 }
 
@@ -4230,6 +4264,7 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 			free(stylerc);
 			continue;
 		}
+		DPRINTF("got file %s\n", stylerc);
 		if (stylefile[0] != '/') {
 			/* WARNING: from_file must return a buffer large enough to add a
 			   path prefix: recommend PATH_MAX +1 */
@@ -4577,6 +4612,7 @@ __xde_get_icon_simple(const char *fallback)
 		icon = strdup(fallback);
 	}
 	if (icon) {
+		DPRINTF("got icon %s\n", icon);
 		free(wm->icon);
 		wm->icon = icon;
 	}
