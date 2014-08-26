@@ -69,8 +69,6 @@ typedef enum {
 	CommandQuit,
 	CommandRestart,
 	CommandRecheck,
-	CommandSet,
-	CommandEdit,
 	CommandHelp,
 	CommandVersion,
 	CommandCopying,
@@ -1633,96 +1631,6 @@ do_recheck(int argc, char *argv[])
 	}
 }
 
-/*
- * Testing for window managers:
- *
- * IceWM:   Sets _NET_SUPPORTING_WM_CHECK(WINDOW) appropriately.  Note that it sets
- *	    _WIN_SUPPORTING_WM_CHECK(CARDINAL) as well.  Also, it sets both to the
- *	    same window.  It sets _NET_WM_NAME(STRING) to "IceWM 1.3.7 (Linux
- *	    3.4.0/x86_64)" or some such.  Extract the first word of the string for
- *	    the actual name.  Note that _NET_WM_NAME should be (UTF8_STRING) instead
- *	    of (STRING) [this has been fixed].  It sets _NET_WM_PID(CARDINAL) to the
- *	    pid of the window manager; however, it does not set
- *	    WM_CLIENT_MACHINE(STRING) to the fully qualified domain name of the
- *	    window manager machine as required by the EWMH specification [this has
- *	    been fixed].
- *
- * Blackbox:
- *	    Blackbox is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.  It
- *	    properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and the
- *	    check window.  On the check window the only other thing that it sets is
- *	    _NET_WM_NAME(UTF8_STRING) whcih is a property UTF8_STRING with the single
- *	    word "Blackbox".  [It now sets _NET_WM_PID correctly, but still does not
- *	    set WM_CLIENT_MACHINE(STRING) to the fully qualified domain name of the
- *	    window manager machine. [fixed]]
- *
- * Fluxbox: Fluxbox is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.  It
- *	    properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and the
- *	    check window.  On the check window the only other thing it sets is
- *	    _NET_WM_NAME(UTF8_STRING) which is a propert UTF8_STRING with the single
- *	    word "Fluxbox".
- *
- *	    Fluxbox also sets _BLACKBOX_PID(CARDINAL) on the root window.  (Gee,
- *	    blackbox doesn't!)  Fluxbox interns the _BLACKBOX_ATTRIBUTES atom and
- *	    then does nothing with it.  Fluxbox interns the _FLUXBOX_ACTION,
- *	    _FLUXBOX_ACTION_RESULT and _FLUXBOX_GROUP_LEFT atoms.  Actions are only
- *	    possible when the session.session0.allowRemoteActions resources is set to
- *	    tru.  THey are affected by changing the _FLUXBOX_ACTION(STRING) property
- *	    on the root window to reflect the new command.  The result is
- *	    communicated by fluxbox setting the _FLUXBOX_ACTION_RESULT(STRING)
- *	    property on the root window with the result.
- *
- * Openbox: Openbox is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.  It
- *	    properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and the
- *	    check window.  On the check window, the only other thing that it sets is
- *	    _NET_WM_NAME(UTF8_STRING) which is a proper UTF8_STRING with the single
- *	    word "Openbox".
- *
- *	    Openbox also sets _OPENBOX_PID(CARDINAL) on the root window.  It also
- *	    sets _OB_VERSION(UTF8_STRING) and _OB_THEME(UTF8_STRING) on the root
- *	    window.
- *
- * FVWM:    FVWM is both GNOME/WMH and ICCCM/EWMH compliant.  It sets
- *	    _NET_SUPPORTING_WM_CHECK(WINDOW) properly on the root and check window.
- *	    On the check window it sets _NET_WM_NAME(UTF8_STRING) to "FVWM".  It sets
- *	    WM_NAME(STRING) to "fvwm" and WM_CLASS(STRING) to "fvwm", "FVWM".  FVWM
- *	    implements _WIN_SUPPORTING_WM_CHECK(CARDINAL) in a separate window from
- *	    _NET_SUPPORTING_WM_CHECK(WINDOW), but the same one as
- *	    _WIN_DESKTOP_BUTTON_PROXY(CARDINAL).  There are no additional properties
- *	    set on those windows.
- *
- * WindowMaker:
- *	    WindowMaker is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.
- *	    It properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and
- *	    the check window.  It does not set the _NET_WM_NAME(UTF8_STRING) on the
- *	    check window.  It does, however, define a recursive
- *	    _WINDOWMAKER_NOTICEBOARD(WINDOW) that shares the same window as the check
- *	    window and sets the _WINDOWMAKER_ICON_TILE(_RGBA_IMAGE) property on this
- *	    window to the ICON/DOCK/CLIP tile.
- *
- * PeKWM:
- *	    PeKWM is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.  It
- *	    properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and the
- *	    check window.  It sets _NET_WM_NAME(STRING) on the check window.  Note
- *	    that _NET_WM_NAME should be (UTF8_STRING) instead of (STRING) (corrected
- *	    in 'git' version).  It does not set WM_CLIENT_MACHINE(STRING) on the
- *	    check window as required by EWMH, but sets it on the root window.  It
- *	    does not, however, set it to the fully qualified domain name as required
- *	    by EWMH.  Also, it sets _NET_WM_PID(CARDINAL) on the check window, but
- *	    mistakenly sets it on the root window.  It sets WM_CLASS(STRING) to a
- *	    null string on the check window and does not set WM_NAME(STRING).
- *
- * JWM:
- *	    JWM is only ICCCM/EWMH compliant and is not GNOME/WMH compliant.  It
- *	    properly sets _NET_SUPPORTING_WM_CHECK(WINDOW) on both the root and the
- *	    check window.  It properly sets _NET_WM_NAME(UTF8_STRING) on the check
- *	    window (to "JWM").  It does not properly set _NET_WM_PID(CARDINAL) on the
- *	    check window, or anywhere for that matter [it does now].  It does not set
- *	    WM_CLIENT_MACHINE(STRING) anywhere and there is no WM_CLASS(STRING) or
- *	    WM_NAME(STRING) on the check window.
- *
- */
-
 static void
 copying(int argc, char *argv[])
 {
@@ -1796,7 +1704,6 @@ usage(int argc, char *argv[])
 		return;
 	(void) fprintf(stderr, "\
 Usage:\n\
-    %1$s [command option] [options] [FILE [FILE ...]]\n\
     %1$s [options] [-l,--replace]\n\
     %1$s [options] {-q,--quit}\n\
     %1$s [options] {-r,--restart}\n\
@@ -1814,7 +1721,6 @@ help(int argc, char *argv[])
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
-    %1$s [command option] [options] [FILE [FILE ...]]\n\
     %1$s [options] [{-l,--replace}]\n\
     %1$s [options] {-q,--quit}\n\
     %1$s [options] {-r,--restart}\n\
@@ -1822,9 +1728,6 @@ Usage:\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
-Arguments:\n\
-    [FILE [FILE ...]]\n\
-        a list of files (one per virtual desktop)\n\
 Command options:\n\
     -q, --quit\n\
         ask running instance to quit\n\
@@ -1832,10 +1735,8 @@ Command options:\n\
         ask running instance to restart\n\
     -c, --recheck\n\
         ask running instance to recheck everything\n\
-    -e, --edit\n\
-        launch background settings editor\n\
-    -s, --set\n\
-        set the background\n\
+    -l, --replace\n\
+        replace running instance with this one\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -1843,32 +1744,20 @@ Command options:\n\
     -C, --copying\n\
         print copying permission and exit\n\
 Options:\n\
-    -l, --replace\n\
-        replace running instance with this one\n\
     -R, --remove\n\
         also remove properties when changes occur\n\
-    -A, --assist\n\
+    -a, --assist\n\
         assist a non-conforming window manager\n\
     -f, --foreground\n\
         run in the foreground and debug to standard error\n\
+    -n, --dryrun\n\
+        do not change anything, just print what would be done\n\
     -d, --delay DELAY\n\
 	delete DELAY milliseconds after a theme changes before\n\
 	applying the theme\n\
     -w, --wait WAIT\n\
         wait WAIT milliseconds after window manager appears or\n\
 	changes before applying themes\n\
-    -g, --grab\n\
-	grab the X server while setting backgrounds\n\
-    -s, --setroot\n\
-	set the background pixmap instead of just properties\n\
-    -n, --nomonitor\n\
-	exit after setting the background\n\
-    -t, --theme THEME\n\
-	set the specified theme\n\
-    -a, --areas\n\
-	distribute backgrounds also over work areas\n\
-    -n, --dry-run\n\
-        do not change anything, just print what would be done\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -1900,26 +1789,17 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-			{"run",		no_argument,		NULL, '0'},
 			{"quit",	no_argument,		NULL, 'q'},
 			{"restart",	no_argument,		NULL, 'r'},
 			{"recheck",	no_argument,		NULL, 'c'},
-			{"edit",	no_argument,		NULL, 'e'},
-			{"set",		required_argument,	NULL, '1'},
-
 			{"remove",	no_argument,		NULL, 'R'},
 			{"foreground",	no_argument,		NULL, 'f'},
+			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
-			{"assist",	no_argument,		NULL, 'A'},
-			{"grab",	no_argument,		NULL, 'g'},
-			{"setroot",	no_argument,		NULL, 's'},
-			{"nomonitor",	no_argument,		NULL, 'm'},
-			{"theme",	required_argument,	NULL, 't'},
+			{"assist",	no_argument,		NULL, 'a'},
 			{"delay",	required_argument,	NULL, 'd'},
 			{"wait",	required_argument,	NULL, 'w'},
-			{"areas",	no_argument,		NULL, 'a'},
 
-			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
 			{"help",	no_argument,		NULL, 'h'},
@@ -1930,10 +1810,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRflAgsmt:d:w:anD::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRfnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRflAgsmt:d:w:anDvhVC?");
+		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -1944,13 +1824,6 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
-		case '0':	/* --run */
-			if (command != CommandDefault)
-				goto bad_option;
-			if (cmd == CommandDefault)
-				cmd = CommandRun;
-			command = CommandRun;
-			break;
 		case 'q':	/* -q, --quit */
 			if (command != CommandDefault)
 				goto bad_option;
@@ -1972,21 +1845,6 @@ main(int argc, char *argv[])
 				cmd = CommandRecheck;
 			command = CommandRecheck;
 			break;
-		case 'e':	/* -e, --edit */
-			if (command != CommandDefault)
-				goto bad_option;
-			if (cmd == CommandDefault)
-				cmd = CommandEdit;
-			command = CommandEdit;
-			break;
-		case '1':	/* --set */
-			if (command != CommandDefault)
-				goto bad_option;
-			if (cmd == CommandDefault)
-				cmd = CommandSet;
-			command = CommandSet;
-			break;
-
 		case 'R':	/* -R, --remove */
 			options.remove = True;
 			break;
@@ -1997,35 +1855,14 @@ main(int argc, char *argv[])
 		case 'l':	/* -l, --replace */
 			options.replace = True;
 			break;
-		case 'A':	/* -A, --assist */
+		case 'a':	/* -a, --assist */
 			options.assist = True;
 			break;
-		case 'g':	/* -g, --grab */
-			options.grab = True;
-			break;
-		case 's':	/* -s, --setroot */
-			options.setroot = True;
-			break;
-		case 'm':	/* -m, --nomonitor */
-			options.nomonitor = True;
-			break;
-		case 't':	/* -t, --theme THEME */
-			options.style = strdup(optarg);
-			break;
-		case 'd':	/* -d, --delay MILLISECONDS */
+		case 'd':	/* -d, --delay */
 			options.delay = strtoul(optarg, NULL, 0);
 			break;
 		case 'w':	/* -w, --wait */
 			options.wait = strtoul(optarg, NULL, 0);
-			break;
-		case 'a':	/* -a, --areas */
-			options.areas = True;
-			break;
-
-		case 'n':	/* -n, --dryrun */
-			options.dryrun = True;
-			if (options.output < 2)
-				options.output = 2;
 			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
@@ -2098,13 +1935,8 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s: option index = %d\n", argv[0], optind);
 		fprintf(stderr, "%s: option count = %d\n", argv[0], argc);
 	}
-	if (optind < argc) {
-		int n = argc - optind, j = 0;
-
-		options.files = calloc(n + 1, sizeof(*options.files));
-		while (optind < argc)
-			options.files[j++] = strdup(argv[optind++]);
-	}
+	if (optind < argc)
+		goto bad_nonopt;
 	switch (cmd) {
 	case CommandDefault:
 		command = CommandRun;
@@ -2123,14 +1955,6 @@ main(int argc, char *argv[])
 	case CommandRecheck:
 		DPRINTF("%s: running recheck\n", argv[0]);
 		do_recheck(argc, argv);
-		break;
-	case CommandSet:
-		EPRINTF("%s: option --set not supported\n", argv[0]);
-		exit(EXIT_FAILURE);
-		break;
-	case CommandEdit:
-		EPRINTF("%s: option --edit not supported\n", argv[0]);
-		exit(EXIT_FAILURE);
 		break;
 	case CommandHelp:
 		DPRINTF("%s: printing help message\n", argv[0]);

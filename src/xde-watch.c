@@ -61,6 +61,19 @@ Atom _XA_XDE_DESKTOP_COMMAND;
 
 Bool foreground = False;
 
+typedef enum {
+	CommandDefault,
+	CommandRun,
+	CommandQuit,
+	CommandRestart,
+	CommandRecheck,
+	CommandHelp,
+	CommandVersion,
+	CommandCopying,
+} CommandType;
+
+CommandType command;
+
 enum {
 	XDE_DESKTOP_QUIT,
 	XDE_DESKTOP_RESTART,
@@ -511,8 +524,8 @@ do_run(int argc, char *argv[])
 	exit(EXIT_FAILURE);
 }
 
-static void
-do_quit()
+void
+do_quit(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -555,8 +568,8 @@ do_quit()
 	}
 }
 
-static void
-do_restart()
+void
+do_restart(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -598,8 +611,8 @@ do_restart()
 	}
 }
 
-static void
-do_recheck()
+void
+do_recheck(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -776,9 +789,22 @@ Options:\n\
 ", argv[0]);
 }
 
+void
+set_defaults(void)
+{
+	int level;
+
+	if ((level = strtoul(getenv("XDE_DEBUG") ? : "0", NULL, 0)))
+		options.debug = level;
+}
+
 int
 main(int argc, char *argv[])
 {
+	CommandType cmd = CommandDefault;
+
+	set_defaults();
+
 	while (1) {
 		int c, val;
 
@@ -822,14 +848,26 @@ main(int argc, char *argv[])
 			goto bad_usage;
 
 		case 'q':	/* -q, --quit */
-			do_quit();
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandQuit;
+			command = CommandQuit;
+			break;
 		case 'r':	/* -r, --restart */
-			do_restart();
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRestart;
+			command = CommandRestart;
+			break;
 		case 'c':	/* -c, --recheck */
-			do_recheck();
-			exit(EXIT_SUCCESS);
+			if (command != CommandRecheck)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRecheck;
+			command = CommandRecheck;
+			break;
 		case 'R':	/* -R, --remove */
 			options.remove = True;
 			break;
@@ -880,22 +918,22 @@ main(int argc, char *argv[])
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
-			if (options.debug)
-				fprintf(stderr, "%s: printing help message\n", argv[0]);
-			help(argc, argv);
-			exit(EXIT_SUCCESS);
+			cmd = CommandHelp;
+			break;
 		case 'V':	/* -V, --version */
-			if (options.debug)
-				fprintf(stderr, "%s: printing version message\n",
-					argv[0]);
-			version(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandVersion;
+			command = CommandVersion;
+			break;
 		case 'C':	/* -C, --copying */
-			if (options.debug)
-				fprintf(stderr, "%s: printing copying message\n",
-					argv[0]);
-			copying(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandCopying;
+			command = CommandCopying;
+			break;
 		case '?':
 		default:
 		      bad_option:
@@ -927,7 +965,38 @@ main(int argc, char *argv[])
 	}
 	if (optind < argc)
 		goto bad_nonopt;
-	do_run(argc, argv);
+	switch (cmd) {
+	case CommandDefault:
+		command = CommandRun;
+	case CommandRun:
+		DPRINTF("%s: running default\n", argv[0]);
+		do_run(argc, argv);
+		break;
+	case CommandQuit:
+		DPRINTF("%s: running quit\n", argv[0]);
+		do_quit(argc, argv);
+		break;
+	case CommandRestart:
+		DPRINTF("%s: running restart\n", argv[0]);
+		do_restart(argc, argv);
+		break;
+	case CommandRecheck:
+		DPRINTF("%s: running recheck\n", argv[0]);
+		do_recheck(argc, argv);
+		break;
+	case CommandHelp:
+		DPRINTF("%s: printing help message\n", argv[0]);
+		help(argc, argv);
+		break;
+	case CommandVersion:
+		DPRINTF("%s: printing version message\n", argv[0]);
+		version(argc, argv);
+		break;
+	case CommandCopying:
+		DPRINTF("%s: printing copying message\n", argv[0]);
+		copying(argc, argv);
+		break;
+	}
 	exit(EXIT_SUCCESS);
 }
 
