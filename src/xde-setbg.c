@@ -1900,12 +1900,12 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-//			{"run",		no_argument,		NULL, 'r'},
+			{"run",		no_argument,		NULL, '0'},
 			{"quit",	no_argument,		NULL, 'q'},
 			{"restart",	no_argument,		NULL, 'r'},
 			{"recheck",	no_argument,		NULL, 'c'},
-//			{"edit",	no_argument,		NULL, 'e'},
-//			{"set",		required_argument,	NULL, 's'},
+			{"edit",	no_argument,		NULL, 'e'},
+			{"set",		required_argument,	NULL, '1'},
 
 			{"remove",	no_argument,		NULL, 'R'},
 			{"foreground",	no_argument,		NULL, 'f'},
@@ -1944,6 +1944,13 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
+		case '0':	/* --run */
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRun;
+			command = CommandRun;
+			break;
 		case 'q':	/* -q, --quit */
 			if (command != CommandDefault)
 				goto bad_option;
@@ -1971,6 +1978,13 @@ main(int argc, char *argv[])
 			if (cmd == CommandDefault)
 				cmd = CommandEdit;
 			command = CommandEdit;
+			break;
+		case '1':	/* --set */
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandSet;
+			command = CommandSet;
 			break;
 
 		case 'R':	/* -R, --remove */
