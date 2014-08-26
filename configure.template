@@ -1,7 +1,7 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-theme],[1.1.23],[http://github.com/bbidulock/xde-theme],[xde-theme])
-AC_REVISION([1.1.23])
+AC_INIT([xde-theme],[1.1],[http://github.com/bbidulock/xde-theme],[xde-theme])
+AC_REVISION([1.1])
 
 AC_CONFIG_SRCDIR([src/xde.c])
 AC_CONFIG_HEADERS([autoconf.h])
