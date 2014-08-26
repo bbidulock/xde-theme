@@ -66,9 +66,11 @@ Bool foreground = False;
 typedef enum {
 	CommandDefault,
 	CommandRun,
-	CommandReplace,
 	CommandQuit,
+	CommandRestart,
+	CommandRecheck,
 	CommandSet,
+	CommandEdit,
 	CommandHelp,
 	CommandVersion,
 	CommandCopying,
@@ -1237,17 +1239,17 @@ startup(char *previous_id)
 		case CommandRun:
 		default:
 			if (scr->owner) {
-				fprintf(stderr,
-					"another instance of %s already running -- exiting\n",
-					NAME);
-				exit(EXIT_SUCCESS);
+				if (options.replace) {
+					fprintf(stderr,
+						"another instance of %s already running -- replacing\n",
+						NAME);
+				} else {
+					fprintf(stderr,
+						"another instance of %s already running -- exiting\n",
+						NAME);
+					exit(EXIT_SUCCESS);
+				}
 			}
-			break;
-		case CommandReplace:
-			if (scr->owner)
-				fprintf(stderr,
-					"another instance of %s already running -- replacing\n",
-					NAME);
 			break;
 		case CommandQuit:
 			if (scr->owner)
@@ -1502,7 +1504,7 @@ do_run(int argc, char *argv[])
 }
 
 void
-do_quit()
+do_quit(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1546,7 +1548,7 @@ do_quit()
 }
 
 void
-do_restart()
+do_restart(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1589,7 +1591,7 @@ do_restart()
 }
 
 void
-do_recheck()
+do_recheck(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1812,6 +1814,7 @@ help(int argc, char *argv[])
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
+    %1$s [command option] [options] [FILE [FILE ...]]\n\
     %1$s [options] [{-l,--replace}]\n\
     %1$s [options] {-q,--quit}\n\
     %1$s [options] {-r,--restart}\n\
@@ -1819,6 +1822,9 @@ Usage:\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
+Arguments:\n\
+    [FILE [FILE ...]]\n\
+        a list of files (one per virtual desktop)\n\
 Command options:\n\
     -q, --quit\n\
         ask running instance to quit\n\
@@ -1826,8 +1832,10 @@ Command options:\n\
         ask running instance to restart\n\
     -c, --recheck\n\
         ask running instance to recheck everything\n\
-    -l, --replace\n\
-        replace running instance with this one\n\
+    -e, --edit\n\
+        launch background settings editor\n\
+    -s, --set\n\
+        set the background\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -1835,20 +1843,32 @@ Command options:\n\
     -C, --copying\n\
         print copying permission and exit\n\
 Options:\n\
+    -l, --replace\n\
+        replace running instance with this one\n\
     -R, --remove\n\
         also remove properties when changes occur\n\
-    -a, --assist\n\
+    -A, --assist\n\
         assist a non-conforming window manager\n\
     -f, --foreground\n\
         run in the foreground and debug to standard error\n\
-    -n, --dryrun\n\
-        do not change anything, just print what would be done\n\
     -d, --delay DELAY\n\
 	delete DELAY milliseconds after a theme changes before\n\
 	applying the theme\n\
     -w, --wait WAIT\n\
         wait WAIT milliseconds after window manager appears or\n\
 	changes before applying themes\n\
+    -g, --grab\n\
+	grab the X server while setting backgrounds\n\
+    -s, --setroot\n\
+	set the background pixmap instead of just properties\n\
+    -n, --nomonitor\n\
+	exit after setting the background\n\
+    -t, --theme THEME\n\
+	set the specified theme\n\
+    -a, --areas\n\
+	distribute backgrounds also over work areas\n\
+    -n, --dry-run\n\
+        do not change anything, just print what would be done\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -1862,13 +1882,15 @@ set_defaults(void)
 {
 	int level;
 
-	if ((level = strtoul(getenv("XDE_DEBUG" ? : "0"), NULL, 0)))
+	if ((level = strtoul(getenv("XDE_DEBUG") ? : "0", NULL, 0)))
 		options.debug = level;
 }
 
 int
 main(int argc, char *argv[])
 {
+	CommandType cmd = CommandDefault;
+
 	set_defaults();
 
 	while (1) {
@@ -1878,17 +1900,26 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
+//			{"run",		no_argument,		NULL, 'r'},
 			{"quit",	no_argument,		NULL, 'q'},
 			{"restart",	no_argument,		NULL, 'r'},
 			{"recheck",	no_argument,		NULL, 'c'},
+//			{"edit",	no_argument,		NULL, 'e'},
+//			{"set",		required_argument,	NULL, 's'},
+
 			{"remove",	no_argument,		NULL, 'R'},
 			{"foreground",	no_argument,		NULL, 'f'},
-			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
-			{"assist",	no_argument,		NULL, 'a'},
+			{"assist",	no_argument,		NULL, 'A'},
+			{"grab",	no_argument,		NULL, 'g'},
+			{"setroot",	no_argument,		NULL, 's'},
+			{"nomonitor",	no_argument,		NULL, 'm'},
+			{"theme",	required_argument,	NULL, 't'},
 			{"delay",	required_argument,	NULL, 'd'},
 			{"wait",	required_argument,	NULL, 'w'},
+			{"areas",	no_argument,		NULL, 'a'},
 
+			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
 			{"help",	no_argument,		NULL, 'h'},
@@ -1899,10 +1930,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnlad:w:D::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRflAgsmt:d:w:anD::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
+		c = getopt(argc, argv, "qrcRflAgsmt:d:w:anDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -1914,14 +1945,34 @@ main(int argc, char *argv[])
 			goto bad_usage;
 
 		case 'q':	/* -q, --quit */
-			do_quit();
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandQuit;
+			command = CommandQuit;
+			break;
 		case 'r':	/* -r, --restart */
-			do_restart();
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRestart;
+			command = CommandRestart;
+			break;
 		case 'c':	/* -c, --recheck */
-			do_recheck();
-			exit(EXIT_SUCCESS);
+			if (command != CommandRecheck)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRecheck;
+			command = CommandRecheck;
+			break;
+		case 'e':	/* -e, --edit */
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandEdit;
+			command = CommandEdit;
+			break;
+
 		case 'R':	/* -R, --remove */
 			options.remove = True;
 			break;
@@ -1929,24 +1980,39 @@ main(int argc, char *argv[])
 			foreground = True;
 			options.debug = 1;
 			break;
-		case 'n':	/* -n, --dryrun */
-			options.dryrun = True;
-			if (options.output < 2)
-				options.output = 2;
-			break;
 		case 'l':	/* -l, --replace */
 			options.replace = True;
 			break;
-		case 'a':	/* -a, --assist */
+		case 'A':	/* -A, --assist */
 			options.assist = True;
 			break;
-		case 'd':	/* -d, --delay */
+		case 'g':	/* -g, --grab */
+			options.grab = True;
+			break;
+		case 's':	/* -s, --setroot */
+			options.setroot = True;
+			break;
+		case 'm':	/* -m, --nomonitor */
+			options.nomonitor = True;
+			break;
+		case 't':	/* -t, --theme THEME */
+			options.style = strdup(optarg);
+			break;
+		case 'd':	/* -d, --delay MILLISECONDS */
 			options.delay = strtoul(optarg, NULL, 0);
 			break;
 		case 'w':	/* -w, --wait */
 			options.wait = strtoul(optarg, NULL, 0);
 			break;
+		case 'a':	/* -a, --areas */
+			options.areas = True;
+			break;
 
+		case 'n':	/* -n, --dryrun */
+			options.dryrun = True;
+			if (options.output < 2)
+				options.output = 2;
+			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
 				fprintf(stderr, "%s: increasing debug verbosity\n",
@@ -1973,22 +2039,22 @@ main(int argc, char *argv[])
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
-			if (options.debug)
-				fprintf(stderr, "%s: printing help message\n", argv[0]);
-			help(argc, argv);
-			exit(EXIT_SUCCESS);
+			cmd = CommandHelp;
+			break;
 		case 'V':	/* -V, --version */
-			if (options.debug)
-				fprintf(stderr, "%s: printing version message\n",
-					argv[0]);
-			version(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandVersion;
+			command = CommandVersion;
+			break;
 		case 'C':	/* -C, --copying */
-			if (options.debug)
-				fprintf(stderr, "%s: printing copying message\n",
-					argv[0]);
-			copying(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandCopying;
+			command = CommandCopying;
+			break;
 		case '?':
 		default:
 		      bad_option:
@@ -2018,9 +2084,53 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s: option index = %d\n", argv[0], optind);
 		fprintf(stderr, "%s: option count = %d\n", argv[0], argc);
 	}
-	if (optind < argc)
-		goto bad_nonopt;
-	do_run(argc, argv);
+	if (optind < argc) {
+		int n = argc - optind, j = 0;
+
+		options.files = calloc(n + 1, sizeof(*options.files));
+		while (optind < argc)
+			options.files[j++] = strdup(argv[optind++]);
+	}
+	switch (cmd) {
+	case CommandDefault:
+		command = CommandRun;
+	case CommandRun:
+		DPRINTF("%s: running default\n", argv[0]);
+		do_run(argc, argv);
+		break;
+	case CommandQuit:
+		DPRINTF("%s: running quit\n", argv[0]);
+		do_quit(argc, argv);
+		break;
+	case CommandRestart:
+		DPRINTF("%s: running restart\n", argv[0]);
+		do_restart(argc, argv);
+		break;
+	case CommandRecheck:
+		DPRINTF("%s: running recheck\n", argv[0]);
+		do_recheck(argc, argv);
+		break;
+	case CommandSet:
+		EPRINTF("%s: option --set not supported\n", argv[0]);
+		exit(EXIT_FAILURE);
+		break;
+	case CommandEdit:
+		EPRINTF("%s: option --edit not supported\n", argv[0]);
+		exit(EXIT_FAILURE);
+		break;
+	case CommandHelp:
+		DPRINTF("%s: printing help message\n", argv[0]);
+		help(argc, argv);
+		break;
+	case CommandVersion:
+		DPRINTF("%s: printing version message\n", argv[0]);
+		version(argc, argv);
+		break;
+	case CommandCopying:
+		DPRINTF("%s: printing copying message\n", argv[0]);
+		copying(argc, argv);
+		break;
+	}
 	exit(EXIT_SUCCESS);
 }
 

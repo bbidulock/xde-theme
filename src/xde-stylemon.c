@@ -48,6 +48,8 @@
 
 #include "xde.h"
 
+#include <X11/SM/SMlib.h>
+
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif
@@ -64,9 +66,11 @@ Bool foreground = False;
 typedef enum {
 	CommandDefault,
 	CommandRun,
-	CommandReplace,
 	CommandQuit,
+	CommandRestart,
+	CommandRecheck,
 	CommandSet,
+	CommandEdit,
 	CommandHelp,
 	CommandVersion,
 	CommandCopying,
@@ -941,20 +945,17 @@ geteventscr(XEvent *ev)
 	return (event_scr = getscreen(ev->xany.window) ? : scr);
 }
 
-static Bool
+Bool
 IGNOREEVENT(XEvent *e)
 {
 	DPRINTF("Got ignore event %d\n", e->type);
 	return False;
 }
 
-static Bool
+Bool
 selectionclear(XEvent *e)
 {
 	if (e->xselectionclear.selection == scr->selection && scr->selwin) {
-		int n;
-		WmScreen *s;
-
 		XDestroyWindow(dpy, scr->selwin);
 		XDeleteContext(dpy, scr->selwin, ScreenContext);
 		scr->selwin = None;
@@ -968,7 +969,7 @@ selectionclear(XEvent *e)
 	return False;
 }
 
-static Bool
+Bool
 clientmessage(XEvent *e)
 {
 	if (e->xclient.message_type != _XA_MANAGER)
@@ -995,10 +996,9 @@ clientmessage(XEvent *e)
 	return True;
 }
 
-static Bool
+Bool
 destroynotify(XEvent *e)
 {
-	int n;
 	XClientMessageEvent mev;
 
 	if (!e->xany.window || scr->owner != e->xany.window)
@@ -1081,6 +1081,18 @@ handle_event(XEvent *e)
 	}
 }
 
+#if 0
+
+#define EXTRANGE 16
+
+enum {
+	XfixesBase,
+	XrandrBase,
+	XineramaBase,
+	XsyncBase,
+	BaseLast
+};
+
 Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	/* *INDENT-OFF* */
 	[KeyPress]		= IGNOREEVENT,
@@ -1129,6 +1141,8 @@ handle_event(XEvent *ev)
 	DPRINTF("WARNING: No handler for event type %d\n", ev->type);
 	return False;
 }
+
+#endif
 
 int signum;
 
@@ -1186,7 +1200,7 @@ event_loop()
 	}
 }
 
-static void
+void
 startup(char *previous_id)
 {
 	char name[32];
@@ -1225,21 +1239,21 @@ startup(char *previous_id)
 		case CommandRun:
 		default:
 			if (scr->owner) {
-				fprintf(stderr,
-					"another instance of %s already running -- exiting\n",
-					NAME);
-				exit(EXIT_SUCCESS);
+				if (options.replace) {
+					fprintf(stderr,
+						"another instance of %s already running -- replacing\n",
+						NAME);
+				} else {
+					fprintf(stderr,
+						"another instance of %s already running -- exiting\n",
+						NAME);
+					exit(EXIT_SUCCESS);
+				}
 			}
-			break;
-		case CommandReplace:
-			if (scr->owner)
-				fprintf(stderr,
-					"another instance of %s already running -- replacing\n",
-					NAME);
 			break;
 		case CommandQuit:
 			if (scr->owner)
-				fprint(stderr,
+				fprintf(stderr,
 				       "another instance of %s already running -- quitting\n",
 				       NAME);
 			break;
@@ -1270,6 +1284,10 @@ startup(char *previous_id)
 	if (command == CommandQuit)
 		exit(EXIT_SUCCESS);
 
+	(void) procs;
+	(void) cbs;
+	(void) errmsg;
+#if 0
 	/* try to connect to session manager */
 	procs =
 	    SmcSaveYourselfProcMask | SmcDieProcMask | SmcSaveCompleteProcMask |
@@ -1291,9 +1309,11 @@ startup(char *previous_id)
 		return;
 	}
 	iceconn = SmcGetIceConnection(smcconn);
+#endif
 
 }
 
+#if 0
 static void
 event_loop()
 {
@@ -1348,8 +1368,9 @@ event_loop()
 		}
 	}
 }
+#endif
 
-static void
+void
 do_run(int argc, char *argv[])
 {
 	xde_init(&wm_callbacks);
@@ -1482,8 +1503,8 @@ do_run(int argc, char *argv[])
 	exit(EXIT_FAILURE);
 }
 
-static void
-do_quit()
+void
+do_quit(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1526,8 +1547,8 @@ do_quit()
 	}
 }
 
-static void
-do_restart()
+void
+do_restart(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1569,8 +1590,8 @@ do_restart()
 	}
 }
 
-static void
-do_recheck()
+void
+do_recheck(int argc, char *argv[])
 {
 	char name[64] = { 0, };
 	Atom selection;
@@ -1775,7 +1796,11 @@ usage(int argc, char *argv[])
 		return;
 	(void) fprintf(stderr, "\
 Usage:\n\
-    %1$s [options]\n\
+    %1$s [command option] [options] [FILE [FILE ...]]\n\
+    %1$s [options] [-l,--replace]\n\
+    %1$s [options] {-q,--quit}\n\
+    %1$s [options] {-r,--restart}\n\
+    %1$s [options] {-c,--recheck}\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
@@ -1789,11 +1814,28 @@ help(int argc, char *argv[])
 		return;
 	(void) fprintf(stdout, "\
 Usage:\n\
-    %1$s [options]\n\
+    %1$s [command option] [options] [FILE [FILE ...]]\n\
+    %1$s [options] [{-l,--replace}]\n\
+    %1$s [options] {-q,--quit}\n\
+    %1$s [options] {-r,--restart}\n\
+    %1$s [options] {-c,--recheck}\n\
     %1$s {-h|--help}\n\
     %1$s {-V|--version}\n\
     %1$s {-C|--copying}\n\
+Arguments:\n\
+    [FILE [FILE ...]]\n\
+        a list of files (one per virtual desktop)\n\
 Command options:\n\
+    -q, --quit\n\
+        ask running instance to quit\n\
+    -r, --restart\n\
+        ask running instance to restart\n\
+    -c, --recheck\n\
+        ask running instance to recheck everything\n\
+    -e, --edit\n\
+        launch background settings editor\n\
+    -s, --set\n\
+        set the background\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -V, --version\n\
@@ -1801,22 +1843,32 @@ Command options:\n\
     -C, --copying\n\
         print copying permission and exit\n\
 Options:\n\
-    -y, --system\n\
-        set or list system styles\n\
-    -u, --user\n\
-        set or list user styles\n\
-    -S, --screen SCREEN\n\
-        only act on screen number SCREEN [default: all(-1)]\n\
-    -L, --link\n\
-        link style files where possible\n\
-    -t, --theme\n\
-        only list styles that are also XDE themes\n\
-    -w, --wmname WMNAME\n\
-        don't detect window manager, use WMNAME\n\
-    -f, --rcfile FILE\n\
-        assume window manager uses rc file FILE, needs -w\n\
-    -r, --reload\n\
-        when setting the style, ask wm to reload\n\
+    -l, --replace\n\
+        replace running instance with this one\n\
+    -R, --remove\n\
+        also remove properties when changes occur\n\
+    -A, --assist\n\
+        assist a non-conforming window manager\n\
+    -f, --foreground\n\
+        run in the foreground and debug to standard error\n\
+    -d, --delay DELAY\n\
+	delete DELAY milliseconds after a theme changes before\n\
+	applying the theme\n\
+    -w, --wait WAIT\n\
+        wait WAIT milliseconds after window manager appears or\n\
+	changes before applying themes\n\
+    -g, --grab\n\
+	grab the X server while setting backgrounds\n\
+    -s, --setroot\n\
+	set the background pixmap instead of just properties\n\
+    -n, --nomonitor\n\
+	exit after setting the background\n\
+    -t, --theme THEME\n\
+	set the specified theme\n\
+    -a, --areas\n\
+	distribute backgrounds also over work areas\n\
+    -n, --dry-run\n\
+        do not change anything, just print what would be done\n\
     -D, --debug [LEVEL]\n\
         increment or set debug LEVEL [default: 0]\n\
     -v, --verbose [LEVEL]\n\
@@ -1830,13 +1882,15 @@ set_defaults(void)
 {
 	int level;
 
-	if ((level = strtoul(getenv("XDE_DEBUG" ? : "0"), NULL, 0)))
+	if ((level = strtoul(getenv("XDE_DEBUG") ? : "0", NULL, 0)))
 		options.debug = level;
 }
 
 int
 main(int argc, char *argv[])
 {
+	CommandType cmd = CommandDefault;
+
 	set_defaults();
 
 	while (1) {
@@ -1846,25 +1900,24 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-			{"run",		no_argument,		NULL, 'r'},
-			{"replace",	no_argument,		NULL, 'R'},
+//			{"run",		no_argument,		NULL, 'r'},
 			{"quit",	no_argument,		NULL, 'q'},
-			{"set",		required_argument,	NULL, 's'},
-			{"help",	no_argument,		NULL, 'h'},
-			{"version",	no_argument,		NULL, 'V'},
-			{"copying",	no_argument,		NULL, 'C'},
+			{"restart",	no_argument,		NULL, 'r'},
+			{"recheck",	no_argument,		NULL, 'c'},
+//			{"edit",	no_argument,		NULL, 'e'},
+//			{"set",		required_argument,	NULL, 's'},
 
-			{"current",	no_argument,		NULL, 'c'},
-			{"list",	no_argument,		NULL, 'l'},
-			{"set",		no_argument,		NULL, 's'},
-			{"system",	no_argument,		NULL, 'y'},
-			{"user",	no_argument,		NULL, 'u'},
-			{"screen",	required_argument,	NULL, 'S'},
-			{"link",	no_argument,		NULL, 'L'},
-			{"theme",	no_argument,		NULL, 't'},
-			{"wmname",	required_argument,	NULL, 'w'},
-			{"rcfile",	required_argument,	NULL, 'f'},
-			{"reload",	no_argument,		NULL, 'r'},
+			{"remove",	no_argument,		NULL, 'R'},
+			{"foreground",	no_argument,		NULL, 'f'},
+			{"replace",	no_argument,		NULL, 'l'},
+			{"assist",	no_argument,		NULL, 'A'},
+			{"grab",	no_argument,		NULL, 'g'},
+			{"setroot",	no_argument,		NULL, 's'},
+			{"nomonitor",	no_argument,		NULL, 'm'},
+			{"theme",	required_argument,	NULL, 't'},
+			{"delay",	required_argument,	NULL, 'd'},
+			{"wait",	required_argument,	NULL, 'w'},
+			{"areas",	no_argument,		NULL, 'a'},
 
 			{"dry-run",	no_argument,		NULL, 'n'},
 			{"debug",	optional_argument,	NULL, 'D'},
@@ -1877,10 +1930,10 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "clsyuS:Ltw:f:rnD::v::hVCH?",
-				     long_options, &option_index);
+		c = getopt_long_only(argc, argv, "qrcRflAgsmt:d:w:anD::v::hVCH?", long_options,
+				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "clsyuS:Ltw:f:rnDvhVC?");
+		c = getopt(argc, argv, "qrcRflAgsmt:d:w:anDvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -1891,57 +1944,75 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
-		case 'c':	/* -c, --current */
-			options.set = False;
-			options.list = False;
-			options.current = True;
-			break;
-		case 'l':	/* -l, --list */
-			options.set = False;
-			options.current = False;
-			options.list = True;
-			break;
-		case 's':	/* -s, --set */
-			options.list = False;
-			options.current = False;
-			options.set = True;
-			break;
-		case 'y':	/* -y, --system */
-			options.user = False;
-			options.system = True;
-			break;
-		case 'u':	/* -u, --user */
-			options.system = False;
-			options.user = True;
-			break;
-		case 'S':	/* -S, --screen */
-			options.screen = atoi(optarg);
-			break;
-		case 'L':	/* -L, --link */
-			options.link = True;
-			break;
-		case 't':
-			options.theme = True;
-			break;
-		case 'w':	/* -w, --wmname NAME */
-			if (!options.wmname)
-				options.wmname = strdup(optarg);
-			else
+		case 'q':	/* -q, --quit */
+			if (command != CommandDefault)
 				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandQuit;
+			command = CommandQuit;
 			break;
-		case 'f':	/* -f, --rcfile FILE */
-			if (options.wmname && !options.rcfile)
-				options.rcfile = strdup(optarg);
-			else
+		case 'r':	/* -r, --restart */
+			if (command != CommandDefault)
 				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRestart;
+			command = CommandRestart;
 			break;
-		case 'r':	/* -r, --reload */
-			options.reload = True;
+		case 'c':	/* -c, --recheck */
+			if (command != CommandRecheck)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandRecheck;
+			command = CommandRecheck;
 			break;
-		case 'n':	/* -n, --dry-run */
+		case 'e':	/* -e, --edit */
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandEdit;
+			command = CommandEdit;
+			break;
+
+		case 'R':	/* -R, --remove */
+			options.remove = True;
+			break;
+		case 'f':	/* -f, --foreground */
+			foreground = True;
+			options.debug = 1;
+			break;
+		case 'l':	/* -l, --replace */
+			options.replace = True;
+			break;
+		case 'A':	/* -A, --assist */
+			options.assist = True;
+			break;
+		case 'g':	/* -g, --grab */
+			options.grab = True;
+			break;
+		case 's':	/* -s, --setroot */
+			options.setroot = True;
+			break;
+		case 'm':	/* -m, --nomonitor */
+			options.nomonitor = True;
+			break;
+		case 't':	/* -t, --theme THEME */
+			options.style = strdup(optarg);
+			break;
+		case 'd':	/* -d, --delay MILLISECONDS */
+			options.delay = strtoul(optarg, NULL, 0);
+			break;
+		case 'w':	/* -w, --wait */
+			options.wait = strtoul(optarg, NULL, 0);
+			break;
+		case 'a':	/* -a, --areas */
+			options.areas = True;
+			break;
+
+		case 'n':	/* -n, --dryrun */
 			options.dryrun = True;
+			if (options.output < 2)
+				options.output = 2;
 			break;
-			j
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
 				fprintf(stderr, "%s: increasing debug verbosity\n",
@@ -1968,22 +2039,22 @@ main(int argc, char *argv[])
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
-			if (options.debug)
-				fprintf(stderr, "%s: printing help message\n", argv[0]);
-			help(argc, argv);
-			exit(EXIT_SUCCESS);
+			cmd = CommandHelp;
+			break;
 		case 'V':	/* -V, --version */
-			if (options.debug)
-				fprintf(stderr, "%s: printing version message\n",
-					argv[0]);
-			version(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandVersion;
+			command = CommandVersion;
+			break;
 		case 'C':	/* -C, --copying */
-			if (options.debug)
-				fprintf(stderr, "%s: printing copying message\n",
-					argv[0]);
-			copying(argc, argv);
-			exit(EXIT_SUCCESS);
+			if (command != CommandDefault)
+				goto bad_option;
+			if (cmd == CommandDefault)
+				cmd = CommandCopying;
+			command = CommandCopying;
+			break;
 		case '?':
 		default:
 		      bad_option:
@@ -2014,27 +2085,52 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s: option count = %d\n", argv[0], argc);
 	}
 	if (optind < argc) {
-		options.style = strdup(argv[optind++]);
-		if (optind < argc)
-			goto bad_nonopt;
+		int n = argc - optind, j = 0;
+
+		options.files = calloc(n + 1, sizeof(*options.files));
+		while (optind < argc)
+			options.files[j++] = strdup(argv[optind++]);
 	}
-	xde_init_display();
-	if (!xde_detect_wm()) {
-		EPRINTF("%s\n", "no detected window manager");
-		exit(1);
+	switch (cmd) {
+	case CommandDefault:
+		command = CommandRun;
+	case CommandRun:
+		DPRINTF("%s: running default\n", argv[0]);
+		do_run(argc, argv);
+		break;
+	case CommandQuit:
+		DPRINTF("%s: running quit\n", argv[0]);
+		do_quit(argc, argv);
+		break;
+	case CommandRestart:
+		DPRINTF("%s: running restart\n", argv[0]);
+		do_restart(argc, argv);
+		break;
+	case CommandRecheck:
+		DPRINTF("%s: running recheck\n", argv[0]);
+		do_recheck(argc, argv);
+		break;
+	case CommandSet:
+		EPRINTF("%s: option --set not supported\n", argv[0]);
+		exit(EXIT_FAILURE);
+		break;
+	case CommandEdit:
+		EPRINTF("%s: option --edit not supported\n", argv[0]);
+		exit(EXIT_FAILURE);
+		break;
+	case CommandHelp:
+		DPRINTF("%s: printing help message\n", argv[0]);
+		help(argc, argv);
+		break;
+	case CommandVersion:
+		DPRINTF("%s: printing version message\n", argv[0]);
+		version(argc, argv);
+		break;
+	case CommandCopying:
+		DPRINTF("%s: printing copying message\n", argv[0]);
+		copying(argc, argv);
+		break;
 	}
-	if (options.current)
-		current_style();
-	else if (options.list)
-		list_styles();
-	else if (options.set)
-		set_style();
-	else {
-		usage(argc, argv);
-		exit(2);
-	}
-	if (options.output > 1)
-		xde_show_wms();
 	exit(EXIT_SUCCESS);
 }
 
