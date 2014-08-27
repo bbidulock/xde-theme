@@ -60,8 +60,6 @@ static int rargc;
 static char **saveArgv;
 static int saveArgc;
 
-char *client_id;
-
 Atom _XA_XDE_DESKTOP_COMMAND;
 
 Bool foreground = True;
@@ -1128,7 +1126,7 @@ main(int argc, char *argv[])
 		c = getopt_long_only(argc, argv, "qrcRbnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
+		c = getopt(argc, argv, "qrcRbnlad:w:DvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -1178,7 +1176,7 @@ main(int argc, char *argv[])
 		case 'a':	/* -a, --assist */
 			options.assist = True;
 			break;
-		case 'd':	/* -d, --delay */
+		case 'd':	/* -d, --delay DELAY */
 			options.delay = strtoul(optarg, NULL, 0);
 			break;
 		case 'w':	/* -w, --wait */

@@ -48,8 +48,6 @@
 
 #include "xde.h"
 
-#include <X11/SM/SMlib.h>
-
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif
@@ -58,6 +56,9 @@ const char *program = NAME;
 
 static char **rargv;
 static int rargc;
+
+static char **saveArgv;
+static int saveArgc;
 
 Atom _XA_XDE_DESKTOP_COMMAND;
 
@@ -96,137 +97,6 @@ typedef struct {
 static WmSettings *setting;
 static WmSettings *settings;
 
-SmcConn smcconn;
-IceConn iceconn;
-
-char *client_id;
-
-int running;
-Atom _XA_MANAGER;
-
-char *
-get_text(Window win, Atom prop)
-{
-	XTextProperty tp = { NULL, };
-
-	XGetTextProperty(dpy, win, &tp, prop);
-	if (tp.value) {
-		tp.value[tp.nitems + 1] = '\0';
-		return (char *) tp.value;
-	}
-	return NULL;
-}
-
-static long *
-get_cardinals(Window win, Atom prop, Atom type, long *n)
-{
-	Atom real;
-	int format;
-	unsigned long nitems, after, num = 1;
-	long *data = NULL;
-
-      try_harder:
-	if (XGetWindowProperty(dpy, win, prop, 0L, num, False, type, &real, &format,
-			       &nitems, &after, (unsigned char **) &data) == Success
-	    && format != 0) {
-		if (after) {
-			num += ((after + 1) >> 2);
-			XFree(data);
-			goto try_harder;
-		}
-		if ((*n = nitems) > 0)
-			return data;
-		if (data)
-			XFree(data);
-	} else
-		*n = -1;
-	return NULL;
-}
-
-static Bool
-get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
-{
-	Bool result = False;
-	long *data, n;
-
-	if ((data = get_cardinals(win, prop, type, &n)) && n > 0) {
-		*card_ret = data[0];
-		result = True;
-	}
-	if (data)
-		XFree(data);
-	return result;
-}
-
-Window *
-get_windows(Window win, Atom prop, Atom type, long *n)
-{
-	return (Window *) get_cardinals(win, prop, type, n);
-}
-
-Bool
-get_window(Window win, Atom prop, Atom type, Window *win_ret)
-{
-	return get_cardinal(win, prop, type, (long *) win_ret);
-}
-
-Time *
-get_times(Window win, Atom prop, Atom type, long *n)
-{
-	return (Time *) get_cardinals(win, prop, type, n);
-}
-
-Bool
-get_time(Window win, Atom prop, Atom type, Time *time_ret)
-{
-	return get_cardinal(win, prop, type, (long *) time_ret);
-}
-
-Atom *
-get_atoms(Window win, Atom prop, Atom type, long *n)
-{
-	return (Atom *) get_cardinals(win, prop, type, n);
-}
-
-Bool
-get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
-{
-	return get_cardinal(win, prop, type, (long *) atom_ret);
-}
-
-Pixmap *
-get_pixmaps(Window win, Atom prop, Atom type, long *n)
-{
-	return (Pixmap *) get_cardinals(win, prop, type, n);
-}
-
-Bool
-get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret)
-{
-	return get_cardinal(win, prop, type, (long *) pixmap_ret);
-}
-
-typedef struct Deferred Deferred;
-struct Deferred {
-	Deferred *next;
-	void (*action) (void *);
-	void *data;
-};
-
-Deferred *deferred = NULL;
-
-Deferred *
-defer_action(void (*action) (void *), void *data)
-{
-	Deferred *d = calloc(1, sizeof(*d));
-
-	d->next = deferred;
-	deferred = d;
-	d->action = action;
-	d->data = data;
-	return d;
-}
-
 /*
  * Sets the pixmap specified by pixmap id, pmid, on the root window specified by proot.
  * This is normally only called internally.  This function needs to be improved to set the
@@ -255,7 +125,7 @@ set_pixmap(Window proot, Pixmap pmid)
 }
 
 void
-deferred_set_pixmap(void *data)
+deferred_set_pixmap(XPointer data)
 {
 	Pixmap pmid;
 
@@ -266,23 +136,17 @@ deferred_set_pixmap(void *data)
 	if (!(pmid = dsk->image->pmid))
 		return;
 	if (!scr->pmid)
-		get_cardinal(root, _XA_XROOTPMAP_ID, XA_PIXMAP, (long *) &scr->pmid);
+		xde_get_cardinal(root, _XA_XROOTPMAP_ID, XA_PIXMAP, (long *) &scr->pmid);
 	if (!scr->pmid)
 		return;
 	if (pmid != scr->pmid)
 		set_pixmap(root, pmid);
 }
 
-void
-check_theme()
-{
-}
-
 static Bool
 get_context(XEvent *e)
 {
-	int status =
-	    XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &event_scr);
+	int status = XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &event_scr);
 
 	if (status == Success) {
 		scr = event_scr;
@@ -292,61 +156,6 @@ get_context(XEvent *e)
 		return True;
 	}
 	return False;
-}
-
-/** @brief handle a _BB_THEME property change notification
-  *
-  *  Our blackbox(1) theme files have a rootCommand that changes the _BB_THEME
-  *  property on the root window.  Check the theme again when it changes.  Check
-  *  the window manager again when it is not blackbox.
-  */
-static void
-handle_BB_THEME(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-/** @brief handle a _BLACKBOX_PID property change notification.
-  *
-  *  When fluxbox(1) restarts, it does not change the _NET_SUPPORTING_WM_CHECK
-  *  window, but it does change the _BLACKBOX_PID, even if it is just to replace
-  *  it with the same value.  When restarting, check the theme again.  Check the
-  *  window manager again when it is not fluxbox.
-  */
-static void
-handle_BLACKBOX_PID(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-/** @brief handle a _ESETROOT_PMAP_ID property change notification
-  *
-  *  We do not really process this because all property root setters now set the
-  *  _XROOTPMAP_ID property which we handle below.  However, it is used to
-  *  trigger recheck of the theme needed by some window managers such as
-  *  blackbox.  If it means we check 3 times after a theme switch, so be it.
-  */
-static void
-handle_ESETROOT_PMAP_ID(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-/** @brief handle a _GTK_READ_RCFILES client message
-  *
-  *  When a GTK style changer changes its style it sends a _GTK_READ_RCFILES
-  *  message to the root window to let GTK clients know to reread their RC
-  *  files.  We use this also for XDE GTK styles for the desktop.  When we
-  *  receive such a message, check the theme again.
-  *
-  */
-static void
-handle_GTK_READ_RCFILES(XEvent *e)
-{
-	check_theme();
 }
 
 static void
@@ -400,35 +209,35 @@ process_desktops(long *desktops, long n)
 		}
 	}
 	if (changed)
-		defer_action(&deferred_set_pixmap, scr);
+		xde_defer_action(deferred_set_pixmap, 0, (XPointer) scr);
 }
 
-static void
+void
 handle_NET_CURRENT_DESKTOP(XEvent *e)
 {
 	if (get_context(e)) {
 		long *d, n;
 
-		if ((d = get_cardinals(root, _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, &n))) {
+		if ((d = xde_get_cardinals(root, _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, &n))) {
 			process_desktops(d, n);
 			XFree(d);
 		}
 	}
 }
 
-static void
+void
 handle_NET_DESKTOP_LAYOUT(XEvent *e)
 {
 }
 
-static void
+void
 handle_NET_NUMBER_OF_DESKTOPS(XEvent *e)
 {
 	if (get_context(e)) {
 		long data = scr->d.numb;
 		unsigned int numb;
 
-		get_cardinal(root, _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, &data);
+		xde_get_cardinal(root, _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, &data);
 		if ((numb = data) != scr->d.numb) {
 			if (numb < scr->d.numb) {
 			} else {
@@ -437,90 +246,7 @@ handle_NET_NUMBER_OF_DESKTOPS(XEvent *e)
 	}
 }
 
-static void
-handle_NET_SUPPORTED(XEvent *e)
-{
-}
-
-static void
-handle_NET_SUPPORTING_WM_CHECK(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-static void
-handle_NET_VISIBLE_DESKTOPS(XEvent *e)
-{
-}
-
-/** @brief handle an _OB_THEME property change notification.
-  *
-  * openbox(1) signals a theme change by changing the _OB_THEME property on the
-  * root window.  Check the theme again when it changes.  Check the window
-  * manager again when it is not openbox.
-  */
-static void
-handle_OB_THEME(XEvent *e)
-{
-	check_theme();
-}
-
-static void
-handle_OPENBOX_PID(XEvent *e)
-{
-}
-
-static void
-handle_WIN_DESKTOP_BUTTON_PROXY(XEvent *e)
-{
-}
-
-static void
-handle_WINDOWMAKER_NOTICEBOARD(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-static void
-handle_WIN_PROTOCOLS(XEvent *e)
-{
-}
-
-static void
-handle_WIN_SUPPORTING_WM_CHECK(XEvent *e)
-{
-	if (get_context(e) && xde_check_wm())
-		check_theme();
-}
-
-static void
-handle_WIN_WORKSPACE_COUNT(XEvent *e)
-{
-}
-
-static void
-handle_WIN_WORKSPACE(XEvent *e)
-{
-}
-
-static void
-handle_XDE_THEME_NAME(XEvent *e)
-{
-}
-
-static void
-handle_XROOTPMAP_ID(XEvent *e)
-{
-	/* We do not really process this because all proper root setters now set the
-	   _XROOTPMAP_ID property which we handle above.  However, it is used to trigger
-	   recheck of the theme needed by some window managers such as blackbox.  If it
-	   means we check 3 times after a theme switch, so be it. */
-	check_theme();
-}
-
-static void
+void
 handle_XSETROOT_ID(XEvent *e)
 {
 	/* Internal function that handles the _XSETROOT_ID property changes on the root
@@ -531,14 +257,13 @@ handle_XSETROOT_ID(XEvent *e)
 	   _XROOTPMAP_ID property which we handle above.  However, it is used to trigger
 	   recheck of the theme needed by some window managers such as blackbox.  If it
 	   means we check 3 times after a theme switch, so be it. */
-	if (XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &scr) ==
-	    Success) {
+	if (XFindContext(dpy, e->xany.window, ScreenContext, (XPointer *) &scr) == Success) {
 		Pixmap pmid = None, oldid;
 
 		screen = scr->screen;
 		root = scr->root;
 		dsk = &scr->d.desktops[scr->d.current];
-		if (get_pixmap(root, _XA_XSETROOT_ID, XA_PIXMAP, &pmid) && pmid) {
+		if (xde_get_pixmap(root, _XA_XSETROOT_ID, XA_PIXMAP, &pmid) && pmid) {
 			oldid = dsk->image->pmid;
 			if (oldid && oldid != pmid) {
 				XFreePixmap(dpy, oldid);
@@ -553,74 +278,292 @@ handle_XSETROOT_ID(XEvent *e)
 	}
 }
 
-/** @brief find the screen associated with an X event
-  */
-void
-get_event_screen(XEvent *e)
+static void
+xdeSetProperties(SmcConn smcConn, SmPointer data)
 {
-	XPointer xptr = NULL;
+	char userID[20], procID[12];
+	int i, j, argc = saveArgc;
+	char **argv = saveArgv;
+	char *cwd = NULL;
+	char hint;
+	struct passwd *pw;
+	SmPropValue *penv = NULL, *prst = NULL, *pcln = NULL;
+	SmPropValue propval[11];
+	SmProp prop[11];
 
-	event_scr = NULL;
+	SmProp *props[11] = {
+		&prop[0], &prop[1], &prop[2], &prop[3], &prop[4], &prop[5],
+		&prop[6], &prop[7], &prop[8], &prop[9], &prop[10],
+	};
 
-	if (XFindContext(dpy, e->xany.window, ScreenContext, &xptr)) {
-		Window root, parent, *children = NULL;
-		unsigned int nchildren;
+	j = 0;
 
-		/* try to find the root of the window */
-		if (XQueryTree
-		    (dpy, e->xany.window, &root, &parent, &children, &nchildren))
-			if (!XFindContext(dpy, root, ScreenContext, &xptr))
-				event_scr = (WmScreen *) xptr;
-		if (children)
-			XFree(children);
-	} else
-		event_scr = (WmScreen *) xptr;
+	/* CloneCommand */
+	prop[j].name = SmCloneCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = pcln = calloc(argc, sizeof(*pcln));
+	prop[j].num_vals = 0;
+	props[j] = &prop[j];
+	for (i = 0; i < argc; i++) {
+		if (!strcmp(argv[i], "-clientId") || !strcmp(argv[i], "-saveFile"))
+			i++;
+		else {
+			prop[j].vals[prop[j].num_vals].value = (SmPointer) argv[i];
+			prop[j].vals[prop[j].num_vals++].length = strlen(argv[i]);
+		}
+	}
+	j++;
+
+#if 1
+	/* Current Directory */
+	prop[j].name = SmCurrentDirectory;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = NULL;
+	propval[j].length = 0;
+	cwd = calloc(PATH_MAX + 1, sizeof(propval[j].value[0]));
+	if (getcwd(cwd, PATH_MAX)) {
+		propval[j].value = cwd;
+		propval[j].length = strlen(propval[j].value);
+		j++;
+	} else {
+		free(cwd);
+		cwd = NULL;
+	}
+#endif
+
+#if 0
+	/* DiscardCommand */
+	prop[j].name = SmDiscardCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "/bin/true";
+	propval[j].length = strlen("/bin/true");
+	j++;
+#endif
+
+#if 0
+	/* Environment */
+	/* XXX: we might want to filter a few out */
+	for (i = 0, env = environ; *env; i += 2, env++) ;
+	prop[j].name = SmEnvironment;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = penv = calloc(i, sizeof(*penv));
+	prop[j].num_vals = i;
+	props[j] = &prop[j];
+	for (i = 0, env = environ; *env; i += 2, env++) {
+		char *equal;
+		int len;
+
+		equal = strchrnul(*env, '=');
+		len = (int) (*env - equal);
+		if (*equal)
+			equal++;
+		prop[j].vals[i].value = *env;
+		prop[j].vals[i].length = len;
+		prop[j].vals[i + 1].value = equal;
+		prop[j].vals[i + 1].length = strlen(equal);
+	}
+	j++;
+#endif
+
+#if 1
+	/* ProcessID */
+	prop[j].name = SmProcessID;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	snprintf(procID, sizeof(procID), "%ld", (long) getpid());
+	propval[j].value = procID;
+	propval[j].length = strlen(procID);
+	j++;
+#endif
+
+	/* Program */
+	prop[j].name = SmProgram;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = argv[0];
+	propval[j].length = strlen(argv[0]);
+	j++;
+
+	/* RestartCommand */
+	prop[j].name = SmRestartCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = prst = calloc(argc + 4, sizeof(*prst));
+	prop[j].num_vals = 0;
+	props[j] = &prop[j];
+	for (i = 0; i < argc; i++) {
+		if (!strcmp(argv[i], "-clientId") || !strcmp(argv[i], "-saveFile"))
+			i++;
+		else {
+			prop[j].vals[prop[j].num_vals].value = (SmPointer) argv[i];
+			prop[j].vals[prop[j].num_vals++].length = strlen(argv[i]);
+		}
+	}
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) "-clientId";
+	prop[j].vals[prop[j].num_vals++].length = 9;
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) options.clientId;
+	prop[j].vals[prop[j].num_vals++].length = strlen(options.clientId);
+
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) "-saveFile";
+	prop[j].vals[prop[j].num_vals++].length = 9;
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) options.saveFile;
+	prop[j].vals[prop[j].num_vals++].length = strlen(options.saveFile);
+	j++;
+
+#if 0
+	/* ResignCommand */
+	prop[j].name = SmResignCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "xde-watch -q";
+	propval[j].length = strlen("xde-watch -q");
+	j++;
+#endif
+
+	/* RestartStyleHint */
+	prop[j].name = SmRestartStyleHint;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[0];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	hint = SmRestartImmediately;
+	propval[j].value = &hint;
+	propval[j].length = 1;
+	j++;
+
+#if 0
+	/* ShutdownCommand */
+	prop[j].name = SmShutdownCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "/bin/true";
+	propval[j].length = strlen("/bin/true");
+	j++;
+#endif
+
+	/* UserID */
+	errno = 0;
+	prop[j].name = SmUserID;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	if ((pw = getpwuid(getuid())))
+		strncpy(userID, pw->pw_name, sizeof(userID) - 1);
+	else {
+		EPRINTF("%s: %s\n", "getpwuid()", strerror(errno));
+		snprintf(userID, sizeof(userID), "%ld", (long) getuid());
+	}
+	propval[j].value = userID;
+	propval[j].length = strlen(userID);
+	j++;
+
+	SmcSetProperties(smcConn, j, props);
+
+	free(cwd);
+	free(pcln);
+	free(prst);
+	free(penv);
 }
 
-typedef struct {
-	Atom *atom;
-	void (*handler_PropertyNotify) (XEvent *);
-	void (*handler_ClientMessage) (XEvent *);
-	Atom value;
-} Handlers;
+static Bool saving_yourself;
+static Bool session_shutdown;
 
-Handlers handlers[] = {
-	/* *INDENT-OFF* */
-	/* global			handler_PropertyNotify		handler_ClientMessage	value		*/
-	/* ------			-------				---------------------	*/
-	{  &_XA_BB_THEME,		handle_BB_THEME,		NULL,			None		},
-	{  &_XA_BLACKBOX_PID,		handle_BLACKBOX_PID,		NULL,			None		},
-	{  &_XA_ESETROOT_PMAP_ID,	handle_ESETROOT_PMAP_ID,	NULL,			None		},
-	{  &_XA_GTK_READ_RCFILES,	NULL,				handle_GTK_READ_RCFILES,None		},
-	{  &_XA_I3_CONFIG_PATH,		NULL,				NULL,			None		},
-	{  &_XA_I3_PID,			NULL,				NULL,			None		},
-	{  &_XA_I3_SHMLOG_PATH,		NULL,				NULL,			None		},
-	{  &_XA_I3_SOCKET_PATH,		NULL,				NULL,			None		},
-	{  &_XA_ICEWMBG_QUIT,		NULL,				NULL,			None		},
-	{  &_XA_MOTIF_WM_INFO,		NULL,				NULL,			None		},
-	{  &_XA_NET_CURRENT_DESKTOP,	handle_NET_CURRENT_DESKTOP,	NULL,			None		},
-	{  &_XA_NET_DESKTOP_LAYOUT,	handle_NET_DESKTOP_LAYOUT,	NULL,			None		},
-	{  &_XA_NET_DESKTOP_PIXMAPS,	NULL,				NULL,			None		},
-	{  &_XA_NET_NUMBER_OF_DESKTOPS,	handle_NET_NUMBER_OF_DESKTOPS,	NULL,			None		},
-	{  &_XA_NET_SUPPORTED,		handle_NET_SUPPORTED,		NULL,			None		},
-	{  &_XA_NET_SUPPORTING_WM_CHECK,handle_NET_SUPPORTING_WM_CHECK,	NULL,			None		},
-	{  &_XA_NET_VISIBLE_DESKTOPS,	handle_NET_VISIBLE_DESKTOPS,	NULL,			None		},
-	{  &_XA_NET_WM_NAME,		NULL,				NULL,			None		},
-	{  &_XA_NET_WM_PID,		NULL,				NULL,			None		},
-	{  &_XA_OB_THEME,		handle_OB_THEME,		NULL,			None		},
-	{  &_XA_OPENBOX_PID,		handle_OPENBOX_PID,		NULL,			None		},
-	{  &_XA_WIN_DESKTOP_BUTTON_PROXY,handle_WIN_DESKTOP_BUTTON_PROXY,NULL,			None		},
-	{  &_XA_WINDOWMAKER_NOTICEBOARD,handle_WINDOWMAKER_NOTICEBOARD,	NULL,			None		},
-	{  &_XA_WIN_PROTOCOLS,		handle_WIN_PROTOCOLS,		NULL,			None		},
-	{  &_XA_WIN_SUPPORTING_WM_CHECK,handle_WIN_SUPPORTING_WM_CHECK,	NULL,			None		},
-	{  &_XA_WIN_WORKSPACE,		handle_WIN_WORKSPACE,		NULL,			None		},
-	{  &_XA_WIN_WORKSPACE_COUNT,	handle_WIN_WORKSPACE_COUNT,	NULL,			None		},
-	{  &_XA_XDE_THEME_NAME,		handle_XDE_THEME_NAME,		NULL,			None		},
-	{  &_XA_XROOTPMAP_ID,		handle_XROOTPMAP_ID,		NULL,			None		},
-	{  &_XA_XSETROOT_ID,		handle_XSETROOT_ID,		NULL,			None		},
-	{  NULL,			NULL,				NULL,			None		}
-	/* *INDENT-ON* */
+static void
+xdeSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
+{
+	xdeSetProperties(smcConn, data);
+	SmcSaveYourselfDone(smcConn, True);
+}
+
+static void
+xdeSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
+		  int interactStyle, Bool fast)
+{
+	if (!(session_shutdown = shutdown)) {
+		if (!SmcRequestSaveYourselfPhase2(smcConn, xdeSaveYourselfPhase2CB, data))
+			SmcSaveYourselfDone(smcConn, False);
+		return;
+	}
+	/* FIXME: actually save state */
+	xdeSetProperties(smcConn, data);
+	SmcSaveYourselfDone(smcConn, True);
+}
+
+static void
+xdeDieCB(SmcConn smcConn, SmPointer data)
+{
+	SmcCloseConnection(smcConn, 0, NULL);
+	session_shutdown = False;
+	xde_main_quit((XPointer) XDE_DESKTOP_QUIT);
+}
+
+static void
+xdeSaveCompleteCB(SmcConn smcConn, SmPointer data)
+{
+	if (saving_yourself)
+		saving_yourself = False;
+}
+
+static void
+xdeShutdownCancelledCB(SmcConn smcConn, SmPointer data)
+{
+	session_shutdown = False;
+}
+
+static unsigned long xdeCBMask =
+    SmcSaveYourselfProcMask | SmcDieProcMask |
+    SmcSaveCompleteProcMask | SmcShutdownCancelledProcMask;
+
+static SmcCallbacks xdeCBs = {
+	.save_yourself = {
+			  .callback = &xdeSaveYourselfCB,
+			  .client_data = NULL,
+			  },
+	.die = {
+		.callback = &xdeDieCB,
+		.client_data = NULL,
+		},
+	.save_complete = {
+			  .callback = &xdeSaveCompleteCB,
+			  .client_data = NULL,
+			  },
+	.shutdown_cancelled = {
+			       .callback = &xdeShutdownCancelledCB,
+			       .client_data = NULL,
+			       },
 };
+
+static void
+smc_init(void)
+{
+	char err[256] = { 0, };
+	char *env;
+
+	if (!(env = getenv("SESSION_MANAGER"))) {
+		if (options.clientId)
+			EPRINTF("clientId provided but no SESSION_MANAGER\n");
+		return;
+	}
+	smcConn = SmcOpenConnection(env, NULL, SmProtoMajor, SmProtoMinor,
+				    xdeCBMask, &xdeCBs, options.clientId, &options.clientId,
+				    sizeof(err), err);
+	if (!smcConn)
+		EPRINTF("SmcOpenConnection: %s\n", err);
+}
 
 static Bool
 wm_event(const XEvent *e)
@@ -645,8 +588,7 @@ wm_event(const XEvent *e)
 			case XDE_DESKTOP_ARGV:
 				DPRINTF("got _XDE_DESKTOP_COMMAND(Argv)\n");
 				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
-					XDeleteProperty(dpy, e->xclient.window,
-							XA_WM_COMMAND);
+					XDeleteProperty(dpy, e->xclient.window, XA_WM_COMMAND);
 					xde_main_quit((XPointer) XDE_DESKTOP_ARGV);
 					return XDE_EVENT_STOP;
 				}
@@ -657,8 +599,7 @@ wm_event(const XEvent *e)
 	case SelectionClear:
 		if (e->xselectionclear.window == scr->selwin
 		    && e->xselectionclear.selection == scr->selection) {
-			DPRINTF("%s selection cleared\n",
-				XGetAtomName(dpy, scr->selection));
+			DPRINTF("%s selection cleared\n", XGetAtomName(dpy, scr->selection));
 			xde_main_quit((XPointer) XDE_DESKTOP_QUIT);
 			return XDE_EVENT_STOP;
 
@@ -671,8 +612,7 @@ wm_event(const XEvent *e)
 static Bool
 wm_signal(int signum)
 {
-	switch (signum)
-	{
+	switch (signum) {
 	case SIGINT:
 		DPRINTF("got SIGINT, shutting down\n");
 		break;
@@ -815,8 +755,7 @@ wm_theme_changed(char *newtheme, char *newfile)
 		DPRINTF("sending %s to 0x%08lx\n",
 			XGetAtomName(dpy, _XA_GTK_READ_RCFILES), scr->root);
 		XSendEvent(dpy, scr->root, False, StructureNotifyMask |
-			   SubstructureRedirectMask | SubstructureNotifyMask,
-			   (XEvent *) &xcm);
+			   SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *) &xcm);
 	} else
 		OPRINTF("would send _GTK_READ_RCFILES client message\n");
 
@@ -919,458 +858,10 @@ selectionreleased(Display *display, XEvent *event, XPointer arg)
 	return True;
 }
 
-WmScreen *
-getscreen(Window win)
-{
-	Window *wins = NULL, wroot = None, parent = None;
-	unsigned int num = 0;
-	WmScreen *s = NULL;
-
-	if (!win)
-		return (s);
-	if (!XFindContext(dpy, win, ScreenContext, (XPointer *) &s))
-		return (s);
-	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
-		XFindContext(dpy, wroot, ScreenContext, (XPointer *) &s);
-	if (wins)
-		XFree(wins);
-	return (s);
-}
-
-WmScreen *
-geteventscr(XEvent *ev)
-{
-	return (event_scr = getscreen(ev->xany.window) ? : scr);
-}
-
-Bool
-IGNOREEVENT(XEvent *e)
-{
-	DPRINTF("Got ignore event %d\n", e->type);
-	return False;
-}
-
-Bool
-selectionclear(XEvent *e)
-{
-	if (e->xselectionclear.selection == scr->selection && scr->selwin) {
-		XDestroyWindow(dpy, scr->selwin);
-		XDeleteContext(dpy, scr->selwin, ScreenContext);
-		scr->selwin = None;
-		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-			XSelectInput(dpy, scr->owner, StructureNotifyMask);
-			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
-			XSync(dpy, False);
-		}
-		return True;
-	}
-	return False;
-}
-
-Bool
-clientmessage(XEvent *e)
-{
-	if (e->xclient.message_type != _XA_MANAGER)
-		return False;
-	if (e->xclient.data.l[1] != scr->selection)
-		return False;
-	if (!scr->owner || scr->owner != e->xclient.data.l[2]) {
-		if (scr->owner) {
-			XDeleteContext(dpy, scr->owner, ScreenContext);
-			scr->owner = None;
-		}
-		if (scr->owner != e->xclient.data.l[2]
-		    && (scr->owner = e->xclient.data.l[2])) {
-			XSelectInput(dpy, scr->owner, StructureNotifyMask);
-			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
-			XSync(dpy, False);
-		}
-	}
-	if (scr->selwin) {
-		XDestroyWindow(dpy, scr->selwin);
-		XDeleteContext(dpy, scr->selwin, ScreenContext);
-		scr->selwin = None;
-	}
-	return True;
-}
-
-Bool
-destroynotify(XEvent *e)
-{
-	XClientMessageEvent mev;
-
-	if (!e->xany.window || scr->owner != e->xany.window)
-		return False;
-	XDeleteContext(dpy, scr->owner, ScreenContext);
-
-	XGrabServer(dpy);
-	if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-		XSelectInput(dpy, scr->owner, StructureNotifyMask);
-		XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
-		XSync(dpy, False);
-	}
-	XUngrabServer(dpy);
-
-	if (!scr->selwin) {
-		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
-						  DisplayWidth(dpy, scr->screen),
-						  DisplayHeight(dpy, scr->screen),
-						  1, 1, 0, 0L, 0L);
-		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
-	}
-
-	XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
-	if (scr->owner) {
-		XEvent ev;
-
-		XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
-		XDeleteContext(dpy, scr->owner, ScreenContext);
-		scr->owner = None;
-	}
-	mev.display = dpy;
-	mev.type = ClientMessage;
-	mev.window = scr->root;
-	mev.message_type = _XA_MANAGER;
-	mev.format = 32;
-	mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
-	mev.data.l[1] = scr->selection;
-	mev.data.l[2] = scr->selwin;
-	mev.data.l[3] = 2;
-	mev.data.l[4] = 0;
-	XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
-	XSync(dpy, False);
-	return True;
-}
-
-void
-handle_event(XEvent *e)
-{
-	int i;
-
-	get_event_screen(e);
-
-	switch (e->type) {
-	case PropertyNotify:
-		for (i = 0; handlers[i].atom; i++) {
-			if (e->xproperty.atom == *handlers[i].atom) {
-				if (handlers[i].handler_PropertyNotify)
-					handlers[i].handler_PropertyNotify(e);
-				break;
-			}
-		}
-		break;
-	case ClientMessage:
-		for (i = 0; handlers[i].atom; i++) {
-			if (e->xclient.message_type == *handlers[i].atom) {
-				if (handlers[i].handler_ClientMessage)
-					handlers[i].handler_ClientMessage(e);
-				break;
-			}
-		}
-	case DestroyNotify:
-		if (get_context(e))
-			if (e->xany.window == scr->wm->netwm_check ||
-			    e->xany.window == scr->wm->winwm_check ||
-			    e->xany.window == scr->wm->maker_check ||
-			    e->xany.window == scr->wm->motif_check ||
-			    e->xany.window == scr->wm->icccm_check)
-				xde_check_wm();
-		break;
-	}
-}
-
-#if 0
-
-#define EXTRANGE 16
-
-enum {
-	XfixesBase,
-	XrandrBase,
-	XineramaBase,
-	XsyncBase,
-	BaseLast
-};
-
-Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
-	/* *INDENT-OFF* */
-	[KeyPress]		= IGNOREEVENT,
-	[KeyRelease]		= IGNOREEVENT,
-	[ButtonPress]		= IGNOREEVENT,
-	[ButtonRelease]		= IGNOREEVENT,
-	[MotionNotify]		= IGNOREEVENT,
-	[EnterNotify]		= IGNOREEVENT,
-	[LeaveNotify]		= IGNOREEVENT,
-	[FocusIn]		= IGNOREEVENT,
-	[FocusOut]		= IGNOREEVENT,
-	[KeymapNotify]		= IGNOREEVENT,
-	[Expose]		= IGNOREEVENT,
-	[GraphicsExpose]	= IGNOREEVENT,
-	[NoExpose]		= IGNOREEVENT,
-	[VisibilityNotify]	= IGNOREEVENT,
-	[CreateNotify]		= IGNOREEVENT,
-	[DestroyNotify]		= IGNOREEVENT,
-	[UnmapNotify]		= IGNOREEVENT,
-	[MapNotify]		= IGNOREEVENT,
-	[MapRequest]		= IGNOREEVENT,
-	[ReparentNotify]	= IGNOREEVENT,
-	[ConfigureNotify]	= IGNOREEVENT,
-	[ConfigureRequest]	= IGNOREEVENT,
-	[GravityNotify]		= IGNOREEVENT,
-	[ResizeRequest]		= IGNOREEVENT,
-	[CirculateNotify]	= IGNOREEVENT,
-	[CirculateRequest]	= IGNOREEVENT,
-	[PropertyNotify]	= IGNOREEVENT,
-	[SelectionClear]	= IGNOREEVENT,
-	[SelectionRequest]	= IGNOREEVENT,
-	[SelectionNotify]	= IGNOREEVENT,
-	[ColormapNotify]	= IGNOREEVENT,
-	[ClientMessage]		= IGNOREEVENT,
-	[MappingNotify]		= IGNOREEVENT,
-	/* *INDENT-ON* */
-};
-
-Bool
-handle_event(XEvent *ev)
-{
-	if (ev->type <= LASTEvent && handler[ev->type]) {
-		geteventscr(ev);
-		return (handler[ev->type]) (ev);
-	}
-	DPRINTF("WARNING: No handler for event type %d\n", ev->type);
-	return False;
-}
-
-#endif
-
-int signum;
-
-void
-sighandler(int sig)
-{
-	if (sig)
-		signum = sig;
-}
-
-void
-handle_deferred_events()
-{
-	Deferred *d, *next;
-
-	while ((d = deferred)) {
-		next = d->next;
-		d->action(d->data);
-		if (deferred == d) {
-			deferred = next;
-			free(d);
-		}
-	}
-}
-
-Bool running;
-
-void
-event_loop()
-{
-	fd_set rd;
-	int xfd;
-	XEvent ev;
-
-	running = True;
-	XSelectInput(dpy, root, PropertyChangeMask);
-	XSync(dpy, False);
-	xfd = ConnectionNumber(dpy);
-
-	while (running) {
-		FD_ZERO(&rd);
-		FD_SET(xfd, &rd);
-		if (select(xfd + 1, &rd, NULL, NULL, NULL) == -1) {
-			if (errno == EINTR)
-				continue;
-			fprintf(stderr, "select failed\n");
-			fflush(stderr);
-			exit(1);
-		}
-		while (XPending(dpy)) {
-			XNextEvent(dpy, &ev);
-			handle_event(&ev);
-		}
-		handle_deferred_events();
-	}
-}
-
-void
-startup(char *previous_id)
-{
-	char name[32];
-	XClientMessageEvent mev;
-	unsigned long procs = 0;
-	SmcCallbacks cbs;
-	char errmsg[256];
-	int n;
-
-	_XA_MANAGER = XInternAtom(dpy, "MANAGER", False);
-
-	signal(SIGHUP, sighandler);
-	signal(SIGINT, sighandler);
-	signal(SIGTERM, sighandler);
-	signal(SIGQUIT, sighandler);
-
-	for (scr = screens, n = 0; n < nscr; n++, scr++) {
-		snprintf(name, 32, "_XDE_STYLE_S%d", scr->screen);
-		scr->selection = XInternAtom(dpy, name, False);
-
-		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
-						  DisplayWidth(dpy, scr->screen),
-						  DisplayHeight(dpy, scr->screen), 1, 1,
-						  0, 0L, 0L);
-		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
-
-		XGrabServer(dpy);
-		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-			XSelectInput(dpy, scr->owner, StructureNotifyMask);
-			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
-			XSync(dpy, False);
-		}
-		XUngrabServer(dpy);
-
-		switch (command) {
-		case CommandRun:
-		default:
-			if (scr->owner) {
-				if (options.replace) {
-					fprintf(stderr,
-						"another instance of %s already running -- replacing\n",
-						NAME);
-				} else {
-					fprintf(stderr,
-						"another instance of %s already running -- exiting\n",
-						NAME);
-					exit(EXIT_SUCCESS);
-				}
-			}
-			break;
-		case CommandQuit:
-			if (scr->owner)
-				fprintf(stderr,
-				       "another instance of %s already running -- quitting\n",
-				       NAME);
-			break;
-		}
-
-		XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
-		if (scr->owner != None) {
-			XEvent ev;
-
-			XIfEvent(dpy, &ev, &selectionreleased, (XPointer) scr->owner);
-			XDeleteContext(dpy, scr->owner, ScreenContext);
-			scr->owner = None;
-		}
-		mev.display = dpy;
-		mev.type = ClientMessage;
-		mev.window = scr->root;
-		mev.message_type = _XA_MANAGER;
-		mev.format = 32;
-		mev.data.l[0] = CurrentTime;	/* FIXME: timestamp */
-		mev.data.l[1] = scr->selection;
-		mev.data.l[2] = scr->selwin;
-		mev.data.l[3] = 2;
-		mev.data.l[4] = 0;
-		XSendEvent(dpy, scr->root, False, StructureNotifyMask, (XEvent *) &mev);
-		XSync(dpy, False);
-	}
-
-	if (command == CommandQuit)
-		exit(EXIT_SUCCESS);
-
-	(void) procs;
-	(void) cbs;
-	(void) errmsg;
-#if 0
-	/* try to connect to session manager */
-	procs =
-	    SmcSaveYourselfProcMask | SmcDieProcMask | SmcSaveCompleteProcMask |
-	    SmcShutdownCancelledProcMask;
-	cbs.save_yourself.callback = xde_save_yourself_cb;
-	cbs.save_yourself.client_data = (SmPointer) NULL;
-	cbs.die.callback = xde_die_cb;
-	cbs.die.client_data = (SmPointer) NULL;
-	cbs.save_complete.callback = xde_save_complete;
-	cbs.save_complete.client_data = (SmPointer) NULL;
-	cbs.shutdown_cancelled.callback = xde_shutdown_cancelled;
-	cbs.shutdown_cancalled.client_data = (SmPointer) NULL;
-
-	smcconn =
-	    SmcOpenConnection(NULL, (SmPointer) scr, SmProtoMajor, SmProtoMinor, procs,
-			      &cbs, previous_id, &client_id, sizeof(client_id), errmsg);
-	if (smcconn == NULL) {
-		/* darn, no sesssion manager */
-		return;
-	}
-	iceconn = SmcGetIceConnection(smcconn);
-#endif
-
-}
-
-#if 0
 static void
-event_loop()
-{
-	int ifd, xfd = 0, num = 1;
-	XEvent ev;
-
-	xfd = ConnectionNumber(dpy);
-	if (iceconn) {
-		ifd = IceConnectionNumber(iceconn);
-		num++;
-	}
-	while (running) {
-		struct pollfd pfd[2] = {
-			{xfd, POLLIN | POLLERR | POLLHUP, 0}
-			{ifd, POLLIN | POLLERR | POLLHUP, 0},
-		};
-
-		if (signum) {
-			if (signum == SIGHUP) {
-				fprintf(stderr, "Exiting on SIGHUP\n");
-				running = 0;
-				break;
-			}
-			signum = 0;
-		}
-		if (poll(pfd, num, -1) == -1) {
-			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
-				continue;
-			fprintf(stderr, "poll failed: %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
-		} else {
-			if (pfd[0].revents & (POLLNVAL | POLLHUP | POLLERR)) {
-				fprintf(stderr, "poll error on ICE connection\n");
-				exit(EXIT_FAILURE);
-			}
-			if (pfd[1].revents & (POLLNVAL | POLLHUP | POLLERR)) {
-				fprintf(stderr, "poll error on X connection\n");
-				exit(EXIT_FAILURE);
-			}
-			if (pfd[0].revents & POLLIN) {
-				IceProcessMessages(iceconn, NULL, NULL);
-			}
-			if (pfd[1].revents & POLLIN) {
-				while (XPending(dpy) && running) {
-					XNextEvent(dpy, &ev);
-					if (!handle_event(&ev))
-						fprintf(stderr,
-							"WARNING: X Event %d not handled\n",
-							ev.type);
-				}
-			}
-		}
-	}
-}
-#endif
-
-void
 do_run(int argc, char *argv[])
 {
+	smc_init();
 	xde_init(&wm_callbacks);
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
 	for (screen = 0; screen < nscr; screen++) {
@@ -1382,15 +873,13 @@ do_run(int argc, char *argv[])
 		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
 						  DisplayWidth(dpy, screen),
 						  DisplayHeight(dpy, screen), 1, 1, 0,
-						  BlackPixel(dpy, screen),
-						  BlackPixel(dpy, screen));
+						  BlackPixel(dpy, screen), BlackPixel(dpy, screen));
 		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
 		XSelectInput(dpy, scr->selwin, StructureNotifyMask | PropertyChangeMask);
 
 		XGrabServer(dpy);
 		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-			XSelectInput(dpy, scr->owner,
-				     StructureNotifyMask | PropertyChangeMask);
+			XSelectInput(dpy, scr->owner, StructureNotifyMask | PropertyChangeMask);
 			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
 			XSync(dpy, False);
 		}
@@ -1399,8 +888,7 @@ do_run(int argc, char *argv[])
 		if (!scr->owner || options.replace)
 			XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
 		else {
-			EPRINTF("another instance of %s already on screen %d\n",
-			     NAME, scr->screen);
+			EPRINTF("another instance of %s already on screen %d\n", NAME, scr->screen);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -1780,6 +1268,9 @@ main(int argc, char *argv[])
 {
 	CommandType cmd = CommandDefault;
 
+	saveArgc = argc;
+	saveArgv = argv;
+
 	set_defaults();
 
 	while (1) {
@@ -1800,6 +1291,9 @@ main(int argc, char *argv[])
 			{"delay",	required_argument,	NULL, 'd'},
 			{"wait",	required_argument,	NULL, 'w'},
 
+			{"clientId",	required_argument,	NULL, '0'},
+			{"saveFile",	required_argument,	NULL, '1'},
+
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
 			{"help",	no_argument,		NULL, 'h'},
@@ -1813,7 +1307,7 @@ main(int argc, char *argv[])
 		c = getopt_long_only(argc, argv, "qrcRbnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
+		c = getopt(argc, argv, "qrcRbnlad:w:DvhVC?");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -1863,16 +1357,25 @@ main(int argc, char *argv[])
 		case 'a':	/* -a, --assist */
 			options.assist = True;
 			break;
-		case 'd':	/* -d, --delay */
+		case 'd':	/* -d, --delay DELAY */
 			options.delay = strtoul(optarg, NULL, 0);
 			break;
 		case 'w':	/* -w, --wait */
 			options.wait = strtoul(optarg, NULL, 0);
 			break;
+
+		case '0':	/* -clientID CLIENTID */
+			free(options.clientId);
+			options.clientId = strdup(optarg);
+			break;
+		case '1':	/* -saveFile SAVEFILE */
+			free(options.saveFile);
+			options.saveFile = strdup(optarg);
+			break;
+
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
-				fprintf(stderr, "%s: increasing debug verbosity\n",
-					argv[0]);
+				fprintf(stderr, "%s: increasing debug verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				options.debug++;
 			} else {
@@ -1883,8 +1386,7 @@ main(int argc, char *argv[])
 			break;
 		case 'v':	/* -v, --verbose [level] */
 			if (options.debug)
-				fprintf(stderr, "%s: increasing output verbosity\n",
-					argv[0]);
+				fprintf(stderr, "%s: increasing output verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				options.output++;
 				break;
@@ -1919,14 +1421,12 @@ main(int argc, char *argv[])
 		      bad_nonopt:
 			if (options.output || options.debug) {
 				if (optind < argc) {
-					fprintf(stderr, "%s: syntax error near '",
-						argv[0]);
+					fprintf(stderr, "%s: syntax error near '", argv[0]);
 					while (optind < argc)
 						fprintf(stderr, "%s ", argv[optind++]);
 					fprintf(stderr, "'\n");
 				} else {
-					fprintf(stderr, "%s: missing option or argument",
-						argv[0]);
+					fprintf(stderr, "%s: missing option or argument", argv[0]);
 					fprintf(stderr, "\n");
 				}
 				fflush(stderr);

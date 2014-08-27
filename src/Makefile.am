@@ -26,12 +26,16 @@ bin_PROGRAMS = \
 	xde-setwm \
 	xde-watch
 
+noinst_PROGRAMS = \
+	xde-setbg
+
 EXTRA_PROGRAMS = \
-	xde-backdrop
+	xde-backdrop \
+	xde-setbg
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c xde.h
-xde_theme_LDADD = libxde.la $(GDK_LIBS) $(SM_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+xde_theme_LDADD = libxde.la $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 xde_theme_LDFLAGS = $(runtime_search) -ldl
 
 xde_identify_CPPFLAGS = -DNAME=\"xde-identify\"
@@ -49,10 +53,10 @@ xde_backdrop_SOURCES = xde-backdrop.c xde.h
 xde_backdrop_LDADD = libxde.la $(X11_LIBS)
 xde_backdrop_LDFLAGS = $(runtime_search) -ldl
 
-#xde_setbg_CPPFLAGS = -DNAME=\"xde-setbg\"
-#xde_setbg_SOURCES = xde-setbg.c xde.h
-#xde_setbg_LDADD = libxde.la $(X11_LIBS)
-#xde_setbg_LDFLAGS = $(runtime_search) -ldl
+xde_setbg_CPPFLAGS = -DNAME=\"xde-setbg\"
+xde_setbg_SOURCES = xde-setbg.c xde.h
+xde_setbg_LDADD = libxde.la $(X11_LIBS)
+xde_setbg_LDFLAGS = $(runtime_search) -ldl
 
 xde_setwm_CPPFLAGS = -DNAME=\"xde-setwm\"
 xde_setwm_SOURCES = xde-setwm.c xde.h
@@ -60,7 +64,7 @@ xde_setwm_LDADD = $(X11_LIBS)
 
 xde_watch_CPPFLAGS = -DNAME=\"xde-watch\"
 xde_watch_SOURCES = xde-watch.c xde.h
-xde_watch_LDADD = libxde.la $(SM_LIBS) $(X11_LIBS)
+xde_watch_LDADD = libxde.la $(X11_LIBS)
 xde_watch_LDFLAGS = $(runtime_search) -ldl
 
 xdemod_LTLIBRARIES = \
