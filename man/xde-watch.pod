@@ -86,10 +86,10 @@ manager by setting known and missing properties on the respective check
 windows.  This helps utilities such as L<libwnck(3)> find the necessary
 information for non-conforming NetWM/EWMH window managers.
 
-=item B<--foreground>, B<-f>
+=item B<--background>, B<-b>
 
-Run in the foreground (implies B<-D>), printing debugging information to
-standard error.
+Run in the background (ignores B<-D>), suppress printing of debugging
+information to standard error.
 
 =item B<--dryrun>, B<-n>
 
