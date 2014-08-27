@@ -61,7 +61,7 @@ static int rargc;
 
 Atom _XA_XDE_DESKTOP_COMMAND;
 
-Bool foreground = False;
+Bool foreground = True;
 
 typedef enum {
 	CommandDefault,
@@ -1748,8 +1748,8 @@ Options:\n\
         also remove properties when changes occur\n\
     -a, --assist\n\
         assist a non-conforming window manager\n\
-    -f, --foreground\n\
-        run in the foreground and debug to standard error\n\
+    -b, --background\n\
+        run in the background and suppress debugging\n\
     -n, --dryrun\n\
         do not change anything, just print what would be done\n\
     -d, --delay DELAY\n\
@@ -1793,7 +1793,7 @@ main(int argc, char *argv[])
 			{"restart",	no_argument,		NULL, 'r'},
 			{"recheck",	no_argument,		NULL, 'c'},
 			{"remove",	no_argument,		NULL, 'R'},
-			{"foreground",	no_argument,		NULL, 'f'},
+			{"background",	no_argument,		NULL, 'b'},
 			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
 			{"assist",	no_argument,		NULL, 'a'},
@@ -1810,7 +1810,7 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnlad:w:D::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRbnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
 		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
@@ -1848,9 +1848,14 @@ main(int argc, char *argv[])
 		case 'R':	/* -R, --remove */
 			options.remove = True;
 			break;
-		case 'f':	/* -f, --foreground */
-			foreground = True;
-			options.debug = 1;
+		case 'b':	/* -b, --background */
+			foreground = False;
+			options.debug = 0;
+			break;
+		case 'n':	/* -n, --dryrun */
+			options.dryrun = True;
+			if (options.output < 2)
+				options.output = 2;
 			break;
 		case 'l':	/* -l, --replace */
 			options.replace = True;
