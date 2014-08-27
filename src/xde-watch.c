@@ -57,9 +57,14 @@ const char *program = NAME;
 static char **rargv;
 static int rargc;
 
+static char **saveArgv;
+static int saveArgc;
+
+char *client_id;
+
 Atom _XA_XDE_DESKTOP_COMMAND;
 
-Bool foreground = False;
+Bool foreground = True;
 
 typedef enum {
 	CommandDefault,
@@ -94,6 +99,293 @@ typedef struct {
 static WmSettings *setting;
 static WmSettings *settings;
 
+static void
+xdeSetProperties(SmcConn smcConn, SmPointer data)
+{
+	char userID[20], procID[12];
+	int i, j, argc = saveArgc;
+	char **argv = saveArgv;
+	char *cwd = NULL;
+	char hint;
+	struct passwd *pw;
+	SmPropValue *penv = NULL, *prst = NULL, *pcln = NULL;
+	SmPropValue propval[11];
+	SmProp prop[11];
+
+	SmProp *props[11] = {
+		&prop[0], &prop[1], &prop[2], &prop[3], &prop[4], &prop[5],
+		&prop[6], &prop[7], &prop[8], &prop[9], &prop[10],
+	};
+
+	j = 0;
+
+	/* CloneCommand */
+	prop[j].name = SmCloneCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = pcln = calloc(argc, sizeof(*pcln));
+	prop[j].num_vals = 0;
+	props[j] = &prop[j];
+	for (i = 0; i < argc; i++) {
+		if (!strcmp(argv[i], "-clientId") || !strcmp(argv[i], "-saveFile"))
+			i++;
+		else {
+			prop[j].vals[prop[j].num_vals].value = (SmPointer) argv[i];
+			prop[j].vals[prop[j].num_vals++].length = strlen(argv[i]);
+		}
+	}
+	j++;
+
+#if 1
+	/* Current Directory */
+	prop[j].name = SmCurrentDirectory;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = NULL;
+	propval[j].length = 0;
+	cwd = calloc(PATH_MAX + 1, sizeof(propval[j].value[0]));
+	if (getcwd(cwd, PATH_MAX)) {
+		propval[j].value = cwd;
+		propval[j].length = strlen(propval[j].value);
+		j++;
+	} else {
+		free(cwd);
+		cwd = NULL;
+	}
+#endif
+
+#if 0
+	/* DiscardCommand */
+	prop[j].name = SmDiscardCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "/bin/true";
+	propval[j].length = strlen("/bin/true");
+	j++;
+#endif
+
+#if 0
+	/* Environment */
+	/* XXX: we might want to filter a few out */
+	for (i = 0, env = environ; *env; i += 2, env++) ;
+	prop[j].name = SmEnvironment;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = penv = calloc(i, sizeof(*penv));
+	prop[j].num_vals = i;
+	props[j] = &prop[j];
+	for (i = 0, env = environ; *env; i += 2, env++) {
+		char *equal;
+		int len;
+
+		equal = strchrnul(*env, '=');
+		len = (int) (*env - equal);
+		if (*equal)
+			equal++;
+		prop[j].vals[i].value = *env;
+		prop[j].vals[i].length = len;
+		prop[j].vals[i + 1].value = equal;
+		prop[j].vals[i + 1].length = strlen(equal);
+	}
+	j++;
+#endif
+
+#if 1
+	/* ProcessID */
+	prop[j].name = SmProcessID;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	snprintf(procID, sizeof(procID), "%ld", (long) getpid());
+	propval[j].value = procID;
+	propval[j].length = strlen(procID);
+	j++;
+#endif
+
+	/* Program */
+	prop[j].name = SmProgram;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = argv[0];
+	propval[j].length = strlen(argv[0]);
+	j++;
+
+	/* RestartCommand */
+	prop[j].name = SmRestartCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = prst = calloc(argc + 4, sizeof(*prst));
+	prop[j].num_vals = 0;
+	props[j] = &prop[j];
+	for (i = 0; i < argc; i++) {
+		if (!strcmp(argv[i], "-clientId") || !strcmp(argv[i], "-saveFile"))
+			i++;
+		else {
+			prop[j].vals[prop[j].num_vals].value = (SmPointer) argv[i];
+			prop[j].vals[prop[j].num_vals++].length = strlen(argv[i]);
+		}
+	}
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) "-clientId";
+	prop[j].vals[prop[j].num_vals++].length = 9;
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) options.clientId;
+	prop[j].vals[prop[j].num_vals++].length = strlen(options.clientId);
+
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) "-saveFile";
+	prop[j].vals[prop[j].num_vals++].length = 9;
+	prop[j].vals[prop[j].num_vals].value = (SmPointer) options.saveFile;
+	prop[j].vals[prop[j].num_vals++].length = strlen(options.saveFile);
+	j++;
+
+#if 0
+	/* ResignCommand */
+	prop[j].name = SmResignCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "xde-watch -q";
+	propval[j].length = strlen("xde-watch -q");
+	j++;
+#endif
+
+	/* RestartStyleHint */
+	prop[j].name = SmRestartStyleHint;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[0];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	hint = SmRestartImmediately;
+	propval[j].value = &hint;
+	propval[j].length = 1;
+	j++;
+
+#if 0
+	/* ShutdownCommand */
+	prop[j].name = SmShutdownCommand;
+	prop[j].type = SmLISTofARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	propval[j].value = "/bin/true";
+	propval[j].length = strlen("/bin/true");
+	j++;
+#endif
+
+	/* UserID */
+	errno = 0;
+	prop[j].name = SmUserID;
+	prop[j].type = SmARRAY8;
+	prop[j].vals = &propval[j];
+	prop[j].num_vals = 1;
+	props[j] = &prop[j];
+	if ((pw = getpwuid(getuid())))
+		strncpy(userID, pw->pw_name, sizeof(userID) - 1);
+	else {
+		EPRINTF("%s: %s\n", "getpwuid()", strerror(errno));
+		snprintf(userID, sizeof(userID), "%ld", (long) getuid());
+	}
+	propval[j].value = userID;
+	propval[j].length = strlen(userID);
+	j++;
+
+	SmcSetProperties(smcConn, j, props);
+
+	free(cwd);
+	free(pcln);
+	free(prst);
+	free(penv);
+}
+
+static Bool saving_yourself;
+static Bool session_shutdown;
+
+static void
+xdeSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
+{
+	xdeSetProperties(smcConn, data);
+	SmcSaveYourselfDone(smcConn, True);
+}
+
+static void
+xdeSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
+		  int interactStyle, Bool fast)
+{
+	if (!(session_shutdown = shutdown)) {
+		if (!SmcRequestSaveYourselfPhase2(smcConn, xdeSaveYourselfPhase2CB, data))
+			SmcSaveYourselfDone(smcConn, False);
+		return;
+	}
+	/* FIXME: actually save state */
+	xdeSetProperties(smcConn, data);
+	SmcSaveYourselfDone(smcConn, True);
+}
+
+static void
+xdeDieCB(SmcConn smcConn, SmPointer data)
+{
+	SmcCloseConnection(smcConn, 0, NULL);
+	session_shutdown = False;
+	xde_main_quit((XPointer) XDE_DESKTOP_QUIT);
+}
+
+static void
+xdeSaveCompleteCB(SmcConn smcConn, SmPointer data)
+{
+	if (saving_yourself)
+		saving_yourself = False;
+}
+
+static void
+xdeShutdownCancelledCB(SmcConn smcConn, SmPointer data)
+{
+	session_shutdown = False;
+}
+
+static unsigned long xdeCBMask =
+    SmcSaveYourselfProcMask | SmcDieProcMask |
+    SmcSaveCompleteProcMask | SmcShutdownCancelledProcMask;
+
+static SmcCallbacks xdeCBs = {
+	.save_yourself = {
+			  .callback = &xdeSaveYourselfCB,
+			  .client_data = NULL,
+			  },
+	.die = {
+		.callback = &xdeDieCB,
+		.client_data = NULL,
+		},
+	.save_complete = {
+			  .callback = &xdeSaveCompleteCB,
+			  .client_data = NULL,
+			  },
+	.shutdown_cancelled = {
+			       .callback = &xdeShutdownCancelledCB,
+			       .client_data = NULL,
+			       },
+};
+
+static void
+smc_init(void)
+{
+	char err[256] = { 0, };
+	char *env;
+
+	if (!(env = getenv("SESSION_MANAGER"))) {
+		if (options.clientId)
+			EPRINTF("clientId provided but no SESSION_MANAGER\n");
+		return;
+	}
+	smcConn = SmcOpenConnection(env, NULL, SmProtoMajor, SmProtoMinor,
+				    xdeCBMask, &xdeCBs, options.clientId, &options.clientId,
+				    sizeof(err), err);
+	if (!smcConn)
+		EPRINTF("SmcOpenConnection: %s\n", err);
+}
+
 static Bool
 wm_event(const XEvent *e)
 {
@@ -117,8 +409,7 @@ wm_event(const XEvent *e)
 			case XDE_DESKTOP_ARGV:
 				DPRINTF("got _XDE_DESKTOP_COMMAND(Argv)\n");
 				if (XGetCommand(dpy, e->xclient.window, &rargv, &rargc)) {
-					XDeleteProperty(dpy, e->xclient.window,
-							XA_WM_COMMAND);
+					XDeleteProperty(dpy, e->xclient.window, XA_WM_COMMAND);
 					xde_main_quit((XPointer) XDE_DESKTOP_ARGV);
 					return XDE_EVENT_STOP;
 				}
@@ -129,8 +420,7 @@ wm_event(const XEvent *e)
 	case SelectionClear:
 		if (e->xselectionclear.window == scr->selwin
 		    && e->xselectionclear.selection == scr->selection) {
-			DPRINTF("%s selection cleared\n",
-				XGetAtomName(dpy, scr->selection));
+			DPRINTF("%s selection cleared\n", XGetAtomName(dpy, scr->selection));
 			xde_main_quit((XPointer) XDE_DESKTOP_QUIT);
 			return XDE_EVENT_STOP;
 
@@ -143,8 +433,7 @@ wm_event(const XEvent *e)
 static Bool
 wm_signal(int signum)
 {
-	switch (signum)
-	{
+	switch (signum) {
 	case SIGINT:
 		DPRINTF("got SIGINT, shutting down\n");
 		break;
@@ -287,8 +576,7 @@ wm_theme_changed(char *newtheme, char *newfile)
 		DPRINTF("sending %s to 0x%08lx\n",
 			XGetAtomName(dpy, _XA_GTK_READ_RCFILES), scr->root);
 		XSendEvent(dpy, scr->root, False, StructureNotifyMask |
-			   SubstructureRedirectMask | SubstructureNotifyMask,
-			   (XEvent *) &xcm);
+			   SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *) &xcm);
 	} else
 		OPRINTF("would send _GTK_READ_RCFILES client message\n");
 
@@ -394,6 +682,7 @@ selectionreleased(Display *display, XEvent *event, XPointer arg)
 static void
 do_run(int argc, char *argv[])
 {
+	smc_init();
 	xde_init(&wm_callbacks);
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
 	for (screen = 0; screen < nscr; screen++) {
@@ -405,15 +694,13 @@ do_run(int argc, char *argv[])
 		scr->selwin = XCreateSimpleWindow(dpy, scr->root,
 						  DisplayWidth(dpy, screen),
 						  DisplayHeight(dpy, screen), 1, 1, 0,
-						  BlackPixel(dpy, screen),
-						  BlackPixel(dpy, screen));
+						  BlackPixel(dpy, screen), BlackPixel(dpy, screen));
 		XSaveContext(dpy, scr->selwin, ScreenContext, (XPointer) scr);
 		XSelectInput(dpy, scr->selwin, StructureNotifyMask | PropertyChangeMask);
 
 		XGrabServer(dpy);
 		if ((scr->owner = XGetSelectionOwner(dpy, scr->selection))) {
-			XSelectInput(dpy, scr->owner,
-				     StructureNotifyMask | PropertyChangeMask);
+			XSelectInput(dpy, scr->owner, StructureNotifyMask | PropertyChangeMask);
 			XSaveContext(dpy, scr->owner, ScreenContext, (XPointer) scr);
 			XSync(dpy, False);
 		}
@@ -422,8 +709,7 @@ do_run(int argc, char *argv[])
 		if (!scr->owner || options.replace)
 			XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
 		else {
-			EPRINTF("another instance of %s already on screen %d\n",
-			     NAME, scr->screen);
+			EPRINTF("another instance of %s already on screen %d\n", NAME, scr->screen);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -771,8 +1057,8 @@ Options:\n\
         also remove properties when changes occur\n\
     -a, --assist\n\
         assist a non-conforming window manager\n\
-    -f, --foreground\n\
-        run in the foreground and debug to standard error\n\
+    -b, --background\n\
+        run in the background and suppress debugging\n\
     -n, --dryrun\n\
         do not change anything, just print what would be done\n\
     -d, --delay DELAY\n\
@@ -803,6 +1089,9 @@ main(int argc, char *argv[])
 {
 	CommandType cmd = CommandDefault;
 
+	saveArgc = argc;
+	saveArgv = argv;
+
 	set_defaults();
 
 	while (1) {
@@ -816,12 +1105,15 @@ main(int argc, char *argv[])
 			{"restart",	no_argument,		NULL, 'r'},
 			{"recheck",	no_argument,		NULL, 'c'},
 			{"remove",	no_argument,		NULL, 'R'},
-			{"foreground",	no_argument,		NULL, 'f'},
+			{"background",	no_argument,		NULL, 'b'},
 			{"dryrun",	no_argument,		NULL, 'n'},
 			{"replace",	no_argument,		NULL, 'l'},
 			{"assist",	no_argument,		NULL, 'a'},
 			{"delay",	required_argument,	NULL, 'd'},
 			{"wait",	required_argument,	NULL, 'w'},
+
+			{"clientId",	required_argument,	NULL, '0'},
+			{"saveFile",	required_argument,	NULL, '1'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'v'},
@@ -833,7 +1125,7 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "qrcRfnlad:w:D::v::hVCH?", long_options,
+		c = getopt_long_only(argc, argv, "qrcRbnlad:w:D::v::hVCH?", long_options,
 				     &option_index);
 #else				/* defined _GNU_SOURCE */
 		c = getopt(argc, argv, "qrcRfnlad:w:DvhVC?");
@@ -871,9 +1163,9 @@ main(int argc, char *argv[])
 		case 'R':	/* -R, --remove */
 			options.remove = True;
 			break;
-		case 'f':	/* -f, --foreground */
-			foreground = True;
-			options.debug = 1;
+		case 'b':	/* -b, --background */
+			foreground = False;
+			options.debug = 0;
 			break;
 		case 'n':	/* -n, --dryrun */
 			options.dryrun = True;
@@ -892,10 +1184,19 @@ main(int argc, char *argv[])
 		case 'w':	/* -w, --wait */
 			options.wait = strtoul(optarg, NULL, 0);
 			break;
+
+		case '0':	/* -clientID CLIENTID */
+			free(options.clientId);
+			options.clientId = strdup(optarg);
+			break;
+		case '1':	/* -saveFile SAVEFILE */
+			free(options.saveFile);
+			options.saveFile = strdup(optarg);
+			break;
+
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)
-				fprintf(stderr, "%s: increasing debug verbosity\n",
-					argv[0]);
+				fprintf(stderr, "%s: increasing debug verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				options.debug++;
 			} else {
@@ -906,8 +1207,7 @@ main(int argc, char *argv[])
 			break;
 		case 'v':	/* -v, --verbose [level] */
 			if (options.debug)
-				fprintf(stderr, "%s: increasing output verbosity\n",
-					argv[0]);
+				fprintf(stderr, "%s: increasing output verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				options.output++;
 				break;
@@ -942,14 +1242,12 @@ main(int argc, char *argv[])
 		      bad_nonopt:
 			if (options.output || options.debug) {
 				if (optind < argc) {
-					fprintf(stderr, "%s: syntax error near '",
-						argv[0]);
+					fprintf(stderr, "%s: syntax error near '", argv[0]);
 					while (optind < argc)
 						fprintf(stderr, "%s ", argv[optind++]);
 					fprintf(stderr, "'\n");
 				} else {
-					fprintf(stderr, "%s: missing option or argument",
-						argv[0]);
+					fprintf(stderr, "%s: missing option or argument", argv[0]);
 					fprintf(stderr, "\n");
 				}
 				fflush(stderr);
