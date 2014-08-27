@@ -77,6 +77,7 @@
 #include <stdarg.h>
 #include <strings.h>
 #include <regex.h>
+#include <pwd.h>
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -94,6 +95,10 @@
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
 #endif
+
+#include <X11/SM/SMlib.h>
+
+extern SmcConn smcConn;
 
 #define CHECK_DIRS 4
 #define CHECK_WINS 6
@@ -314,6 +319,8 @@ typedef struct {
 	Bool replace;
 	Bool assist;
 	unsigned long wait;
+	char *clientId;
+	char *saveFile;
 } Options;
 
 extern Display *dpy;
@@ -483,6 +490,7 @@ extern void xde_sig_handler(int sig);
 extern void xde_main_quit(XPointer);
 extern void xde_process_timeouts(void);
 extern void xde_process_xevents(void);
+extern void xde_process_messages(void);
 extern void xde_process_deferred(void);
 extern void xde_handle_signal(int sig);
 extern XPointer xde_main_loop(void);

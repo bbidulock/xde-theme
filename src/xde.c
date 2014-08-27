@@ -48,6 +48,8 @@
 #include "xde.h"
 #include <dlfcn.h>
 
+SmcConn smcConn;
+
 Display *dpy;
 int screen;
 Window root;
@@ -87,6 +89,8 @@ Options options = {
 	.replace = False,
 	.assist = False,
 	.wait = 2000,
+	.clientId = NULL,
+	.saveFile = NULL,
 };
 
 static WindowManager *
@@ -5272,6 +5276,21 @@ __xde_process_xevents()
 
 __asm__(".symver __xde_process_xevents,xde_process_xevents@@XDE_1.0");
 
+/** @brief process ICE messages
+  */
+void
+__xde_process_messages(void)
+{
+	IceConn iceConn;
+
+	if (!smcConn)
+		return;
+	iceConn = SmcGetIceConnection(smcConn);
+	IceProcessMessages(iceConn, NULL, NULL);
+}
+
+__asm__(".symver __xde_process_messages,xde_process_messages@@XDE_1.0");
+
 /** @brief process deferred events
   *
   * Process all deferred events that have expired their waiting intervals.  You
@@ -5320,8 +5339,11 @@ __asm__(".symver __xde_handle_signal,xde_handle_signal@@XDE_1.0");
 XPointer
 __xde_main_loop(void)
 {
+	IceConn iceConn = smcConn ? SmcGetIceConnection(smcConn) : 0;
 	int tfd = xde_defer_timer();
 	int xfd = ConnectionNumber(dpy);
+	int ifd = iceConn ? IceConnectionNumber(iceConn) : -1;
+	int num = iceConn ? 3 : 2;
 
 	DPRINTF("setting up signal handlers\n");
 	signal(SIGINT, &xde_sig_handler);
@@ -5333,7 +5355,8 @@ __xde_main_loop(void)
 	for (;;) {
 		struct pollfd pfd[] = {
 			{tfd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0},
-			{xfd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0}
+			{xfd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0},
+			{ifd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0}
 		};
 
 		if (shutting_down) {
@@ -5360,7 +5383,7 @@ __xde_main_loop(void)
 		}
 
 		XPRINTF("calling poll(2)\n");
-		switch (poll(pfd, 2, -1)) {
+		switch (poll(pfd, num, -1)) {
 		case -1:
 			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
 				continue;
@@ -5371,11 +5394,14 @@ __xde_main_loop(void)
 			continue;
 		case 1:
 		case 2:
+		case 3:
 			if (pfd[0].revents & (POLLIN | POLLPRI))
 				xde_process_timeouts();
 			if (pfd[1].revents & (POLLIN | POLLPRI))
 				xde_process_xevents();
-			if ((pfd[0].revents | pfd[1].revents)
+			if (pfd[2].revents & (POLLIN | POLLPRI))
+				xde_process_messages();
+			if ((pfd[0].revents | pfd[1].revents | pfd[2].revents)
 			    & (POLLNVAL | POLLHUP | POLLERR)) {
 				EPRINTF("fatal error on poll\n");
 				exit(EXIT_FAILURE);

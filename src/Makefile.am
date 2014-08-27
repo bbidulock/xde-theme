@@ -1,5 +1,5 @@
 
-AM_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(GDK_CFLAGS)
+AM_CFLAGS = $(X11_CFLAGS) $(XINERAMA_CFLAGS) $(XRANDR_CFLAGS) $(SM_CFLAGS) $(GDK_CFLAGS)
 
 lib_LTLIBRARIES = libxde.la
 
@@ -13,7 +13,7 @@ endif
 
 libxde_la_CPPFLAGS = -DNAME=\"libxde\"
 libxde_la_SOURCES = xde.h xde.c
-libxde_la_LIBADD = $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+libxde_la_LIBADD = $(GDK_LIBS) $(SM_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 libxde_la_LDFLAGS = -version-info 0:0:0 -export-dynamic -shared $(runtime_search) \
 		    -Wl,--version-script -Wl,$(srcdir)/xde.VERSION -ldl
 
@@ -31,7 +31,7 @@ EXTRA_PROGRAMS = \
 
 xde_theme_CPPFLAGS = -DNAME=\"xde-theme\"
 xde_theme_SOURCES = xde-theme.c xde.h
-xde_theme_LDADD = libxde.la $(GDK_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
+xde_theme_LDADD = libxde.la $(GDK_LIBS) $(SM_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)
 xde_theme_LDFLAGS = $(runtime_search) -ldl
 
 xde_identify_CPPFLAGS = -DNAME=\"xde-identify\"
@@ -60,7 +60,7 @@ xde_setwm_LDADD = $(X11_LIBS)
 
 xde_watch_CPPFLAGS = -DNAME=\"xde-watch\"
 xde_watch_SOURCES = xde-watch.c xde.h
-xde_watch_LDADD = libxde.la $(X11_LIBS)
+xde_watch_LDADD = libxde.la $(SM_LIBS) $(X11_LIBS)
 xde_watch_LDFLAGS = $(runtime_search) -ldl
 
 xdemod_LTLIBRARIES = \
