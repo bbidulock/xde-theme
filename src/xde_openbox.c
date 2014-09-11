@@ -314,13 +314,13 @@ reload_style_OPENBOX()
   *
   * When openbox changes its theme, it changes the _OB_THEME property on the root
   * window.  openbox also changes the theme section in ~/.config/openbox/rc.xml and
-  * writes the file and performs a reconfigure.
+  * writes the file and performs a reconfigure.  The entry in the rc.xml file
+  * looks like:
   *
-  * openbox sets the _OB_CONFIG_FILE property on the root window when the
-  * configuration file differs from the default (but not otherwise).
-  *
-  * openbox does not provide internal actions for setting the theme: it uses an
-  * external theme setting program that communicates with the window manager.
+  *   <theme>
+  *     <name>Penguins</name>
+  *     ...
+  *   </theme>
   *
   * When xde-session runs, it sets the OPENBOX_RCFILE environment variable.
   * xde-session and associated tools will always launch openbox with a command such
@@ -336,25 +336,83 @@ reload_style_OPENBOX()
 static void
 set_style_OPENBOX()
 {
-	char *stylefile;
+	FILE *f;
+	struct stat st;
+	char *stylefile, *buf, *pos, *end, *line, *p, *q;
+	int len;
+	size_t read, total;
 
 	if (!(stylefile = find_style_OPENBOX())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
-		return;
+		goto no_stylefile;
 	}
-
+	if (!(f = fopen(wm->rcfile, "r"))) {
+		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+		goto no_rcfile;
+	}
+	if (fstat(fileno(f), &st)) {
+		EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+		goto no_stat;
+	}
+	buf = calloc(st.st_size + 1, sizeof(*buf));
+	/* read entire file into buffer */
+	total = 0;
+	while (total < st.st_size) {
+		read = fread(buf + total, 1, st.st_size - total, f);
+		total += read;
+		if (total >= st.st_size)
+			break;
+		if (ferror(f)) {
+			EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			goto no_buf;
+		}
+		if (feof(f))
+			break;
+	}
+	len = strlen(options.style) + strlen("<name>%s</name>");
+	line = calloc(len, sizeof(*line));
+	snprintf(line, len, "<name>%s</name>", options.style);
+	if (strstr(buf, line)) {
+		DPRINTF("%s: no change\n", stylefile);
+		goto no_change;
+	}
 	if (options.dryrun) {
 	} else {
-		free(wm->stylename);
-		wm->stylename = strdup(options.style);
-		free(wm->style);
-		wm->style = strdup(stylefile);
-		free(wm->stylefile);
-		wm->stylefile = strdup(stylefile);
+		int intheme = 0;
+
+		if (!(f = freopen(wm->rcfile, "w", f))) {
+			EPRINTF("%s: %s\n", wm->rcfile, strerror(errno));
+			goto no_change;
+		}
+		for (pos = buf, end = buf + st.st_size; pos < end; pos = pos + strlen(pos) + 1) {
+			*strchrnul(pos, '\n') = '\0';
+			if (intheme) {
+				if ((p = strstr(pos, "<name>"))
+				    && (!(q = strstr(pos, "<!--")) || p < q)) {
+					DPRINTF("%s: printing line '    %s'\n", wm->rcfile, line);
+					fprintf(f, "    %s\n", line);
+					continue;
+				} else if ((p = strstr(pos, "</theme>"))
+					   && (!(q = strstr(pos, "<!--")) || p < q))
+					intheme = 0;
+			} else if ((p = strstr(pos, "<theme>"))
+				   && (!(q = strstr(pos, "<!--")) || p < q))
+				intheme = 1;
+			DPRINTF("%s: printing line '%s'\n", wm->rcfile, pos);
+			fprintf(f, "%s\n", pos);
+		}
 		if (options.reload)
 			reload_style_OPENBOX();
 	}
+      no_change:
+	free(line);
+      no_buf:
+	free(buf);
+      no_stat:
+	fclose(f);
+      no_rcfile:
 	free(stylefile);
+      no_stylefile:
 	return;
 }
 
