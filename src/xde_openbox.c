@@ -402,16 +402,50 @@ list_styles_OPENBOX()
 static void
 gen_item_OPENBOX(char *style, enum ListType type, char *stylename, char *file)
 {
+	switch(type) {
+	case XDE_LIST_PRIVATE:
+	case XDE_LIST_USER:
+		fprintf(stdout, "  <item label=\"%s\">\n", stylename);
+		fprintf(stdout, "    <action name=\"Execute\">\n");
+		fprintf(stdout, "      <command>xde-style -s -t -r -u '%s'</command>\n", stylename);
+		fprintf(stdout, "    </action>\n");
+		fprintf(stdout, "  </item>\n");
+		break;
+	case XDE_LIST_SYSTEM:
+	case XDE_LIST_GLOBAL:
+		fprintf(stdout, "  <item label=\"%s\">\n", stylename);
+		fprintf(stdout, "    <action name=\"Execute\">\n");
+		fprintf(stdout, "      <command>xde-style -s -t -r -y '%s'</command>\n", stylename);
+		fprintf(stdout, "    </action>\n");
+		fprintf(stdout, "  </item>\n");
+		break;
+	case XDE_LIST_MIXED:
+		fprintf(stdout, "  <item label=\"%s\">\n", stylename);
+		fprintf(stdout, "    <action name=\"Execute\">\n");
+		fprintf(stdout, "      <command>xde-style -s -t -r '%s'</command>\n", stylename);
+		fprintf(stdout, "    </action>\n");
+		fprintf(stdout, "  </item>\n");
+		break;
+	}
 }
 
 static void
 gen_dir_OPENBOX(char *xdir, char *style, enum ListType type)
 {
+	return xde_gen_dir_simple(xdir, "themes", "/openbox-3/themerc", "", style, type);
 }
 
 static void
 gen_menu_OPENBOX()
 {
+	char **dir, *style = get_style_OPENBOX();
+
+	xde_get_xdg_dirs();
+
+	fprintf(stdout, "%s\n", "<openbox_pipe_menu>");
+	for (dir = wm->xdg_dirs; *dir; dir++)
+		gen_dir_OPENBOX(*dir, style, XDE_LIST_MIXED);
+	fprintf(stdout, "%s\n", "</openbox_pipe_menu>");
 }
 
 static char *
