@@ -3108,7 +3108,7 @@ __xde_recheck_wm()
 		changed = True;
 	} else if (!oldwm && !wm) {
 		DPRINTF("no window manager yet, test again in 2 seconds\n");
-		xde_defer_wm_check(2000);
+		xde_defer_wm_check(options.wait);
 		changed = False;
 	}
 	if (changed && callbacks && callbacks->wm_changed)
