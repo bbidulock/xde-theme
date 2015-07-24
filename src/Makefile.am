@@ -11,6 +11,8 @@ runtime_search = -R $(xdemoddir)
 runtime_path = -rpath $(xdemoddir)
 endif
 
+xdeinc_HEADERS = xde.h
+
 libxde_la_CPPFLAGS = -DNAME=\"libxde\"
 libxde_la_SOURCES = xde.h xde.c
 libxde_la_LIBADD = $(GDK_LIBS) $(SM_LIBS) $(XINERAMA_LIBS) $(XRANDR_LIBS) $(X11_LIBS)

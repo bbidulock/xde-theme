@@ -1,0 +1,20 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+xdemoddir=@xdemoddir@
+xdeincdir=@xdeincdir@
+
+Name: XDE
+Description: X Desktop Environment Library
+Version: @PACKAGE_VERSION@
+URL: @PACKAGE_URL@
+@XRANDR_TRUE@@XINERAMA_TRUE@Requires: x11 sm gdk-pixbuf-xlib-2.0 glib-2.0 gobject-2.0 gio-2.0 imlib2 xrandr xinerama
+@XRANDR_TRUE@@XINERAMA_FALSE@Requires: x11 sm gdk-pixbuf-xlib-2.0 glib-2.0 gobject-2.0 gio-2.0 imlib2 xrandr
+@XRANDR_FALSE@@XINERAMA_TRUE@Requires: x11 sm gdk-pixbuf-xlib-2.0 glib-2.0 gobject-2.0 gio-2.0 imlib2 xinerama
+@XRANDR_FALSE@@XINERAMA_FALSE@Requires: x11 sm gdk-pixbuf-xlib-2.0 glib-2.0 gobject-2.0 gio-2.0 imlib2
+Libs: -R ${xdemoddir} -lxde -ldl
+Libs.private: -lm
+Cflags: -I${xdeincdir}
+
+

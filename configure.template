@@ -1,6 +1,6 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-theme],[1.1],[http://github.com/bbidulock/xde-theme],[xde-theme])
+AC_INIT([xde-theme],[1.1],[https://github.com/bbidulock/xde-theme/issues],[xde-theme], [https://github.com/bbidulock/xde-theme])
 AC_REVISION([1.1])
 
 AC_CONFIG_SRCDIR([src/xde.c])
@@ -67,6 +67,7 @@ if test "x$enable_xrandr" != xno ; then
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
 		[enable_xrandr=no])
 fi
+AM_CONDITIONAL([XRANDR],[test "x$enable_xrandr" != xno])
 AC_MSG_CHECKING([for XRANDR support])
 AC_MSG_RESULT([${enable_xrandr:-yes}])
 
@@ -78,6 +79,7 @@ if test "x$enable_xinerama" != xno ; then
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
 		[enable_xinerama=no])
 fi
+AM_CONDITIONAL([XINERAMA],[test "x$enable_xinerama" != xno])
 AC_MSG_CHECKING([for XINERAMA support])
 AC_MSG_RESULT([${enable_xinerama:-yes}])
 
@@ -113,10 +115,17 @@ AC_SUBST([xdgdatadir])
 xdemoddir='${libdir}/xde/modules'
 AC_SUBST([xdemoddir])
 
+xdeincdir='${includedir}/xde'
+AC_SUBST([xdeincdir])
+
+pcdir='${libdir}/pkgconfig'
+AC_SUBST([pcdir])
+
 AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 man/Makefile
 		 data/Makefile
+		 xde.pc
 		 ])
 AC_OUTPUT
 

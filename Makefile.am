@@ -35,3 +35,4 @@ TODO: TODO.in
 
 dist_noinst_SCRIPTS = autogen.sh
 
+pc_DATA = xde.pc
