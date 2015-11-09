@@ -487,11 +487,19 @@ __asm__(".symver __xde_set_screen,xde_set_screen@@XDE_1.0");
 static Bool
 find_screen(Window window)
 {
+	Window *wins = NULL, wroot, parent;
+	unsigned int num;
 	WmScreen *scrn = NULL;
 
-	if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success
-	    && scrn)
+	if (!window)
+		return False;
+	if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success && scrn)
 		set_screen(scrn);
+	else if (XQueryTree(dpy, window, &wroot, &parent, &wins, &num))
+		if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success && scrn)
+			set_screen(scrn);
+	if (wins)
+		XFree(wins);
 	return (scrn != NULL) ? True : False;
 }
 
@@ -5041,14 +5049,14 @@ __xde_handle_event(const XEvent *ev)
 	int i;
 
 	XPRINTF("handling X event\n");
+	if (!find_screen(ev->xany.window)) {
+		EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+		return False;
+	}
 	switch (ev->type) {
 	case PropertyNotify:
 		XPRINTF("handling PropertyNotify event for %s\n",
 			XGetAtomName(dpy, ev->xproperty.atom));
-		if (!find_screen(ev->xany.window)) {
-			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-			return False;
-		}
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xproperty.atom) {
 				if (atoms[i].handler)
@@ -5060,10 +5068,6 @@ __xde_handle_event(const XEvent *ev)
 	case ClientMessage:
 		XPRINTF("handling ClientMessage event for %s\n",
 			XGetAtomName(dpy, ev->xclient.message_type));
-		if (!find_screen(ev->xany.window)) {
-			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-			return False;
-		}
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xclient.message_type) {
 				if (atoms[i].handler)
@@ -5074,10 +5078,6 @@ __xde_handle_event(const XEvent *ev)
 		break;
 	case DestroyNotify:
 		DPRINTF("handling DestroyNotify event\n");
-		if (!find_screen(ev->xany.window)) {
-			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-			return False;
-		}
 		return handle_DestroyNotify(ev);
 	}
 	return False;
