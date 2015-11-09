@@ -5041,14 +5041,14 @@ __xde_handle_event(const XEvent *ev)
 	int i;
 
 	XPRINTF("handling X event\n");
-	if (!find_screen(ev->xany.window)) {
-		EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-		return False;
-	}
 	switch (ev->type) {
 	case PropertyNotify:
 		XPRINTF("handling PropertyNotify event for %s\n",
 			XGetAtomName(dpy, ev->xproperty.atom));
+		if (!find_screen(ev->xany.window)) {
+			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+			return False;
+		}
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xproperty.atom) {
 				if (atoms[i].handler)
@@ -5060,6 +5060,10 @@ __xde_handle_event(const XEvent *ev)
 	case ClientMessage:
 		XPRINTF("handling ClientMessage event for %s\n",
 			XGetAtomName(dpy, ev->xclient.message_type));
+		if (!find_screen(ev->xany.window)) {
+			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+			return False;
+		}
 		for (i = 0; atoms[i].name; i++) {
 			if (atoms[i].value == ev->xclient.message_type) {
 				if (atoms[i].handler)
@@ -5070,6 +5074,10 @@ __xde_handle_event(const XEvent *ev)
 		break;
 	case DestroyNotify:
 		DPRINTF("handling DestroyNotify event\n");
+		if (!find_screen(ev->xany.window)) {
+			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+			return False;
+		}
 		return handle_DestroyNotify(ev);
 	}
 	return False;
