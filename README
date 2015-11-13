@@ -1,9 +1,9 @@
-xde-theme -- read me first file.  2015-07-24
+xde-theme -- read me first file.  2015-11-09
 
 xde-theme
 =========
 
-Package xde-theme-1.1.144 was released under GPL license 2015-07-24.
+Package xde-theme-1.1.146 was released under GPL license 2015-11-09.
 
 This is a set of styles for the XDE (X Desktop Environment) which
 provides a small and consistent set of window manager styles across a
@@ -14,7 +14,7 @@ supported window managers.
 Release
 -------
 
-This is the xde-theme-1.1.144 package, released 2015-07-24.  This release,
+This is the xde-theme-1.1.146 package, released 2015-11-09.  This release,
 and the latest version, can be obtained from the GitHub repository at
 (http://github.com/bbidulock/xde-theme), using a command such as:
 

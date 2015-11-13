@@ -496,7 +496,7 @@ find_screen(Window window)
 	if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success && scrn)
 		set_screen(scrn);
 	else if (XQueryTree(dpy, window, &wroot, &parent, &wins, &num))
-		if (XFindContext(dpy, window, ScreenContext, (XPointer *) &scrn) == Success && scrn)
+		if (XFindContext(dpy, wroot, ScreenContext, (XPointer *) &scrn) == Success && scrn)
 			set_screen(scrn);
 	if (wins)
 		XFree(wins);
@@ -5049,12 +5049,14 @@ __xde_handle_event(const XEvent *ev)
 	int i;
 
 	XPRINTF("handling X event\n");
-	if (!find_screen(ev->xany.window)) {
-		EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-		return False;
-	}
 	switch (ev->type) {
 	case PropertyNotify:
+		if (!find_screen(ev->xany.window)) {
+			EPRINTF("while handling PropertyNotify event for %s\n",
+				XGetAtomName(dpy, ev->xproperty.atom));
+			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+			return False;
+		}
 		XPRINTF("handling PropertyNotify event for %s\n",
 			XGetAtomName(dpy, ev->xproperty.atom));
 		for (i = 0; atoms[i].name; i++) {
@@ -5066,6 +5068,12 @@ __xde_handle_event(const XEvent *ev)
 		}
 		break;
 	case ClientMessage:
+		if (!find_screen(ev->xany.window)) {
+			EPRINTF("while handling ClientMessage event for %s\n",
+				XGetAtomName(dpy, ev->xclient.message_type));
+			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
+			return False;
+		}
 		XPRINTF("handling ClientMessage event for %s\n",
 			XGetAtomName(dpy, ev->xclient.message_type));
 		for (i = 0; atoms[i].name; i++) {
