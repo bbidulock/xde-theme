@@ -125,9 +125,13 @@ get_style_FLUXBOX()
   *   SIGUSR2 - reload menu file
   *
   * After:
-  *   SIGHUP - exit
+  *   SIGHUP  - exit
   *   SIGUSR1 - restart
   *   SIGUSR2 - reload configuration
+  *
+  * Note also the following:
+  *   SIGINT  - shutdown
+  *   SIGTERM - shutdown
   *
   * The only single signal that is consistent across version is SIGUSR1 which
   * will reload in the before case and restart in the after case.
