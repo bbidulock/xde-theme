@@ -4,7 +4,6 @@ xde_man_files = \
 	    xde-style.man \
 	    xde-backdrop.man \
 	    xde-actions.man \
-	    xde-menu.man \
 	    xde-identify.man \
 	    xde-setwm.man \
 	    xde-stylemon.man \
@@ -18,7 +17,6 @@ EXTRA_DIST = \
 	     xde-style.pod \
 	     xde-backdrop.pod \
 	     xde-actions.pod \
-	     xde-menu.pod \
 	     xde-identify.pod \
 	     xde-setwm.pod \
 	     xde-stylemon.pod \
@@ -35,9 +33,6 @@ xde-backdrop.man: xde-backdrop.pod
 
 xde-actions.man: MANNAME = XDE-ACTIONS
 xde-actions.man: xde-actions.pod
-
-xde-menu.man: MANNAME = XDE-MENU
-xde-menu.man: xde-menu.pod
 
 xde-identify.man: MANNAME = XDE-IDENTIFY
 xde-identify.man: xde-identify.pod
