@@ -75,7 +75,12 @@ get_rcfile_BLACKBOX()
 static char *
 find_style_BLACKBOX()
 {
-	return xde_find_style_simple("styles", "/stylerc", "");
+	char *style, *p;
+
+	style = xde_find_style_simple("styles", "/stylerc", "");
+	if ((p = strstr(style, "/stylerc")))
+		*p = '\0';
+	return (style);
 }
 
 /** @brief Get the current menu file.
@@ -148,7 +153,7 @@ list_styles_BLACKBOX()
 static void
 gen_item_BLACKBOX(char *style, enum ListType type, char *stylename, char *file)
 {
-	switch(type) {
+	switch (type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:
 		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r -u '%s'}\n",

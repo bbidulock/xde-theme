@@ -81,7 +81,12 @@ get_rcfile_FLUXBOX()
 static char *
 find_style_FLUXBOX()
 {
-	return xde_find_style_simple("styles", "/theme.cfg", "");
+	char *style, *p;
+
+	style = xde_find_style_simple("styles", "/theme.cfg", "");
+	if ((p = strstr(style, "/theme.cfg")))
+		*p = '\0';
+	return (style);
 }
 
 /** @brief Get the current menu file.
@@ -151,7 +156,7 @@ reload_style_FLUXBOX()
   * configuration does not result in a change to the menu styles (in particular
   * the font color), so a restart is likely required.
   *
-  * Note that when fluxbox restarts, it dow not change the
+  * Note that when fluxbox restarts, it does not change the
   * _NET_SUPPORTING_WM_CHECK root window property but it does change the
   * _BLACKBOX_PID root window property, even if it is just to replace it with
   * the same value again.
@@ -168,8 +173,6 @@ list_dir_FLUXBOX(char *xdir, char *style, enum ListType type)
 	return xde_list_dir_simple(xdir, "styles", "/theme.cfg", "", style, type);
 }
 
-/** @brief List fluxbox styles.
-  */
 static void
 list_styles_FLUXBOX()
 {
@@ -179,16 +182,51 @@ list_styles_FLUXBOX()
 static void
 gen_item_FLUXBOX(char *style, enum ListType type, char *stylename, char *file)
 {
+	switch (type) {
+	case XDE_LIST_PRIVATE:
+	case XDE_LIST_USER:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r -u '%s'}\n",
+				stylename, stylename);
+		break;
+	case XDE_LIST_SYSTEM:
+	case XDE_LIST_GLOBAL:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r -y '%s'}\n",
+				stylename, stylename);
+		break;
+	case XDE_LIST_MIXED:
+		fprintf(stdout, "  [exec] (%s) {xde-style -s -t -r '%s'}\n",
+				stylename, stylename);
+		break;
+	}
 }
 
 static void
 gen_dir_FLUXBOX(char *xdir, char *style, enum ListType type)
 {
+	xde_gen_dir_simple(xdir, "styles", "/theme.cfg", "", style, type);
 }
 
 static void
 gen_menu_FLUXBOX()
 {
+	const char *which;
+
+	if (options.system && !options.user) {
+		which = "System ";
+	} else if (!options.system && options.user) {
+		which = "User ";
+	} else {
+		which = "";
+	}
+	if (options.theme) {
+		fprintf(stdout, "[submenu] (%sThemes) {Choose a theme...}\n", which);
+		xde_gen_menu_simple();
+		fprintf(stdout, "[end]\n");
+	} else {
+		fprintf(stdout, "[submenu] (%sStyles) {Choose a style...}\n", which);
+		xde_gen_menu_simple();
+		fprintf(stdout, "[end]\n");
+	}
 }
 
 static char *
