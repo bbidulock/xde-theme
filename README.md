@@ -1,7 +1,7 @@
 
 ## xde-theme
 
-Package xde-theme-1.1.151 was released under GPL license 2015-11-15.
+Package xde-theme-1.1.152 was released under GPL license 2016-02-14.
 
 This is a set of styles for the XDE (X Desktop Environment) which
 provides a small and consistent set of window manager styles across a
@@ -13,7 +13,7 @@ supported window managers.
 
 ### Release
 
-This is the `xde-theme-1.1.151` package, released 2015-11-15.  This release,
+This is the `xde-theme-1.1.152` package, released 2016-02-14.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/xde-theme, using a command such as:
 
