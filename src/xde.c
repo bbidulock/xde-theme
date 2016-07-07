@@ -264,7 +264,7 @@ static Bool handle_I3_CONFIG_PATH(const XEvent *);
 static Bool handle_I3_PID(const XEvent *);
 static Bool handle_I3_SHMLOG_PATH(const XEvent *);
 static Bool handle_I3_SOCKET_PATH(const XEvent *);
-static Bool handle_ICEWMGB_QUIT(const XEvent *);
+static Bool handle_ICEWMBG_QUIT(const XEvent *);
 static Bool handle_MANAGER(const XEvent *);
 static Bool handle_MOTIF_WM_INFO(const XEvent *);
 
@@ -339,7 +339,7 @@ static Atoms atoms[] = {
 	{"I3_PID",			&_XA_I3_PID,			&handle_I3_PID,				None			},
 	{"I3_SHMLOG_PATH",		&_XA_I3_SHMLOG_PATH,		&handle_I3_SHMLOG_PATH,			None			},
 	{"I3_SOCKET_PATH",		&_XA_I3_SOCKET_PATH,		&handle_I3_SOCKET_PATH,			None			},
-	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&handle_ICEWMGB_QUIT,			None			},
+	{"_ICEWMBG_QUIT",		&_XA_ICEWMBG_QUIT,		&handle_ICEWMBG_QUIT,			None			},
 	{"MANAGER",			&_XA_MANAGER,			&handle_MANAGER,			None			},
 	{"_MOTIF_WM_INFO",		&_XA_MOTIF_WM_INFO,		&handle_MOTIF_WM_INFO,			None			},
 
@@ -5051,37 +5051,39 @@ __xde_handle_event(const XEvent *ev)
 	XPRINTF("handling X event\n");
 	switch (ev->type) {
 	case PropertyNotify:
-		if (!find_screen(ev->xany.window)) {
-			EPRINTF("while handling PropertyNotify event for %s\n",
-				XGetAtomName(dpy, ev->xproperty.atom));
-			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-			return False;
-		}
 		XPRINTF("handling PropertyNotify event for %s\n",
 			XGetAtomName(dpy, ev->xproperty.atom));
 		for (i = 0; atoms[i].name; i++) {
-			if (atoms[i].value == ev->xproperty.atom) {
-				if (atoms[i].handler)
-					return (atoms[i].handler) (ev);
+			if (atoms[i].value != ev->xproperty.atom)
+				continue;
+			if (!atoms[i].handler)
 				break;
+			if (!find_screen(ev->xany.window)) {
+				EPRINTF("while handling PropertyNotify event for %s\n",
+					XGetAtomName(dpy, ev->xproperty.atom));
+				EPRINTF("could not find screen for window 0x%lx\n",
+					ev->xany.window);
+				return False;
 			}
+			return (atoms[i].handler) (ev);
 		}
 		break;
 	case ClientMessage:
-		if (!find_screen(ev->xany.window)) {
-			EPRINTF("while handling ClientMessage event for %s\n",
-				XGetAtomName(dpy, ev->xclient.message_type));
-			EPRINTF("could not find screen for window 0x%lx\n", ev->xany.window);
-			return False;
-		}
 		XPRINTF("handling ClientMessage event for %s\n",
 			XGetAtomName(dpy, ev->xclient.message_type));
 		for (i = 0; atoms[i].name; i++) {
-			if (atoms[i].value == ev->xclient.message_type) {
-				if (atoms[i].handler)
-					return (atoms[i].handler) (ev);
+			if (atoms[i].value != ev->xclient.message_type)
+				continue;
+			if (!atoms[i].handler)
 				break;
+			if (!find_screen(ev->xany.window)) {
+				EPRINTF("while handling ClientMessage event for %s\n",
+					XGetAtomName(dpy, ev->xclient.message_type));
+				EPRINTF("could not find screen for window 0x%lx\n",
+					ev->xany.window);
+				return False;
 			}
+			return (atoms[i].handler) (ev);
 		}
 		break;
 	case DestroyNotify:
@@ -5660,7 +5662,7 @@ handle_I3_SOCKET_PATH(const XEvent *e)
 }
 
 static Bool
-handle_ICEWMGB_QUIT(const XEvent *e)
+handle_ICEWMBG_QUIT(const XEvent *e)
 {
 	DPRINTF("processing %s\n", XGetAtomName(dpy, e->xclient.message_type));
 	if (!e || e->type != ClientMessage)
