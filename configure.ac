@@ -1,7 +1,7 @@
 
 AC_PREREQ(2.69)
-AC_INIT([xde-theme],[1.1],[https://github.com/bbidulock/xde-theme/issues],[xde-theme], [https://github.com/bbidulock/xde-theme])
-AC_REVISION([1.1])
+AC_INIT([xde-theme],[1.1.153],[https://github.com/bbidulock/xde-theme/issues],[xde-theme], [https://github.com/bbidulock/xde-theme])
+AC_REVISION([1.1.153])
 
 AC_CONFIG_SRCDIR([src/xde.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -9,7 +9,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
-DATE=`date -uI`
+DATE='2016-03-10'
 AC_SUBST([DATE])
 
 AM_INIT_AUTOMAKE([gnits 1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])

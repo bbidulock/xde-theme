@@ -1,13 +1,13 @@
-@PACKAGE@ -- NEWS file.  @DATE@
+xde-theme -- NEWS file.  2016-03-10
 
 History of major user-visible changes:
 ======================================
 
-Release @PACKAGE@-@VERSION@ released @DATE@
+Release xde-theme-1.1.153 released 2016-03-10
 -------------------------------------------
 
-Split @PACKAGE@ package from xde-styles.  This contains
+Split xde-theme package from xde-styles.  This contains
 only the binary programs.  This is the initial development
-release of @PACKAGE@.
+release of xde-theme.
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
