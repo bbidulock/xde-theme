@@ -1,7 +1,7 @@
 
 ## xde-theme
 
-Package xde-theme-1.1.153 was released under GPL license 2016-03-10.
+Package xde-theme-1.2 was released under GPL license 2016-07-09.
 
 This is a set of styles for the XDE (X Desktop Environment) which
 provides a small and consistent set of window manager styles across a
@@ -10,16 +10,13 @@ consistent visual appearance for the X Desktop Environment across all
 supported window managers.
 
 
-
 ### Release
 
-This is the `xde-theme-1.1.153` package, released 2016-03-10.  This release,
+This is the `xde-theme-1.2` package, released 2016-07-09.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/xde-theme, using a command such as:
 
-```bash
-git clone https://github.com/bbidulock/xde-theme.git
-```
+    git clone https://github.com/bbidulock/xde-theme.git
 
 Please see the [NEWS](NEWS) file for release notes and history of user visible
 changes for the current version, and the [ChangeLog](ChangeLog) file for a more
@@ -35,19 +32,18 @@ appears below.
 This release is published under the GPL license that can be found in
 the file [COPYING](COPYING).
 
+
 ### Quick Start:
 
 The quickest and easiest way to get xde-theme up and running is to run
 the following commands:
 
-```bash
-git clone https://github.com/bbidulock/xde-theme.git xde-theme
-cd xde-theme
-./autogen.sh
-./configure --prefix=/usr
-make V=0
-make DESTDIR="$pkgdir" install
-```
+    $> git clone https://github.com/bbidulock/xde-theme.git xde-theme
+    $> cd xde-theme
+    $> ./autogen.sh
+    $> ./configure --prefix=/usr
+    $> make V=0
+    $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install xde-theme the quickest.  For
 those who would like to spend the extra 15 seconds reading `./configure
@@ -56,11 +52,13 @@ build.
 
 For general information on GNU's `./configure`, see the file [INSTALL](INSTALL).
 
+
 ### Running xde-theme
 
 Read the manual pages after installation:
 
     man xde-theme
+
 
 ### Issues
 

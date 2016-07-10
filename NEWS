@@ -1,13 +1,177 @@
-xde-theme -- NEWS file.  2016-03-10
+xde-theme -- history of user-visible changes.  2016-07-09
 
-History of major user-visible changes:
-======================================
+Release xde-theme-1.2 released 2016-07-09
+-----------------------------------------
 
-Release xde-theme-1.1.153 released 2016-03-10
--------------------------------------------
+git shortlog -e -n -w80,6,8 1.1...1.2
 
-Split xde-theme package from xde-styles.  This contains
-only the binary programs.  This is the initial development
-release of xde-theme.
+Brian Bidulock <bidulock@openss7.org> (155):
+      added _build and _install to ignore
+      added twm variants
+      updated build
+      added version control
+      strip git commit number from version
+      added full readme for this package
+      initial set of GNU autoconf release files
+      do not need m4 directory
+      removed feels directory from *twm
+      provide substitutions in scripts
+      recorganize twm styles
+      move directories
+      renamed some files
+      renamed and moved directories
+      do not do XDG here, do it in xde-setup
+      better file tracing
+      finalizing twm variants
+      trim twm config and start programs
+      working up jwm configuration
+      more jwm workup
+      working up fvwm
+      more files to outpu
+      missing installing some scripts
+      some corrections, avoid useless commits
+      try to handle menu colors correctly
+      follow symbolic links when generating styles menus
+      propagate ctwm changes to vtwm and twm
+      defaults go first
+      added xde-theme program for theme setting and switching
+      added xde-style style listing and setting program
+      working up xde-style
+      working better, more wm's supported
+      more workup
+      better factoring, offline support
+      rearrange for separation as a library
+      split common functions into shared library
+      moved source files into src directory
+      move manual pages into man subdirectory
+      heavy factoring, added manual page
+      working loadable module system
+      split all window manager support into loadable modules
+      completed waimea, more factoring
+      a few corrections
+      add set of styles for waimea window manager
+      integrate support for waimea styles
+      typo
+      documentation and minor fixes
+      checking in work
+      do not build xde-backdrop for now...
+      doc updates
+      added xde-identify program, started get_menu function
+      remove files from xde-styles package
+      clean up build
+      more build tweaks
+      include README for github
+      update readme
+      passes a distcheck
+      added missing files
+      missing dlopen option to LT_INIT
+      add manual page for xde-identify
+      passes distcheck again but builds std files
+      only list, set, get appropriate style (user/system)
+      add the ability to identify menu files
+      a little more documentation
+      lots of updates to identification routines
+      adjust etc directory for XTWM window managers
+      handle echinus and uwm
+      a uwm example for documentation
+      handle spectrwm better
+      document support for more window managers
+      documentation updates
+      adding xde-stylemon program
+      add metacity detection, use maintainer mode when testing
+      provide shell and perl style outputs
+      handle XDE themes better, generate style menus (start)
+      add gen_dir, initalize operations by member
+      start generating simple style/theme menus
+      actually process the menu argument
+      restrict styles to themes where applicable
+      sort listings within a directory
+      add some debugs to pekwm style setting
+      read entire file better
+      strip trailing /theme from style for pekwm
+      more menu listing, try to display loaded module info
+      don't need static libraries
+      just shared, add maintenance script configure.sh
+      put pekwm menu entries in dynamic section
+      different flags for different architectures
+      link libxde to xde-theme
+      add common stuff needed by xde-theme to libxde
+      strip default names from listings
+      new workup of xde-theme
+      add indentation profile
+      add methods to get icon name for window manager
+      output theme and themefile for xde-identify
+      better trim approach
+      correct uwm style file name
+      added xde-setwm utility for setting root window WM props
+      install X error handlers
+      set and delete more properties
+      export utility functions
+      start working up xde-backdrop
+      added backdrop functions to library
+      getting it to build
+      getting there
+      add xde-watch program
+      working up xde-watch
+      complete commands for xde-watch
+      buildig up xde-watch
+      place delay in call
+      invoke changed callbacks once for each window manager change
+      indentation
+      export some atoms to xde.h
+      just use xde_set_properties where possible
+      debugging of xde-watch
+      correct command handling for xde-watch
+      handle each screen
+      handle themes better for icewm
+      provide window manager assistance
+      add assist also to xde-identify
+      startu xde-setbg
+      split off xde-setbg program
+      add X Session Management library to requirements
+      start working up others
+      xde-setbg now in xde-ctools, might come back
+      correct command and arguments behaviour xde-setwm
+      pretty much all the same program
+      recognize obsolete options
+      big correct to theme setting
+      narrow down a bit
+      reversed delay and wait defaults
+      add desktop files
+      drop version number in template
+      add some missing types
+      change foreground to background
+      add basic session management capabilities
+      change foreground to background
+      session management capability for xde-watch
+      get session management in others
+      generate a theme menu for openbox
+      propertly set an openbox style or theme
+      parameterize wait
+      added some types
+      install headers and library pkg-config
+      remove noxious error
+      find screen better
+      handle screen checks better
+      typo
+      fix up a few things on fluxbox
+      clarify fluxbox signals
+      do not include xde-menu manpage
+      minor updates to build system
+      update readme files
+      don't get screen on unrecognized client messages
+      simplify distribution
 
-# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+
+Release xde-theme-1.1 released 2013-09-26
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 1.1
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      initial commit
+      remove some autoconf intermediate files
+      bump revision number
+      added .gitignore
+      changes to support JWM button icons
+

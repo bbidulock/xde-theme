@@ -1,5 +1,38 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit a406bcc3212b58ce755c749d86ee27d17ca25efd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 19:07:09 2016 -0600
+
+    simplify distribution
+
+ .gitignore                         |   21 +-
+ AUTHORS.in => AUTHORS              |    2 +-
+ ChangeLog                          | 7012 ++++++++++++++++++++++++++++++++
+ Makefile.am                        |   78 +-
+ NEWS.in => NEWS                    |    8 +-
+ README.in                          |   73 -
+ README.md.in                       |   22 +-
+ TODO.in => THANKS                  |    3 +-
+ THANKS.in => TODO                  |    3 +-
+ autogen.sh                         |   55 +-
+ configure.template => configure.ac |    6 +-
+ dist.sh                            |    9 +
+ gennews.sh                         |   34 +
+ rebuild.sh                         |    4 +-
+ 14 files changed, 7157 insertions(+), 173 deletions(-)
+
+commit 08937f184a81eaa84d58788b521923a85206cef2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 7 12:34:42 2016 -0600
+
+    don't get screen on unrecognized client messages
+
+ README    |  6 +++---
+ README.md |  4 ++--
+ src/xde.c | 44 +++++++++++++++++++++++---------------------
+ 3 files changed, 28 insertions(+), 26 deletions(-)
+
 commit d037ae83c0588c82a30367533944044f0f694bee
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Mar 10 12:00:00 2016 -0700
