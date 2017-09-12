@@ -4,10 +4,10 @@ xde-setwm - set some information on root pertaining to window manager
 
 =head1 SYNOPSIS
 
- xde-setwm [options]
- xde-setwm [options] {-h|--help}
- xde-setwm {-V|--version}
- xde-setwm {-C|--copying}
+B<> B<xde-setwm> [I<options>]
+ B<xde-setwm> [I<options>] {B<-h>|B<--help>}
+ B<xde-setwm> {B<-V>|B<--version>}
+ B<xde-setwm> {B<-C>|B<--copying>}
 
 =head1 DESCRIPTION
 
@@ -87,6 +87,20 @@ Increment or set output verbosity level to I<LEVEL>.  The default output
 verbosity level is 1.  This option may be repeated.
 
 =back
+
+=head1 PROPERTIES
+
+For the window properties that are set on the root window, see
+L<xde-itentify(1)>.
+
+=head1 USAGE
+
+B<xde-setwm> is intended on being using by session startup scripts to
+identify the window manager being run before it is run.  Otherwise,
+L<xde-identify(1)> would do.  The X Desktop Environment (XDE) uses this
+utility in session startup shell scripts to identify the window manager
+to auto-starting applications that may need to know the identity of the
+window manager and pertinent theme settings.
 
 =head1 EXAMPLES
 

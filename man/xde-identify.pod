@@ -4,10 +4,10 @@ xde-identify - query information about running lightweight window managers
 
 =head1 SYNOPSIS
 
- xde-identify [options]
- xde-identify [options] {-h|--help}
- xde-identify {-V|--version}
- xde-identify {-C|--copying}
+B<> B<xde-identify> [I<options>]
+ B<xde-identify> [I<options>] {B<-h>|B<--help>}
+ B<xde-identify> {B<-V>|B<--version>}
+ B<xde-identify> {B<-C>|B<--copying>}
 
 =head1 DESCRIPTION
 
