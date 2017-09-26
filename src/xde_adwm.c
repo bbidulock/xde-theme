@@ -44,7 +44,7 @@
 
 #include "xde.h"
 
-/** @name ECHINUS
+/** @name ADWM
   */
 /** @{ */
 
