@@ -207,6 +207,9 @@ Atom _XA_NET_WM_NAME;
 Atom _XA_NET_WM_PID;
 Atom _XA_NET_WORKAREA;
 
+Atom _XA_NET_STARTUP_INFO_BEGIN;
+Atom _XA_NET_STARTUP_INFO;
+
 Atom _XA_OB_THEME;
 Atom _XA_OPENBOX_PID;
 
@@ -370,6 +373,9 @@ static Atoms atoms[] = {
 	{"_NET_WM_NAME",		&_XA_NET_WM_NAME,		&handle_NET_WM_NAME,			None			},
 	{"_NET_WM_PID",			&_XA_NET_WM_PID,		&handle_NET_WM_PID,			None			},
 	{"_NET_WORKAREA",		&_XA_NET_WORKAREA,		&handle_NET_WORKAREA,			None			},
+
+	{"_NET_STARTUP_INFO_BEGIN",	&_XA_NET_STARTUP_INFO_BEGIN,	NULL,					None			},
+	{"_NET_STARTUP_INFO",		&_XA_NET_STARTUP_INFO,		NULL,					None			},
 
 	{"_OB_THEME",			&_XA_OB_THEME,			&handle_OB_THEME,			None			},
 	{"_OPENBOX_PID",		&_XA_OPENBOX_PID,		&handle_OPENBOX_PID,			None			},

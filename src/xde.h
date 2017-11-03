@@ -392,6 +392,9 @@ extern Atom _XA_NET_WM_NAME;
 extern Atom _XA_NET_WM_PID;
 extern Atom _XA_NET_WORKAREA;
 
+extern Atom _XA_NET_STARTUP_INFO_BEGIN;
+extern Atom _XA_NET_STARTUP_INFO;
+
 extern Atom _XA_OB_THEME;
 extern Atom _XA_OPENBOX_PID;
 

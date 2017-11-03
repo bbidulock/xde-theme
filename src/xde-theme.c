@@ -426,8 +426,8 @@ xdeSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals = &propval[j];
 	prop[j].num_vals = 1;
 	props[j] = &prop[j];
-	propval[j].value = "xde-watch -q";
-	propval[j].length = strlen("xde-watch -q");
+	propval[j].value = NAME " -q";
+	propval[j].length = strlen(NAME " -q");
 	j++;
 #endif
 
@@ -861,6 +861,8 @@ selectionreleased(Display *display, XEvent *event, XPointer arg)
 static void
 do_run(int argc, char *argv[])
 {
+	const char *id;
+
 	smc_init();
 	xde_init(&wm_callbacks);
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
@@ -953,6 +955,38 @@ do_run(int argc, char *argv[])
 		XSync(dpy, False);
 	}
 #endif
+	if ((id = getenv("DESKTOP_STARTUP_ID"))) {
+		int l, len = 20 + strlen(id);
+		XEvent ev = { 0, };
+		Window root = DefaultRootWindow(dpy);
+		char *msg, *p;
+
+		msg = calloc(len + 1, sizeof(*msg));
+		snprintf(msg, len, "remove: ID=%s", id);
+
+		ev.xclient.type = ClientMessage;
+		ev.xclient.serial = 0;
+		ev.xclient.send_event = False;
+		ev.xclient.display = dpy;
+		ev.xclient.message_type = _XA_NET_STARTUP_INFO_BEGIN;
+		ev.xclient.window = scr->selwin;
+		ev.xclient.format = 8;
+
+		l = strlen((p = msg)) + 1;
+		while (l > 0) {
+			strncpy(ev.xclient.data.b, p, 20);
+			p += 20;
+			l -= 20;
+			if (!XSendEvent(dpy, root, False,
+					StructureNotifyMask |
+					SubstructureNotifyMask |
+					SubstructureRedirectMask |
+					PropertyChangeMask, &ev))
+				EPRINTF("XSendEvent: failed!\n");
+			ev.xclient.message_type = _XA_NET_STARTUP_INFO;
+		}
+		XSync(dpy, False);
+	}
 	switch ((int) (long) do_startup()) {
 	case XDE_DESKTOP_QUIT:
 		xde_del_properties();
