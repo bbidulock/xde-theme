@@ -113,9 +113,9 @@ if test "x$enable_xrandr" != xno ; then
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
 		[enable_xrandr=no])
 fi
-AM_CONDITIONAL([XRANDR],[test "x$enable_xrandr" != xno])
 AC_MSG_CHECKING([for XRANDR support])
 AC_MSG_RESULT([${enable_xrandr:-yes}])
+AM_CONDITIONAL([XRANDR],[test "x$enable_xrandr" != xno])
 
 AC_ARG_ENABLE([xinerama],
 	AC_HELP_STRING([--disable-xinerama],
@@ -125,9 +125,9 @@ if test "x$enable_xinerama" != xno ; then
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
 		[enable_xinerama=no])
 fi
-AM_CONDITIONAL([XINERAMA],[test "x$enable_xinerama" != xno])
 AC_MSG_CHECKING([for XINERAMA support])
 AC_MSG_RESULT([${enable_xinerama:-yes}])
+AM_CONDITIONAL([XINERAMA],[test "x$enable_xinerama" != xno])
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],
