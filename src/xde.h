@@ -294,6 +294,9 @@ enum OutputFormat {
 typedef struct {
 	int debug;
 	int output;
+	int monitor;
+	char *startup_id;
+	Time timestamp;
 	Bool current;
 	Bool menu;
 	Bool list;

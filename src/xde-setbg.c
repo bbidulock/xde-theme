@@ -863,8 +863,6 @@ selectionreleased(Display *display, XEvent *event, XPointer arg)
 static void
 do_run(int argc, char *argv[])
 {
-	const char *id;
-
 	smc_init();
 	xde_init(&wm_callbacks);
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
@@ -957,14 +955,14 @@ do_run(int argc, char *argv[])
 		XSync(dpy, False);
 	}
 #endif
-	if ((id = getenv("DESKTOP_STARTUP_ID"))) {
-		int l, len = 20 + strlen(id);
+	if (options.startup_id) {
+		int l, len = 12 + strlen(options.startup_id);
 		XEvent ev = { 0, };
 		Window root = DefaultRootWindow(dpy);
 		char *msg, *p;
 
 		msg = calloc(len + 1, sizeof(*msg));
-		snprintf(msg, len, "remove: ID=%s", id);
+		snprintf(msg, len, "remove: ID=%s", options.startup_id);
 
 		ev.xclient.type = ClientMessage;
 		ev.xclient.serial = 0;
@@ -1312,8 +1310,30 @@ Options:\n\
 void
 set_defaults(void)
 {
-	int level;
+	const char *env, *p, *q;
+	char *endptr = NULL;
+	Time timestamp;
+	int level, monitor;
 
+	if ((env = getenv("DESKTOP_STARTUP_ID"))) {
+		free(options.startup_id);
+		options.startup_id = strdup(env);
+		unsetenv("DESKTOP_STARTUP_ID"); /* take away from GTK */
+		/* we can get the timestamp from the startup id */
+		if ((p = strstr(env, "_TIME"))) {
+			timestamp = strtoul(p + 5, &endptr, 10);
+			if (endptr[0] == '\0')
+				options.timestamp = timestamp;
+		}
+		/* we can get the monitor number from the startup id */
+		if ((p = strstr(env, "xdg-launch/")) == env &&
+		    (p = strchr(p + 11, '/')) && (p = strchr(p + 1, '-')) &&
+		    (q = strchr(p + 1, '-'))) {
+			monitor = strtoul(p, &endptr, 10);
+			if (endptr == q)
+				options.monitor = monitor;
+		}
+	}
 	if ((level = strtoul(getenv("XDE_DEBUG") ? : "0", NULL, 0)))
 		options.debug = level;
 }

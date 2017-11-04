@@ -64,6 +64,9 @@ WmDesktop *dsk;
 Options options = {
 	.debug = 0,
 	.output = 1,
+	.monitor = 0,
+	.startup_id = NULL,
+	.timestamp = CurrentTime,
 	.current = True,
 	.menu = False,
 	.list = False,
