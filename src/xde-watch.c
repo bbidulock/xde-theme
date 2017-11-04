@@ -1120,7 +1120,7 @@ set_defaults(void)
 		/* we can get the timestamp from the startup id */
 		if ((p = strstr(env, "_TIME"))) {
 			timestamp = strtoul(p + 5, &endptr, 10);
-			if (endptr[0] == '\0')
+			if (!*endptr)
 				options.timestamp = timestamp;
 		}
 		/* we can get the monitor number from the startup id */
