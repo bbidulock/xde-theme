@@ -100,7 +100,7 @@ reload_style_CWM()
 	ev.xkey.window = root;
 	ev.xkey.root = root;
 	ev.xkey.subwindow = None;
-	ev.xkey.time = CurrentTime;
+	ev.xkey.time = options.timestamp;
 	ev.xkey.x = 0;
 	ev.xkey.y = 0;
 	ev.xkey.x_root = 0;

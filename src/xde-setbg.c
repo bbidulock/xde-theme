@@ -888,7 +888,7 @@ do_run(int argc, char *argv[])
 		XUngrabServer(dpy);
 
 		if (!scr->owner || options.replace)
-			XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+			XSetSelectionOwner(dpy, scr->selection, scr->selwin, options.timestamp);
 		else {
 			EPRINTF("another instance of %s already on screen %d\n", NAME, scr->screen);
 			exit(EXIT_FAILURE);
@@ -912,7 +912,7 @@ do_run(int argc, char *argv[])
 		ev.xclient.window = scr->root;
 		ev.xclient.message_type = _XA_MANAGER;
 		ev.xclient.format = 32;
-		ev.xclient.data.l[0] = CurrentTime;	/* FIXME */
+		ev.xclient.data.l[0] = options.timestamp;	/* FIXME */
 		ev.xclient.data.l[1] = scr->selection;
 		ev.xclient.data.l[2] = scr->selwin;
 		ev.xclient.data.l[3] = 2;
@@ -951,7 +951,7 @@ do_run(int argc, char *argv[])
 			XCloseDisplay(dpy);
 			exit(EXIT_SUCCESS);
 		}
-		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
+		XSetSelectionOwner(dpy, selection, mine, options.timestamp);
 		XSync(dpy, False);
 	}
 #endif
