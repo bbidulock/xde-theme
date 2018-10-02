@@ -13,3 +13,5 @@ NotShowIn=GNOME;KDE;XFCE;LXDE;
 StartupNotify=true
 StartupWMClass=xde-watch
 X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Initialization
+X-KDE-autostart-phase=1
