@@ -624,7 +624,9 @@ __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
 		XTextProperty tp = { NULL, };
 		char **strings;
 
-		strings = calloc(n, sizeof(*strings));
+		if (n > 255)
+			n = 255;
+		strings = calloc((uint8_t) n, sizeof(*strings));
 		for (i = 0; i < n; i++)
 			strings[i] = list[i] ? : "";
 
