@@ -1,7 +1,7 @@
 /*****************************************************************************
 
- Copyright (c) 2008-2014  Monavacon Limited <http://www.monavacon.com/>
- Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>
+ Copyright (c) 2010-2017  Monavacon Limited <http://www.monavacon.com/>
+ Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>
  Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>
 
  All Rights Reserved.
@@ -64,6 +64,9 @@ WmDesktop *dsk;
 Options options = {
 	.debug = 0,
 	.output = 1,
+	.monitor = 0,
+	.startup_id = NULL,
+	.timestamp = CurrentTime,
 	.current = True,
 	.menu = False,
 	.list = False,
@@ -206,6 +209,9 @@ Atom _XA_NET_VISIBLE_DESKTOPS;
 Atom _XA_NET_WM_NAME;
 Atom _XA_NET_WM_PID;
 Atom _XA_NET_WORKAREA;
+
+Atom _XA_NET_STARTUP_INFO_BEGIN;
+Atom _XA_NET_STARTUP_INFO;
 
 Atom _XA_OB_THEME;
 Atom _XA_OPENBOX_PID;
@@ -370,6 +376,9 @@ static Atoms atoms[] = {
 	{"_NET_WM_NAME",		&_XA_NET_WM_NAME,		&handle_NET_WM_NAME,			None			},
 	{"_NET_WM_PID",			&_XA_NET_WM_PID,		&handle_NET_WM_PID,			None			},
 	{"_NET_WORKAREA",		&_XA_NET_WORKAREA,		&handle_NET_WORKAREA,			None			},
+
+	{"_NET_STARTUP_INFO_BEGIN",	&_XA_NET_STARTUP_INFO_BEGIN,	NULL,					None			},
+	{"_NET_STARTUP_INFO",		&_XA_NET_STARTUP_INFO,		NULL,					None			},
 
 	{"_OB_THEME",			&_XA_OB_THEME,			&handle_OB_THEME,			None			},
 	{"_OPENBOX_PID",		&_XA_OPENBOX_PID,		&handle_OPENBOX_PID,			None			},

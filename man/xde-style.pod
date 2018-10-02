@@ -4,13 +4,13 @@ xde-style - query or set styles for lightweight window managers
 
 =head1 SYNOPSIS
 
- xde-style [{-c|--current}] [options]
- xde-style {-l|--list} [options] [STYLE]
- xde-style {-s|--set}  [options]  STYLE
- xde-style {-m|--menu} [options]
- xde-style [options] {-h|--help}
- xde-style {-V|--version}
- xde-style {-C|--copying}
+B<> B<xde-style> [{B<-c>|B<--current>}] [I<options>]
+ B<xde-style> {B<-l>|B<--list>} [I<options>] [I<STYLE>]
+ B<xde-style> {B<-s>|B<--set>}  [I<options>]  I<STYLE>
+ B<xde-style> {B<-m>|B<--menu>} [I<options>]
+ B<xde-style> [I<options>] {B<-h>|B<--help>}
+ B<xde-style> {B<-V>|B<--version>}
+ B<xde-style> {B<-C>|B<--copying>}
 
 =head1 DESCRIPTION
 
@@ -179,6 +179,11 @@ verbosity level is 1.  This option may be repeated.
 =back
 
 =head1 USAGE
+
+The typical use of B<xde-style> is for use by root menus to set the
+style on the window manager.  It can be executed when the menu selection
+is made and results in the proper setting of the window manager and
+corresponding desktop style.
 
 =head1 OUTPUT FORMAT
 
@@ -518,6 +523,11 @@ B<xde-style>.
 Brian Bidulock <bidulock@openss7.org>
 
 =head1 SEE ALSO
+
+L<xde-identify(1)>,
+L<xde-setwm(1)>,
+L<xde-watch(1)>,
+L<xde-setbg(1)>.
 
 =cut
 

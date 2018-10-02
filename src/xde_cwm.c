@@ -1,7 +1,7 @@
 /*****************************************************************************
 
- Copyright (c) 2008-2014  Monavacon Limited <http://www.monavacon.com/>
- Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>
+ Copyright (c) 2010-2017  Monavacon Limited <http://www.monavacon.com/>
+ Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>
  Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>
 
  All Rights Reserved.
@@ -100,7 +100,7 @@ reload_style_CWM()
 	ev.xkey.window = root;
 	ev.xkey.root = root;
 	ev.xkey.subwindow = None;
-	ev.xkey.time = CurrentTime;
+	ev.xkey.time = options.timestamp;
 	ev.xkey.x = 0;
 	ev.xkey.y = 0;
 	ev.xkey.x_root = 0;

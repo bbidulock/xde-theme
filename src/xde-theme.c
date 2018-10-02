@@ -1,7 +1,7 @@
 /*****************************************************************************
 
- Copyright (c) 2008-2014  Monavacon Limited <http://www.monavacon.com/>
- Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>
+ Copyright (c) 2010-2017  Monavacon Limited <http://www.monavacon.com/>
+ Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>
  Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>
 
  All Rights Reserved.
@@ -426,8 +426,8 @@ xdeSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals = &propval[j];
 	prop[j].num_vals = 1;
 	props[j] = &prop[j];
-	propval[j].value = "xde-watch -q";
-	propval[j].length = strlen("xde-watch -q");
+	propval[j].value = NAME " -q";
+	propval[j].length = strlen(NAME " -q");
 	j++;
 #endif
 
@@ -886,7 +886,8 @@ do_run(int argc, char *argv[])
 		XUngrabServer(dpy);
 
 		if (!scr->owner || options.replace)
-			XSetSelectionOwner(dpy, scr->selection, scr->selwin, CurrentTime);
+			XSetSelectionOwner(dpy, scr->selection, scr->selwin,
+					options.timestamp);
 		else {
 			EPRINTF("another instance of %s already on screen %d\n", NAME, scr->screen);
 			exit(EXIT_FAILURE);
@@ -910,7 +911,7 @@ do_run(int argc, char *argv[])
 		ev.xclient.window = scr->root;
 		ev.xclient.message_type = _XA_MANAGER;
 		ev.xclient.format = 32;
-		ev.xclient.data.l[0] = CurrentTime;	/* FIXME */
+		ev.xclient.data.l[0] = options.timestamp;	/* FIXME */
 		ev.xclient.data.l[1] = scr->selection;
 		ev.xclient.data.l[2] = scr->selwin;
 		ev.xclient.data.l[3] = 2;
@@ -949,10 +950,42 @@ do_run(int argc, char *argv[])
 			XCloseDisplay(dpy);
 			exit(EXIT_SUCCESS);
 		}
-		XSetSelectionOwner(dpy, selection, mine, CurrentTime);
+		XSetSelectionOwner(dpy, selection, mine, options.timestamp);
 		XSync(dpy, False);
 	}
 #endif
+	if (options.startup_id) {
+		int l, len = 12 + strlen(options.startup_id);
+		XEvent ev = { 0, };
+		Window root = DefaultRootWindow(dpy);
+		char *msg, *p;
+
+		msg = calloc(len + 1, sizeof(*msg));
+		snprintf(msg, len, "remove: ID=%s", options.startup_id);
+
+		ev.xclient.type = ClientMessage;
+		ev.xclient.serial = 0;
+		ev.xclient.send_event = False;
+		ev.xclient.display = dpy;
+		ev.xclient.message_type = _XA_NET_STARTUP_INFO_BEGIN;
+		ev.xclient.window = scr->selwin;
+		ev.xclient.format = 8;
+
+		l = strlen((p = msg)) + 1;
+		while (l > 0) {
+			strncpy(ev.xclient.data.b, p, 20);
+			p += 20;
+			l -= 20;
+			if (!XSendEvent(dpy, root, False,
+					StructureNotifyMask |
+					SubstructureNotifyMask |
+					SubstructureRedirectMask |
+					PropertyChangeMask, &ev))
+				EPRINTF("XSendEvent: failed!\n");
+			ev.xclient.message_type = _XA_NET_STARTUP_INFO;
+		}
+		XSync(dpy, False);
+	}
 	switch ((int) (long) do_startup()) {
 	case XDE_DESKTOP_QUIT:
 		xde_del_properties();
@@ -1128,8 +1161,8 @@ copying(int argc, char *argv[])
 --------------------------------------------------------------------------------\n\
 %1$s\n\
 --------------------------------------------------------------------------------\n\
-Copyright (c) 2008-2014  Monavacon Limited <http://www.monavacon.com/>\n\
-Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>\n\
+Copyright (c) 2010-2017  Monavacon Limited <http://www.monavacon.com/>\n\
+Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>\n\
 Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>\n\
 \n\
 All Rights Reserved.\n\
@@ -1172,8 +1205,8 @@ version(int argc, char *argv[])
 %1$s (OpenSS7 %2$s) %3$s\n\
 Written by Brian Bidulock.\n\
 \n\
-Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014  Monavacon Limited.\n\
-Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008  OpenSS7 Corporation.\n\
+Copyright (c) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017  Monavacon Limited.\n\
+Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009  OpenSS7 Corporation.\n\
 Copyright (c) 1997, 1998, 1999, 2000, 2001  Brian F. G. Bidulock.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
@@ -1257,8 +1290,30 @@ Options:\n\
 void
 set_defaults(void)
 {
-	int level;
+	const char *env, *p, *q;
+	char *endptr = NULL;
+	Time timestamp;
+	int level, monitor;
 
+	if ((env = getenv("DESKTOP_STARTUP_ID"))) {
+		free(options.startup_id);
+		options.startup_id = strdup(env);
+		unsetenv("DESKTOP_STARTUP_ID"); /* take away from GTK */
+		/* we can get the timestamp from the startup id */
+		if ((p = strstr(env, "_TIME"))) {
+			timestamp = strtoul(p + 5, &endptr, 10);
+			if (!*endptr)
+				options.timestamp = timestamp;
+		}
+		/* we can get the monitor number from the startup id */
+		if ((p = strstr(env, "xdg-launch/")) == env &&
+		    (p = strchr(p + 11, '/')) && (p = strchr(p + 1, '-')) &&
+		    (q = strchr(p + 1, '-'))) {
+			monitor = strtoul(p, &endptr, 10);
+			if (endptr == q)
+				options.monitor = monitor;
+		}
+	}
 	if ((level = strtoul(getenv("XDE_DEBUG") ? : "0", NULL, 0)))
 		options.debug = level;
 }
@@ -1275,6 +1330,7 @@ main(int argc, char *argv[])
 
 	while (1) {
 		int c, val;
+		char *endptr = NULL;
 
 #ifdef _GNU_SOURCE
 		int option_index = 0;
@@ -1358,10 +1414,16 @@ main(int argc, char *argv[])
 			options.assist = True;
 			break;
 		case 'd':	/* -d, --delay DELAY */
-			options.delay = strtoul(optarg, NULL, 0);
+			val = strtoul(optarg, &endptr, 0);
+			if (*endptr)
+				goto bad_option;
+			options.delay = val;
 			break;
 		case 'w':	/* -w, --wait */
-			options.wait = strtoul(optarg, NULL, 0);
+			val = strtoul(optarg, &endptr, 0);
+			if (*endptr)
+				goto bad_option;
+			options.wait = val;
 			break;
 
 		case '0':	/* -clientID CLIENTID */
@@ -1379,7 +1441,8 @@ main(int argc, char *argv[])
 			if (optarg == NULL) {
 				options.debug++;
 			} else {
-				if ((val = strtol(optarg, NULL, 0)) < 0)
+				val = strtol(optarg, &endptr, 0);
+				if (*endptr || val < 0)
 					goto bad_option;
 				options.debug = val;
 			}
@@ -1391,7 +1454,8 @@ main(int argc, char *argv[])
 				options.output++;
 				break;
 			}
-			if ((val = strtol(optarg, NULL, 0)) < 0)
+			val = strtol(optarg, &endptr, 0);
+			if (*endptr || val < 0)
 				goto bad_option;
 			options.output = val;
 			break;
