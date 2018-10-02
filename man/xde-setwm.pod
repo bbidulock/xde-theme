@@ -13,6 +13,7 @@ B<> B<xde-setwm> [I<options>]
 
 B<xde-setwm> is a C-language application that can be used to set
 pertinent information about the window manager on the root window.
+See L</USAGE> below for more information.
 
 =head1 OPTIONS
 
@@ -91,7 +92,7 @@ verbosity level is 1.  This option may be repeated.
 =head1 PROPERTIES
 
 For the window properties that are set on the root window, see
-L<xde-itentify(1)>.
+L<xde-identify(1)>.
 
 =head1 USAGE
 
@@ -100,7 +101,8 @@ identify the window manager being run before it is run.  Otherwise,
 L<xde-identify(1)> would do.  The X Desktop Environment (XDE) uses this
 utility in session startup shell scripts to identify the window manager
 to auto-starting applications that may need to know the identity of the
-window manager and pertinent theme settings.
+window manager and pertinent theme settings before the window manager
+appears.
 
 =head1 EXAMPLES
 
