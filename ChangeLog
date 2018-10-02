@@ -1,4 +1,307 @@
-# created with git log --stat=76 -M -C|fmt -sct -w80
+# created with git log --stat=76 -M -C -500|fmt -sct -w80
+
+commit eb66de424a2dda550103aaa5776f6b5698749ba8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 00:06:12 2018 -0600
+
+    add missing file
+
+ RELEASE.md | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+commit 78257296d9bb54f56ea63e3f3522eea427b6d48f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 1 23:54:45 2018 -0600
+
+    update build system
+
+ Makefile.am        | 13 +++++++++++--
+ autogen.sh         |  7 +++++--
+ configure.ac       | 22 ++++++++++++----------
+ configure.sh       |  1 +
+ gennews.sh         |  9 +++++----
+ src/Makefile.am    |  4 ++--
+ src/xde-backdrop.c | 10 +++++-----
+ src/xde.h          |  4 ++--
+ 8 files changed, 43 insertions(+), 27 deletions(-)
+
+commit eee461befc34acf6806ff7abe49abc2a599c1ab6
+Merge: a8e5187 655e317
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 1 22:22:09 2018 -0600
+
+    Merge branch 'master' of github.com:bbidulock/xde-theme
+
+commit a8e5187421a5874941ad020f3c5f573ac2850185
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 1 22:21:29 2018 -0600
+
+    little change to support gcc 8.2
+
+ src/xde.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit 655e317287f02f1ac2c8f0dd4917af4893ec60b7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 03:58:52 2017 -0600
+
+    use startup id timestamp where possible
+
+ src/xde-setbg.c    | 6 +++---
+ src/xde-stylemon.c | 7 ++++---
+ src/xde-theme.c    | 7 ++++---
+ src/xde-watch.c    | 7 ++++---
+ src/xde_cwm.c      | 2 +-
+ src/xde_twm.c      | 2 +-
+ 6 files changed, 17 insertions(+), 14 deletions(-)
+
+commit 6d7d6bf5014aa3c91b1d0cc06745f11340180acb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 03:55:45 2017 -0600
+
+    better endptr checks for strtol
+
+ src/xde-backdrop.c |  7 +++++--
+ src/xde-detect.c   |  7 +++++--
+ src/xde-identify.c |  7 +++++--
+ src/xde-setbg.c    | 17 +++++++++++++----
+ src/xde-setwm.c    |  7 +++++--
+ src/xde-style.c    |  7 +++++--
+ src/xde-stylemon.c | 17 +++++++++++++----
+ src/xde-theme.c    | 17 +++++++++++++----
+ src/xde-watch.c    | 17 +++++++++++++----
+ 9 files changed, 77 insertions(+), 26 deletions(-)
+
+commit 71bafd1cafd82b25c6c2cf7a8f69538996d086d1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 03:42:50 2017 -0600
+
+    simplify endptr checks
+
+ src/xde-setbg.c    | 2 +-
+ src/xde-stylemon.c | 2 +-
+ src/xde-theme.c    | 2 +-
+ src/xde-watch.c    | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+commit ff952cee34c28324415222a03e49778a5fe92112
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 03:21:00 2017 -0600
+
+    take DESKTOP_STARTUP_ID away from GTK
+
+ src/xde-setbg.c    | 34 +++++++++++++++++++++++++++-------
+ src/xde-stylemon.c | 34 +++++++++++++++++++++++++++-------
+ src/xde-theme.c    | 34 +++++++++++++++++++++++++++-------
+ src/xde-watch.c    | 34 +++++++++++++++++++++++++++-------
+ src/xde.c          |  3 +++
+ src/xde.h          |  3 +++
+ 6 files changed, 114 insertions(+), 28 deletions(-)
+
+commit b209fb9f4efadb6923d3cf56e3e6fb6d5a158bdb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 08:25:12 2017 -0600
+
+    add startup notification where required
+
+ src/xde-setbg.c    | 38 ++++++++++++++++++++++++++++++++++++--
+ src/xde-stylemon.c | 38 ++++++++++++++++++++++++++++++++++++--
+ src/xde-theme.c    | 38 ++++++++++++++++++++++++++++++++++++--
+ src/xde-watch.c    | 38 ++++++++++++++++++++++++++++++++++++--
+ src/xde.c          |  6 ++++++
+ src/xde.h          |  3 +++
+ 6 files changed, 153 insertions(+), 8 deletions(-)
+
+commit 46789c1d4214d372fc1570da8d75f4e6e8bc261a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 08:24:28 2017 -0600
+
+    more changelog
+
+ Makefile.am | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 1ba3028514645e3d1b9fb7664925e0a723c26ff3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 08:24:17 2017 -0600
+
+    reorder this a bit
+
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 713bd3aa76497188c09222651f391a50f689defa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 26 09:24:51 2017 -0600
+
+    parallel distcheck
+
+ dist.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 039bce62ba0fb98734defbbb24dc2fd65f494a38
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 26 09:24:43 2017 -0600
+
+    parallel build
+
+ rebuild.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit eb85fea0a0df574f5fbefd9d087464ce999cdb55
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 26 09:24:33 2017 -0600
+
+    minor correction
+
+ src/xde_adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 024110630a6c8fc54a8f872885bee577ad1c7161
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 12 20:24:21 2017 -0600
+
+    update copyright headers
+
+ src/xde-backdrop.c  | 12 ++++++------
+ src/xde-detect.c    | 12 ++++++------
+ src/xde-identify.c  | 12 ++++++------
+ src/xde-setbg.c     | 12 ++++++------
+ src/xde-setwm.c     | 12 ++++++------
+ src/xde-style.c     | 12 ++++++------
+ src/xde-stylemon.c  | 12 ++++++------
+ src/xde-theme.c     | 12 ++++++------
+ src/xde-watch.c     | 12 ++++++------
+ src/xde.c           |  4 ++--
+ src/xde_2bwm.c      |  4 ++--
+ src/xde_adwm.c      |  4 ++--
+ src/xde_afterstep.c |  4 ++--
+ src/xde_awesome.c   |  4 ++--
+ src/xde_blackbox.c  |  4 ++--
+ src/xde_ctwm.c      |  4 ++--
+ src/xde_cwm.c       |  4 ++--
+ src/xde_dtwm.c      |  4 ++--
+ src/xde_dwm.c       |  4 ++--
+ src/xde_echinus.c   |  4 ++--
+ src/xde_etwm.c      |  4 ++--
+ src/xde_fluxbox.c   |  4 ++--
+ src/xde_flwm.c      |  4 ++--
+ src/xde_fvwm.c      |  4 ++--
+ src/xde_icewm.c     |  4 ++--
+ src/xde_jwm.c       |  4 ++--
+ src/xde_matwm2.c    |  4 ++--
+ src/xde_metacity.c  |  4 ++--
+ src/xde_mwm.c       |  4 ++--
+ src/xde_openbox.c   |  4 ++--
+ src/xde_pekwm.c     |  4 ++--
+ src/xde_spectrwm.c  |  4 ++--
+ src/xde_twm.c       |  4 ++--
+ src/xde_uwm.c       |  4 ++--
+ src/xde_vtwm.c      |  4 ++--
+ src/xde_waimea.c    |  4 ++--
+ src/xde_wind.c      |  4 ++--
+ src/xde_wmaker.c    |  4 ++--
+ src/xde_wmx.c       |  4 ++--
+ src/xde_yeahwm.c    |  4 ++--
+ 40 files changed, 116 insertions(+), 116 deletions(-)
+
+commit bcfcb066cb560ecf69304d96c40a18aef3360584
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 12 10:29:02 2017 -0600
+
+    update manual pages a bit
+
+ man/xde-identify.pod |  8 ++++----
+ man/xde-setwm.pod    | 22 ++++++++++++++++++----
+ man/xde-style.pod    | 24 +++++++++++++++++-------
+ 3 files changed, 39 insertions(+), 15 deletions(-)
+
+commit 436826cc4b75a2e54a3628744d782b2c66f9d753
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 02:42:14 2017 -0600
+
+    update readmes
+
+ README       | 61 +++++++++++++++++++++++++++++++-------------------------
+ README.md    | 61 +++++++++++++++++++++++++++++++-------------------------
+ README.md.in | 42 ++++++++++++++++++++------------------
+ 3 files changed, 91 insertions(+), 73 deletions(-)
+
+commit 6db786aa02b8f7b55450342be36a3a8407d9905b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 01:24:08 2017 -0600
+
+    correction
+
+ src/Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit e1e018411634c40f1521187832edd5bf1de049b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 01:22:07 2017 -0600
+
+    update build system
+
+ Makefile.am     | 16 ++++++------
+ README.md.in    | 75 ++++++++++++++++++++++++++++-------------------------
+ autogen.sh      |  9 +++++++
+ configure.ac    | 58 ++++++++++++++++++++++++++++++++++++-----
+ configure.sh    | 18 ++++++++-----
+ man/Makefile.am | 53 +++++++++++++------------------------
+ rebuild.sh      |  4 +--
+ 7 files changed, 139 insertions(+), 94 deletions(-)
+
+commit 31cdb6c70335c6180c5c62be3843af397a8515db
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jun 27 00:59:04 2017 -0600
+
+    updated indent
+
+ .indent.pro | 62 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 61 insertions(+), 1 deletion(-)
+
+commit cbcde9a30c34d87a9cb01fc38820e4416f6b750c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:47:13 2016 -0600
+
+    limit changelog
+
+ Makefile.am | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 1059d33b20fb7d26881966a73f83790d094989aa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:37:47 2016 -0600
+
+    better formatting
+
+ README       | 79 ++++++++++++++++++++++++++++++-------------------------
+ README.md    | 80 +++++++++++++++++++++++++++++++-------------------------
+ README.md.in | 80 +++++++++++++++++++++++++++++++-------------------------
+ 3 files changed, 134 insertions(+), 105 deletions(-)
+
+commit 640457e08ea7be38c077715e8bc762b00e7570e8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:37:45 2016 -0600
+
+    git hates trailing space
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 37933ab27303f1ead3c9847d92825179e3c58997
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 19:14:17 2016 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    |  33 ++++++++++
+ NEWS         | 182 ++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ README       |  58 ++++++++----------
+ README.md    |  26 ++++----
+ configure.ac |   6 +-
+ 6 files changed, 248 insertions(+), 59 deletions(-)
 
 commit a406bcc3212b58ce755c749d86ee27d17ca25efd
 Author: Brian Bidulock <bidulock@openss7.org>

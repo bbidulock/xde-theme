@@ -1,11 +1,42 @@
-xde-theme -- history of user-visible changes.  2016-07-09
+xde-theme -- history of user-visible changes.  2018-10-02
+
+Release xde-theme-1.2.23 released 2018-10-02
+--------------------------------------------
+
+git shortlog -e -n -w80,6,8 1.2...HEAD
+
+Brian Bidulock <bidulock@openss7.org> (23):
+      git hates trailing space
+      better formatting
+      limit changelog
+      updated indent
+      update build system
+      correction
+      update readmes
+      update manual pages a bit
+      update copyright headers
+      minor correction
+      parallel build
+      parallel distcheck
+      reorder this a bit
+      more changelog
+      add startup notification where required
+      take DESKTOP_STARTUP_ID away from GTK
+      simplify endptr checks
+      better endptr checks for strtol
+      use startup id timestamp where possible
+      little change to support gcc 8.2
+      Merge branch 'master' of github.com:bbidulock/xde-theme
+      update build system
+      add missing file
+
 
 Release xde-theme-1.2 released 2016-07-09
 -----------------------------------------
 
 git shortlog -e -n -w80,6,8 1.1...1.2
 
-Brian Bidulock <bidulock@openss7.org> (155):
+Brian Bidulock <bidulock@openss7.org> (156):
       added _build and _install to ignore
       added twm variants
       updated build
@@ -161,6 +192,7 @@ Brian Bidulock <bidulock@openss7.org> (155):
       update readme files
       don't get screen on unrecognized client messages
       simplify distribution
+      update release files
 
 
 Release xde-theme-1.1 released 2013-09-26
