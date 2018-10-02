@@ -84,11 +84,11 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
-#ifdef XRANDR
+#ifdef HAVE_XRANDR
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/randr.h>
 #endif
-#ifdef XINERAMA
+#ifdef HAVE_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
 #ifdef STARTUP_NOTIFICATION

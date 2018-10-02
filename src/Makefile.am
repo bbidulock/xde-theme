@@ -207,9 +207,9 @@ xde_matwm2_la_LIBADD = libxde.la
 xde_matwm2_la_LDFLAGS = $(module_ldflags)
 
 xde_metacity_la_CPPFLAGS = -DNAME=\"xde-metacity\"
-xde_metacity_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(GOBJ_CFLAGS) $(GIO_CFLAGS)
+xde_metacity_la_CFLAGS = $(AM_CFLAGS) $(GLIB_CFLAGS) $(GOBJ_CFLAGS) $(GIO_CFLAGS) $(GIO_UNIX_CFLAGS)
 xde_metacity_la_SOURCES = xde.h xde_metacity.c
-xde_metacity_la_LIBADD = libxde.la $(GIO_LIBS)  $(GOBJ_LIBS) $(GLIB_LIBS)
+xde_metacity_la_LIBADD = libxde.la $(GIO_UNIX_LIBS) $(GIO_LIBS)  $(GOBJ_LIBS) $(GLIB_LIBS)
 xde_metacity_la_LDFLAGS = $(module_ldflags)
 
 xde_mwm_la_CPPFLAGS = -DNAME=\"xde-mwm\"

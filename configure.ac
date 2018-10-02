@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-theme],[1.2],[https://github.com/bbidulock/xde-theme],[xde-theme], [https://github.com/bbidulock/xde-theme/issues])
-AC_REVISION([1.2])
+AC_INIT([xde-theme],[1.2.21],[https://github.com/bbidulock/xde-theme],[xde-theme], [https://github.com/bbidulock/xde-theme/issues])
+AC_REVISION([1.2.21])
 
 AC_CONFIG_SRCDIR([src/xde.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -12,14 +12,14 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2016-07-09'
+DATE='2018-10-01'
 AC_SUBST([DATE])
 
 BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 AC_PREFIX_DEFAULT([/usr])
@@ -40,7 +40,7 @@ AC_ARG_VAR([MARKDOWN],[markdown command. @<:@default=markdown@:>@])
 AC_CHECK_PROGS([MARKDOWN],[markdown],[${am_missing_run}markdown],[$PATH])
 
 AC_ARG_VAR([ASCIIDOC],[asciidoc command. @<:@default=asciidoctor@:>@])
-AC_CHECK_PROGS([ASCIIDOC],[asciidoctor asciidoc],[${am_missing_run}asciidoctor],[$PATH])
+AC_CHECK_PROGS([ASCIIDOC],[asciidoc asciidoctor],[${am_missing_run}asciidoc],[$PATH])
 
 AC_ARG_VAR([ASCIIDOC_BACKEND],[asciidoc backend @<:@default=NONE@:>@])
 if test -z "$ASCIIDOC_BACKEND"; then
@@ -51,8 +51,8 @@ if test -z "$ASCIIDOC_BACKEND"; then
 	esac
 fi
 
-AC_ARG_VAR([ASCIIMAN],[asciidoc to manpage converter. @<:@default=asciidoctor@:>@])
-AC_CHECK_PROGS([ASCIIMAN],[asciidoctor a2x],[${am_missing_run}asciidoctor],[$PATH])
+AC_ARG_VAR([ASCIIMAN],[asciidoc to manpage converter. @<:@default=a2x@:>@])
+AC_CHECK_PROGS([ASCIIMAN],[a2x asciidoctor],[${am_missing_run}a2x],[$PATH])
 
 AC_ARG_VAR([ASCIIMAN_FORMAT],[asciidoc manpage option @<:@default=NONE@:>@])
 if test -z "$ASCIIMAN_FORMAT"; then
@@ -103,6 +103,7 @@ PKG_CHECK_MODULES([GDK],[gdk-pixbuf-xlib-2.0])
 PKG_CHECK_MODULES([GLIB],[glib-2.0])
 PKG_CHECK_MODULES([GOBJ],[gobject-2.0])
 PKG_CHECK_MODULES([GIO],[gio-2.0])
+PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0])
 PKG_CHECK_MODULES([IMLIB],[imlib2])
 
 AC_ARG_ENABLE([xrandr],
@@ -113,9 +114,10 @@ if test "x$enable_xrandr" != xno ; then
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
 		[enable_xrandr=no])
 fi
+AM_CONDITIONAL([XRANDR],[test "x$enable_xrandr" != xno])
 AC_MSG_CHECKING([for XRANDR support])
 AC_MSG_RESULT([${enable_xrandr:-yes}])
-AM_CONDITIONAL([XRANDR],[test "x$enable_xrandr" != xno])
+AM_CONDITIONAL([HAVE_XRANDR],[test  "x$enable_xrandr" != "xno"])
 
 AC_ARG_ENABLE([xinerama],
 	AC_HELP_STRING([--disable-xinerama],
@@ -125,9 +127,10 @@ if test "x$enable_xinerama" != xno ; then
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
 		[enable_xinerama=no])
 fi
+AM_CONDITIONAL([XINERAMA],[test "x$enable_xinerama" != xno])
 AC_MSG_CHECKING([for XINERAMA support])
 AC_MSG_RESULT([${enable_xinerama:-yes}])
-AM_CONDITIONAL([XINERAMA],[test "x$enable_xinerama" != xno])
+AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],
@@ -139,7 +142,6 @@ AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
-
 sharedir="$datadir"
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""

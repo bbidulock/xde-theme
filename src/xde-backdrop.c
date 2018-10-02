@@ -901,7 +901,7 @@ void (*handler[LASTEvent + (EXTRANGE + BaseLast)]) (XEvent *ev) = {
 	[UnmapNotify]		= handle_UnmapNotify,
 	[ClientMessage]		= handle_ClientMessage,
 	[SelectionClear]	= handle_SelectionClear,
-#ifdef XRANDR
+#ifdef HAVE_XRANDR
 	[RRScreenChangeNotify + LASTEvent + EXTRANGE * XrandrBase] = handle_RRScreenChangeNotify,
 #endif
 	/* *INDENT-ON* */
@@ -951,7 +951,7 @@ bd_init_xinerama()
 {
 	int dummy;
 
-#ifdef XINERAMA
+#ifdef HAVE_XINERAMA
 	if ((ext[XineramaBase].have =
 	     XineramaQueryExtension(dpy, &ext[XineramaBase].base, &dummy))) {
 		XineramaScreenInfo *si;
@@ -975,7 +975,7 @@ bd_init_xinerama()
 			nmon = n;
 		} while (0);
 	}
-#endif				/* XINERAMA */
+#endif				/* HAVE_XINERAMA */
 }
 
 static void
@@ -983,7 +983,7 @@ bd_init_xrandr()
 {
 	int dummy;
 
-#ifdef XRANDR
+#ifdef HAVE_XRANDR
 	if ((ext[XrandrBase].have =
 	     XRRQueryExtension(dpy, &ext[XrandrBase].base, &dummy))) {
 		XRRScreenResources *sr;
@@ -1017,7 +1017,7 @@ bd_init_xrandr()
 			nmon = n;
 		} while (0);
 	}
-#endif				/* XRANDR */
+#endif				/* HAVE_XRANDR */
 }
 
 void
