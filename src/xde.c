@@ -1446,6 +1446,11 @@ __xde_find_theme(char *name, char **filename)
 	static char *suffix = "/xde/theme.ini";
 	static char *subdir = "/themes/";
 
+	if (!name) {
+		EPRINTF("theme name is NULL\n");
+		return False;
+	}
+
 	if (!wm->xdg_dirs)
 		xde_get_xdg_dirs();
 	if (!wm->xdg_dirs) {
