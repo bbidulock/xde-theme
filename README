@@ -3,7 +3,7 @@
 xde-theme
 ===============
 
-Package `xde-theme-1.2.41` was released under GPLv3 license 2019-09-05.
+Package `xde-theme-1.3` was released under GPLv3 license 2019-09-05.
 
 This is a set of styles for the XDE (_X Desktop Environment_) which
 provides a small and consistent set of window manager styles across a
@@ -15,7 +15,7 @@ supported window managers.
 Release
 -------
 
-This is the `xde-theme-1.2.41` package, released 2019-09-05.  This
+This is the `xde-theme-1.3` package, released 2019-09-05.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 
@@ -72,12 +72,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-theme
 [2]: https://github.com/bbidulock/xde-theme/issues
-[3]: https://github.com/bbidulock/xde-theme/blob/master/NEWS
-[4]: https://github.com/bbidulock/xde-theme/blob/master/ChangeLog
-[5]: https://github.com/bbidulock/xde-theme/blob/master/TODO
-[6]: https://github.com/bbidulock/xde-theme/blob/master/COMPLIANCE
-[7]: https://github.com/bbidulock/xde-theme/blob/master/INSTALL
-[8]: https://github.com/bbidulock/xde-theme/blob/master/LICENSE
-[9]: https://github.com/bbidulock/xde-theme/blob/master/COPYING
+[3]: https://github.com/bbidulock/xde-theme/blob/1.3/NEWS
+[4]: https://github.com/bbidulock/xde-theme/blob/1.3/ChangeLog
+[5]: https://github.com/bbidulock/xde-theme/blob/1.3/TODO
+[6]: https://github.com/bbidulock/xde-theme/blob/1.3/COMPLIANCE
+[7]: https://github.com/bbidulock/xde-theme/blob/1.3/INSTALL
+[8]: https://github.com/bbidulock/xde-theme/blob/1.3/LICENSE
+[9]: https://github.com/bbidulock/xde-theme/blob/1.3/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

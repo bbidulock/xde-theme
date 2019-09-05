@@ -1,11 +1,31 @@
 xde-theme -- history of user-visible changes.  2019-09-05
 
-Release xde-theme-1.2.41 released 2019-09-05
---------------------------------------------
+Release xde-theme-1.3 released 2019-09-05
+-----------------------------------------
 
-git shortlog -e -n -w80,6,8 1.2...HEAD
+git tag -n100 -l 1.3
 
-Brian Bidulock <bidulock@openss7.org> (41):
+1.3             Maintenance Release 1.3
+
+    This is the third release of the xde-theme package. This package
+    contains various tools for setting themes for a wide range of
+    light-weight window managers. These tools are meant to have minimal
+    dependencies, GTK2-based, and each tool able to run independent of the
+    others (and, for that matter, independent of the desktop environment):
+    they work well with many light-weight window managers. I use these
+    tools daily and they are quite stable.
+
+    This release is a maintenance release whose sole purpose is to update
+    the build system, generate a better NEWS files, handles annotated tags
+    better, and converts the release archives to lzip compression.
+
+    Included in the release is an autoconf tarball for building the release
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 1.2...1.3
+
+Brian Bidulock <bidulock@openss7.org> (42):
       git hates trailing space
       better formatting
       limit changelog
@@ -47,6 +67,7 @@ Brian Bidulock <bidulock@openss7.org> (41):
       fix for gcc 9.1 string truncation stupidity
       ignore release file products
       add license to repo
+      update release files
 
 
 Release xde-theme-1.2 released 2016-07-09
