@@ -973,7 +973,8 @@ do_run(int argc, char *argv[])
 
 		l = strlen((p = msg)) + 1;
 		while (l > 0) {
-			strncpy(ev.xclient.data.b, p, 20);
+			memset(ev.xclient.data.b, 0, 20);
+			memcpy(ev.xclient.data.b, p, l > 20 ? 20 : l);
 			p += 20;
 			l -= 20;
 			if (!XSendEvent(dpy, root, False,
