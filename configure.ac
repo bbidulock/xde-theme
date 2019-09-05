@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-theme],[1.2.23],[https://github.com/bbidulock/xde-theme],[xde-theme], [https://github.com/bbidulock/xde-theme/issues])
-AC_REVISION([1.2.23])
+AC_INIT([xde-theme],[1.2.41],[https://github.com/bbidulock/xde-theme],[xde-theme], [https://github.com/bbidulock/xde-theme/issues])
+AC_REVISION([1.2.41])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,10 +20,10 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2018-10-02'
+DATE='2019-09-05'
 AC_SUBST([DATE])
 
-MDOCDATE='October 2, 2018'
+MDOCDATE='September 5, 2019'
 AC_SUBST([MDOCDATE])
 
 BRANCH='master'

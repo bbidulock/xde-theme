@@ -1,9 +1,9 @@
-[xde-theme -- read me first file.  2018-10-02]: #
+[xde-theme -- read me first file.  2019-09-05]: #
 
 xde-theme
 ===============
 
-Package `xde-theme-1.2.23` was released under GPLv3 license 2018-10-02.
+Package `xde-theme-1.2.41` was released under GPLv3 license 2019-09-05.
 
 This is a set of styles for the XDE (_X Desktop Environment_) which
 provides a small and consistent set of window manager styles across a
@@ -15,7 +15,7 @@ supported window managers.
 Release
 -------
 
-This is the `xde-theme-1.2.23` package, released 2018-10-02.  This
+This is the `xde-theme-1.2.41` package, released 2019-09-05.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 

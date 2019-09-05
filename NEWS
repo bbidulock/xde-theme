@@ -1,11 +1,11 @@
-xde-theme -- history of user-visible changes.  2018-10-02
+xde-theme -- history of user-visible changes.  2019-09-05
 
-Release xde-theme-1.2.23 released 2018-10-02
+Release xde-theme-1.2.41 released 2019-09-05
 --------------------------------------------
 
 git shortlog -e -n -w80,6,8 1.2...HEAD
 
-Brian Bidulock <bidulock@openss7.org> (23):
+Brian Bidulock <bidulock@openss7.org> (41):
       git hates trailing space
       better formatting
       limit changelog
@@ -29,6 +29,24 @@ Brian Bidulock <bidulock@openss7.org> (23):
       Merge branch 'master' of github.com:bbidulock/xde-theme
       update build system
       add missing file
+      update xde-setwm manual page
+      add autostart phase initialization to xde-watch
+      update copyright headers
+      no, actually want a window manager first
+      protect xde_find_theme from core dump
+      reformat TODO
+      update for gettext 0.20.1
+      generate NEWS better
+      build NOTES and TODO too
+      update release notes
+      place filename last in sed command
+      better defaults and lzip compression
+      we have better defaults now
+      build release notes with dist
+      gcc caught a bug
+      fix for gcc 9.1 string truncation stupidity
+      ignore release file products
+      add license to repo
 
 
 Release xde-theme-1.2 released 2016-07-09
