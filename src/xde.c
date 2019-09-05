@@ -4750,9 +4750,9 @@ __xde_get_rcfile_XTWM(char *xtwm)
 			errno = 0;
 			if (!stat(rcfile, &st) && S_ISREG(st.st_mode))
 				break;
+			DPRINTF("%s: %s\n", rcfile, strerror(errno));
 			free(rcfile);
 			rcfile = NULL;
-			DPRINTF("%s: %s\n", rcfile, strerror(errno));
 		}
 		if (rcfile) {
 			/* often this is symlinked into the actual directory */
