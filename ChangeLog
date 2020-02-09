@@ -1,5 +1,83 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 9eef379b6641a0141357a3c18367aae8ab49d505
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Feb 8 22:16:14 2020 -0700
+
+    new release notes
+
+ RELEASE.md | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 3d68b91d9b726ae01181925fadb60dba98bf9c32
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Feb 8 22:13:05 2020 -0700
+
+    fixes for -Wextra
+
+ src/xde-identify.c  |  6 +++++
+ src/xde-setbg.c     | 26 +++++++++++++++++++-
+ src/xde-setwm.c     |  7 ++++++
+ src/xde-style.c     | 22 +++++++++++------
+ src/xde-theme.c     | 26 +++++++++++++++++++-
+ src/xde-watch.c     | 25 ++++++++++++++++++-
+ src/xde.c           | 65 +++++++++++++++++++++++++++++--------------------
+ src/xde.h           | 10 ++++----
+ src/xde_2bwm.c      | 10 ++++++++
+ src/xde_adwm.c      |  7 ++++++
+ src/xde_afterstep.c | 10 ++++++++
+ src/xde_awesome.c   | 10 ++++++++
+ src/xde_blackbox.c  |  2 ++
+ src/xde_ctwm.c      |  7 ++++++
+ src/xde_cwm.c       |  7 ++++++
+ src/xde_dtwm.c      | 10 ++++++++
+ src/xde_dwm.c       | 10 ++++++++
+ src/xde_echinus.c   |  7 ++++++
+ src/xde_etwm.c      |  7 ++++++
+ src/xde_fluxbox.c   |  2 ++
+ src/xde_flwm.c      | 10 ++++++++
+ src/xde_fvwm.c      | 10 ++++++++
+ src/xde_icewm.c     | 14 +++++++++--
+ src/xde_jwm.c       |  7 ++++++
+ src/xde_matwm2.c    |  7 ++++++
+ src/xde_metacity.c  |  7 ++++++
+ src/xde_mwm.c       | 10 ++++++++
+ src/xde_openbox.c   |  5 +++-
+ src/xde_pekwm.c     |  5 +++-
+ src/xde_spectrwm.c  | 10 ++++++++
+ src/xde_twm.c       |  7 ++++++
+ src/xde_uwm.c       |  7 ++++++
+ src/xde_vtwm.c      |  7 ++++++
+ src/xde_waimea.c    |  2 ++
+ src/xde_wind.c      | 10 ++++++++
+ src/xde_wmaker.c    | 10 ++++++++
+ src/xde_wmx.c       | 10 ++++++++
+ src/xde_yeahwm.c    | 10 ++++++++
+ 38 files changed, 377 insertions(+), 47 deletions(-)
+
+commit 8ade7d5862ae6ad4f0259aa05d99e0b87ae1335a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Feb 8 22:12:48 2020 -0700
+
+    simplify MDOCDATE and cscope
+
+ autogen.sh   | 8 ++++++--
+ configure.sh | 7 ++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+commit 1c2d80ccb7936b192c6d3585c1c505bbffc58585
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 14:44:59 2019 -0600
+
+    update release files (again)
+
+ ChangeLog    | 14 ++++++++++++++
+ NEWS         | 29 +++++++++++++++++++++++++----
+ README       | 18 +++++++++---------
+ README.md    | 18 +++++++++---------
+ configure.ac |  8 ++++----
+ 5 files changed, 61 insertions(+), 26 deletions(-)
+
 commit e609c8e886cf36a1682b00eef4450d17b38c6b03
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Sep 5 14:27:37 2019 -0600
