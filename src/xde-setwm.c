@@ -91,6 +91,8 @@ int debug = 0;
 static void
 copying(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!output && !debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -135,6 +137,8 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!output && !debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -157,6 +161,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
+	(void) argc;
 	if (!output && !debug)
 		return;
 	(void) fprintf(stderr, "\
@@ -171,6 +176,7 @@ Usage:\n\
 static void
 help(int argc, char *argv[])
 {
+	(void) argc;
 	if (!output && !debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -210,6 +216,7 @@ Display *dpy;
 int
 handler(Display *display, XErrorEvent *xev)
 {
+	(void) display;
 	if (debug) {
 		char msg[80], req[80], num[80], def[80];
 

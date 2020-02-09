@@ -188,11 +188,18 @@ list_styles_UWM()
 static void
 gen_item_UWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_UWM(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

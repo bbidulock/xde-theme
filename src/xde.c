@@ -51,7 +51,7 @@
 SmcConn smcConn;
 
 Display *dpy;
-int screen;
+unsigned int screen;
 Window root;
 WindowManager *wm;
 WmScreen *screens;
@@ -463,6 +463,7 @@ XContext ScreenContext;
 int
 error_handler(Display *display, XErrorEvent *xev)
 {
+	(void) display;
 	if (options.debug) {
 		char msg[80], req[80], num[80], def[80];
 
@@ -519,7 +520,7 @@ __xde_init_display()
 {
 	Window dw;
 	unsigned int du;
-	int i;
+	unsigned int i;
 
 	if (!(dpy = XOpenDisplay(0))) {
 		EPRINTF("%s\n", "cannot open display");
@@ -2183,7 +2184,7 @@ __xde_check_wm()
 		wm->ops = get_wm_ops();
 		if (wm->pid) {
 			WmScreen *s;
-			int i;
+			unsigned int i;
 
 			OPRINTF("checking for duplicate wm for screen %d\n", screen);
 
@@ -2465,6 +2466,7 @@ was_destroyed(Display *display, XEvent *event, XPointer arg)
 {
 	Window win = (typeof(win)) arg;
 
+	(void) display;
 	if (event->type != DestroyNotify)
 		return False;
 	if (event->xdestroywindow.window != win)
@@ -3020,7 +3022,7 @@ show_wm()
 void
 __xde_show_wms()
 {
-	int s;
+	unsigned int s;
 
 	for (s = 0; s < nscr; s++) {
 		screen = s;
@@ -3041,7 +3043,7 @@ __xde_detect_wm()
 
 	if (options.wmname) {
 		screen = DefaultScreen(dpy);
-		if (0 <= options.screen && options.screen < nscr)
+		if (options.screen < nscr)
 			screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
@@ -3054,7 +3056,7 @@ __xde_detect_wm()
 		if (options.output > 1)
 			show_wm();
 	} else {
-		int s;
+		unsigned int s;
 
 		for (s = 0; s < nscr; s++) {
 			xde_set_screen(s);
@@ -3077,6 +3079,7 @@ __asm__(".symver __xde_detect_wm,xde_detect_wm@@XDE_1.0");
 void
 __xde_action_check_wm(XPointer dummy)
 {
+	(void) dummy;
 	xde_recheck_wm();
 }
 
@@ -3331,6 +3334,7 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 	struct sortentry *entries = NULL;
 	int len, numb = 0;
 
+	(void) type;
 	if (!xdir || !*xdir)
 		return;
 	len = strlen(xdir) + strlen(dname) + 2;
@@ -4140,6 +4144,7 @@ __asm__(".symver __xde_check_theme,xde_check_theme@@XDE_1.0");
 void
 __xde_action_check_theme(XPointer dummy)
 {
+	(void) dummy;
 	xde_check_theme();
 }
 
@@ -4863,6 +4868,9 @@ reload_style_NONE()
 static void
 list_dir_NONE(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void
@@ -4878,16 +4886,16 @@ get_menu_NONE()
 }
 
 static WmOperations wm_ops_NONE = {
-	"none",
-	VERSION,
-	&get_rcfile_NONE,
-	&find_style_NONE,
-	&get_style_NONE,
-	&set_style_NONE,
-	&reload_style_NONE,
-	&list_dir_NONE,
-	&list_styles_NONE,
-	&get_menu_NONE
+	.name = "none",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_NONE,
+	.find_style = &find_style_NONE,
+	.get_style = &get_style_NONE,
+	.set_style = &set_style_NONE,
+	.reload_style = &reload_style_NONE,
+	.list_dir = &list_dir_NONE,
+	.list_styles = &list_styles_NONE,
+	.get_menu = &get_menu_NONE,
 };
 
 /** @} */
@@ -4941,6 +4949,9 @@ reload_style_UNKNOWN()
 static void
 list_dir_UNKNOWN(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void
@@ -4949,16 +4960,16 @@ list_styles_UNKNOWN()
 }
 
 static WmOperations wm_ops_UNKNOWN = {
-	"unknown",
-	VERSION,
-	&get_rcfile_UNKNOWN,
-	&find_style_UNKNOWN,
-	&get_style_UNKNOWN,
-	&set_style_UNKNOWN,
-	&reload_style_UNKNOWN,
-	&list_dir_UNKNOWN,
-	&list_styles_UNKNOWN,
-	&get_menu_UNKNOWN
+	.name = "unknown",
+	.version = VERSION,
+	.get_rcfile = &get_rcfile_UNKNOWN,
+	.find_style = &find_style_UNKNOWN,
+	.get_style = &get_style_UNKNOWN,
+	.set_style = &set_style_UNKNOWN,
+	.reload_style = &reload_style_UNKNOWN,
+	.list_dir = &list_dir_UNKNOWN,
+	.list_styles = &list_styles_UNKNOWN,
+	.get_menu = &get_menu_UNKNOWN,
 };
 
 /** @} */
@@ -5263,7 +5274,7 @@ __xde_process_timeouts()
 	DPRINTF("processing timeouts\n");
 	DPRINTF("reading %d bytes\n", (int) sizeof(count));
 	while ((bytes = read(defer_timer, &count, sizeof(count))) >= 0
-	       && (total += bytes) < sizeof(count)) ;
+	       && (size_t) (total += bytes) < sizeof(count)) ;
 	DPRINTF("got %d bytes\n", (int) total);
 	if (bytes == -1) {
 		EPRINTF("read: %s\n", strerror(errno));

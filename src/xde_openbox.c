@@ -340,7 +340,8 @@ set_style_OPENBOX()
 	struct stat st;
 	char *stylefile, *buf, *pos, *end, *line, *p, *q;
 	int len;
-	size_t read, total;
+	size_t read;
+	ssize_t total;
 
 	if (!(stylefile = find_style_OPENBOX())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
@@ -460,6 +461,8 @@ list_styles_OPENBOX()
 static void
 gen_item_OPENBOX(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) file;
 	switch(type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:

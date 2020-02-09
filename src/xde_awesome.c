@@ -93,6 +93,9 @@ reload_style_AWESOME()
 static void
 list_dir_AWESOME(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void
@@ -103,11 +106,18 @@ list_styles_AWESOME()
 static void
 gen_item_AWESOME(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_AWESOME(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

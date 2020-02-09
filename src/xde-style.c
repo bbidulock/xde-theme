@@ -59,7 +59,7 @@ current_style()
 
 	OPRINTF("%s\n", "getting current style");
 
-	if (options.screen == -1) {
+	if (options.screen == -1U) {
 		for (screen = 0; screen < nscr; screen++) {
 			OPRINTF("getting current style for screen %d\n", screen);
 			scr = screens + screen;
@@ -83,7 +83,7 @@ current_style()
 					screen);
 			}
 		}
-	} else if (0 <= options.screen && options.screen < nscr) {
+	} else if (options.screen < nscr) {
 		screen = options.screen;
 		OPRINTF("getting current style for screen %d\n", screen);
 		scr = screens + screen;
@@ -117,7 +117,7 @@ gen_menu()
 
 	OPRINTF("%s\n", "generating style menu");
 
-	if (options.screen == -1) {
+	if (options.screen == -1U) {
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
@@ -125,7 +125,7 @@ gen_menu()
 				continue;
 			ops->gen_menu();
 		}
-	} else if (0 <= options.screen && options.screen < nscr) {
+	} else if (options.screen < nscr) {
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
@@ -149,7 +149,7 @@ list_styles()
 
 	OPRINTF("%s\n", "listing styles");
 
-	if (options.screen == -1) {
+	if (options.screen == -1U) {
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
@@ -157,7 +157,7 @@ list_styles()
 				continue;
 			ops->list_styles();
 		}
-	} else if (0 <= options.screen && options.screen < nscr) {
+	} else if (options.screen < nscr) {
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
@@ -181,7 +181,7 @@ set_style()
 
 	OPRINTF("%s\n", "setting style");
 
-	if (options.screen == -1) {
+	if (options.screen == -1U) {
 		for (screen = 0; screen < nscr; screen++) {
 			scr = screens + screen;
 			root = scr->root;
@@ -193,7 +193,7 @@ set_style()
 				continue;
 			ops->set_style();
 		}
-	} else if (0 <= options.screen && options.screen < nscr) {
+	} else if (options.screen < nscr) {
 		screen = options.screen;
 		scr = screens + screen;
 		root = scr->root;
@@ -215,6 +215,8 @@ set_style()
 static void
 copying(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -259,6 +261,8 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -281,6 +285,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stderr, "\
@@ -298,6 +303,7 @@ Usage:\n\
 static void
 help(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\

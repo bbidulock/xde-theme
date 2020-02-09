@@ -186,6 +186,8 @@ list_styles_FLUXBOX()
 static void
 gen_item_FLUXBOX(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) file;
 	switch (type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:

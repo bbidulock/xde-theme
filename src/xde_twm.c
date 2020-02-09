@@ -125,11 +125,18 @@ list_styles_TWM()
 static void
 gen_item_TWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_TWM(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

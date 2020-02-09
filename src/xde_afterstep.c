@@ -93,6 +93,9 @@ reload_style_AFTERSTEP()
 static void
 list_dir_AFTERSTEP(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void
@@ -103,11 +106,18 @@ list_styles_AFTERSTEP()
 static void
 gen_item_AFTERSTEP(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_AFTERSTEP(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

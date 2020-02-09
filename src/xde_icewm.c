@@ -207,7 +207,8 @@ get_style_ICEWM()
 	struct stat st;
 	char *stylefile, *themerc, *buf, *pos, *trm;
 	int i, len, beg, end;
-	size_t read, total;
+	size_t read;
+	ssize_t total;
 
 	get_rcfile_ICEWM();
 	len = strlen(wm->pdir) + strlen("/theme") + 1;
@@ -366,7 +367,8 @@ set_style_ICEWM()
 	struct stat st;
 	char *stylefile, *themerc, *buf, *pos, *end, *line;
 	int n, len;
-	size_t read, total;
+	size_t read;
+	ssize_t total;
 
 	if (!(stylefile = find_style_ICEWM())) {
 		EPRINTF("cannot find style '%s'\n", options.style);
@@ -447,6 +449,7 @@ list_dir_ICEWM(char *xdir, char *style, enum ListType type)
 	struct stat st;
 	int len;
 
+	(void) type;
 	if (!xdir || !*xdir)
 		return;
 	len = strlen(xdir) + strlen("/themes") + 1;
@@ -546,11 +549,18 @@ list_styles_ICEWM()
 static void
 gen_item_ICEWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_ICEWM(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

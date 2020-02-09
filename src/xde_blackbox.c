@@ -153,6 +153,8 @@ list_styles_BLACKBOX()
 static void
 gen_item_BLACKBOX(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) file;
 	switch (type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:

@@ -253,7 +253,8 @@ set_style_PEKWM()
 	struct stat st;
 	char *stylefile, *buf, *pos, *end, *line, *p, *q;
 	int len;
-	size_t read, total;
+	size_t read;
+	ssize_t total;
 
 	if (!wm->pid) {
 		EPRINTF("%s", "cannot set pekwm style without pid\n");
@@ -342,6 +343,8 @@ list_styles_PEKWM()
 static void
 gen_item_PEKWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) file;
 	switch(type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:

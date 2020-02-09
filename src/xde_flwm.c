@@ -126,6 +126,9 @@ reload_style_FLWM()
 static void
 list_dir_FLWM(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void
@@ -136,11 +139,18 @@ list_styles_FLWM()
 static void
 gen_item_FLWM(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) type;
+	(void) stylename;
+	(void) file;
 }
 
 static void
 gen_dir_FLWM(char *xdir, char *style, enum ListType type)
 {
+	(void) xdir;
+	(void) style;
+	(void) type;
 }
 
 static void

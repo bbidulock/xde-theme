@@ -162,6 +162,8 @@ list_styles_WAIMEA()
 static void
 gen_item_WAIMEA(char *style, enum ListType type, char *stylename, char *file)
 {
+	(void) style;
+	(void) file;
 	switch (type) {
 	case XDE_LIST_PRIVATE:
 	case XDE_LIST_USER:

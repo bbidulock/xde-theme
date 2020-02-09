@@ -235,7 +235,7 @@ typedef struct {
 	int x, y;
 	unsigned int width, height;
 	struct {
-		int current;
+		unsigned int current;
 		unsigned int numb;
 		unsigned int cols;
 		unsigned int rows;
@@ -255,7 +255,7 @@ struct _WmScreen {
 	char *theme;			/* XDE theme name */
 	char *themefile;		/* XDE theme file */
 	struct {
-		int current;		/* current monitor/desktop */
+		unsigned int current;	/* current monitor/desktop */
 		unsigned int numb;	/* number monitors/desktops */
 		unsigned int cols;	/* cols of monitors/desktops */
 		unsigned int rows;	/* rows of monitors/desktops */
@@ -273,7 +273,7 @@ struct _WmScreen {
 typedef struct {
 	Display *dpy;
 	struct {
-		int current;		/* current screen/image */
+		unsigned int current;	/* current screen/image */
 		unsigned int numb;	/* number screens/images */
 		unsigned int cols;	/* cols of screens/images */
 		unsigned int rows;	/* rows of screens/images */
@@ -307,7 +307,7 @@ typedef struct {
 	Bool theme;
 	Bool dryrun;
 	Bool reload;
-	int screen;
+	unsigned int screen;
 	char *style;
 	char *wmname;
 	char *rcfile;
@@ -327,7 +327,7 @@ typedef struct {
 } Options;
 
 extern Display *dpy;
-extern int screen;
+extern unsigned int screen;
 extern Window root;
 extern WindowManager *wm;
 extern WmScreen *screens;

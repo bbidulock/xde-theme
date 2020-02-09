@@ -228,6 +228,7 @@ handle_NET_CURRENT_DESKTOP(XEvent *e)
 void
 handle_NET_DESKTOP_LAYOUT(XEvent *e)
 {
+	(void) e;
 }
 
 void
@@ -296,6 +297,7 @@ xdeSetProperties(SmcConn smcConn, SmPointer data)
 		&prop[6], &prop[7], &prop[8], &prop[9], &prop[10],
 	};
 
+	(void) data;
 	j = 0;
 
 	/* CloneCommand */
@@ -493,6 +495,9 @@ static void
 xdeSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
 		  int interactStyle, Bool fast)
 {
+	(void) saveType;
+	(void) interactStyle;
+	(void) fast;
 	if (!(session_shutdown = shutdown)) {
 		if (!SmcRequestSaveYourselfPhase2(smcConn, xdeSaveYourselfPhase2CB, data))
 			SmcSaveYourselfDone(smcConn, False);
@@ -506,6 +511,7 @@ xdeSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
 static void
 xdeDieCB(SmcConn smcConn, SmPointer data)
 {
+	(void) data;
 	SmcCloseConnection(smcConn, 0, NULL);
 	session_shutdown = False;
 	xde_main_quit((XPointer) XDE_DESKTOP_QUIT);
@@ -514,6 +520,8 @@ xdeDieCB(SmcConn smcConn, SmPointer data)
 static void
 xdeSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	if (saving_yourself)
 		saving_yourself = False;
 }
@@ -521,6 +529,8 @@ xdeSaveCompleteCB(SmcConn smcConn, SmPointer data)
 static void
 xdeShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	session_shutdown = False;
 }
 
@@ -776,7 +786,7 @@ static WmCallbacks wm_callbacks = {
 static XPointer
 do_startup(void)
 {
-	int s;
+	unsigned int s;
 
 	if (!foreground) {
 		pid_t pid;
@@ -851,6 +861,7 @@ cmd_remove_predicate(Display *display, XEvent *event, XPointer arg)
 static Bool
 selectionreleased(Display *display, XEvent *event, XPointer arg)
 {
+	(void) display;
 	if (event->type != DestroyNotify)
 		return False;
 	if (event->xdestroywindow.window != (Window) arg)
@@ -1030,6 +1041,8 @@ do_quit(int argc, char *argv[])
 	Atom selection;
 	Window owner;
 
+	(void) argc;
+	(void) argv;
 	xde_init_display();
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_DESKTOP_S%d", scr->screen);
@@ -1074,6 +1087,8 @@ do_restart(int argc, char *argv[])
 	Atom selection;
 	Window owner;
 
+	(void) argc;
+	(void) argv;
 	xde_init_display();
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_DESKTOP_S%d", scr->screen);
@@ -1117,6 +1132,8 @@ do_recheck(int argc, char *argv[])
 	Atom selection;
 	Window owner;
 
+	(void) argc;
+	(void) argv;
 	xde_init_display();
 	_XA_XDE_DESKTOP_COMMAND = XInternAtom(dpy, "_XDE_DESKTOP_COMMAND", False);
 	snprintf(name, sizeof(name), "_XDE_DESKTOP_S%d", scr->screen);
@@ -1156,6 +1173,8 @@ do_recheck(int argc, char *argv[])
 static void
 copying(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -1200,6 +1219,8 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -1222,6 +1243,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stderr, "\
@@ -1239,6 +1261,7 @@ Usage:\n\
 static void
 help(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -1510,6 +1533,7 @@ main(int argc, char *argv[])
 	switch (cmd) {
 	case CommandDefault:
 		command = CommandRun;
+		/* fall thru */
 	case CommandRun:
 		DPRINTF("%s: running default\n", argv[0]);
 		do_run(argc, argv);
