@@ -25,12 +25,13 @@ git tag -n100 -l 1.5
 
 git shortlog -e -n -w80,6,8 1.4...1.5
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (6):
       update copyright headers
       whoops
       support gcc 10 symver
       update release notes
       update for autoconf 2.71
+      update release files
 
 
 Release xde-theme-1.4 released 2020-02-08
