@@ -1,9 +1,9 @@
-[xde-theme -- release notes.  2020-02-09]: #
+[xde-theme -- release notes.  2021-05-08]: #
 
-Maintenance Release 1.4
+Maintenance Release 1.5
 =======================
 
-This is the fourth release of the xde-theme package.  This package
+This is the fifth release of the xde-theme package.  This package
 contains various tools for setting themes for a wide range of
 light-weight window managers.  These tools are meant to have minimal
 dependencies, GTK2-based, and each tool able to run independent of the
@@ -12,7 +12,7 @@ they work well with many light-weight window managers.  I use these
 tools daily and they are quite stable.
 
 This release is a maintenance release whose sole purpose is to update
-the build system and pass extra compilation checks under gcc 9.2.0
+the build system and support symbol versioning under gcc 10.2.0
 compiler.
 
 Included in the release is an autoconf tarball for building the release
