@@ -135,6 +135,7 @@ delete_this_wm(WindowManager *w)
 	}
 }
 
+__attribute__((symver("xde_wm_unref@@XDE_1.0")))
 void
 __xde_wm_unref(WindowManager *w)
 {
@@ -145,8 +146,6 @@ __xde_wm_unref(WindowManager *w)
 		}
 	}
 }
-
-__asm__(".symver __xde_wm_unref,xde_wm_unref@@XDE_1.0");
 
 static WindowManager *
 unref_wm()
@@ -486,13 +485,12 @@ set_screen(WmScreen *s)
 	wm = scr->wm;
 }
 
+__attribute__((symver("xde_set_screen@@XDE_1.0")))
 void
 __xde_set_screen(int s)
 {
 	set_screen(screens + s);
 }
-
-__asm__(".symver __xde_set_screen,xde_set_screen@@XDE_1.0");
 
 static Bool
 find_screen(Window window)
@@ -515,6 +513,7 @@ find_screen(Window window)
 
 /** @brief initialize X windows display
   */
+__attribute__((symver("xde_init_display@@XDE_1.0")))
 void
 __xde_init_display()
 {
@@ -550,13 +549,12 @@ __xde_init_display()
 	root = scr->root;
 }
 
-__asm__(".symver __xde_init_display,xde_init_display@@XDE_1.0");
-
 static WmCallbacks *callbacks;
 static int defer_timer;
 
 /** @brief obtain defer timer file number
   */
+__attribute__((symver("xde_defer_timer@@XDE_1.0")))
 int
 __xde_defer_timer(void)
 {
@@ -569,11 +567,10 @@ __xde_defer_timer(void)
 	return (defer_timer);
 }
 
-__asm__(".symver __xde_defer_timer,xde_defer_timer@@XDE_1.0");
-
 /** @brief initialize XDE library
   * @param cbs - callbacks to invoke
   */
+__attribute__((symver("xde_init@@XDE_1.0")))
 void
 __xde_init(WmCallbacks *cbs)
 {
@@ -581,8 +578,6 @@ __xde_init(WmCallbacks *cbs)
 	xde_defer_timer();
 	xde_init_display();
 }
-
-__asm__(".symver __xde_init,xde_init@@XDE_1.0");
 
 static Bool
 string_compare(char *a, char *b)
@@ -601,6 +596,7 @@ string_compare(char *a, char *b)
   *
   * @{ */
 
+__attribute__((symver("xde_delete_property@@XDE_1.0")))
 void
 __xde_delete_property(Window win, Atom prop)
 {
@@ -612,8 +608,7 @@ __xde_delete_property(Window win, Atom prop)
 	OPRINTF("would delete from 0x%lx %s\n", win, XGetAtomName(dpy, prop));
 }
 
-__asm__(".symver __xde_delete_property,xde_delete_property@@XDE_1.0");
-
+__attribute__((symver("xde_set_text_list@@XDE_1.0")))
 void
 __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list, long n)
 {
@@ -674,8 +669,7 @@ __xde_set_text_list(Window win, Atom prop, XICCEncodingStyle style, char **list,
 	}
 }
 
-__asm__(".symver __xde_set_text_list,xde_set_text_list@@XDE_1.0");
-
+__attribute__((symver("xde_get_text@@XDE_1.0")))
 char *
 __xde_get_text(Window win, Atom prop)
 {
@@ -689,8 +683,7 @@ __xde_get_text(Window win, Atom prop)
 	return NULL;
 }
 
-__asm__(".symver __xde_get_text,xde_get_text@@XDE_1.0");
-
+__attribute__((symver("xde_set_text@@XDE_1.0")))
 void
 __xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text)
 {
@@ -714,8 +707,7 @@ __xde_set_text(Window win, Atom prop, XICCEncodingStyle style, char *text)
 	}
 }
 
-__asm__(".symver __xde_set_text,xde_set_text@@XDE_1.0");
-
+__attribute__((symver("xde_get_cardinals@@XDE_1.0")))
 long *
 __xde_get_cardinals(Window win, Atom prop, Atom type, long *n)
 {
@@ -742,8 +734,7 @@ __xde_get_cardinals(Window win, Atom prop, Atom type, long *n)
 	return NULL;
 }
 
-__asm__(".symver __xde_get_cardinals,xde_get_cardinals@@XDE_1.0");
-
+__attribute__((symver("xde_set_cardinals@@XDE_1.0")))
 void
 __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 {
@@ -776,8 +767,7 @@ __xde_set_cardinals(Window win, Atom prop, Atom type, long *cards, long n)
 	}
 }
 
-__asm__(".symver __xde_set_cardinals,xde_set_cardinals@@XDE_1.0");
-
+__attribute__((symver("xde_get_cardinal@@XDE_1.0")))
 Bool
 __xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 {
@@ -793,143 +783,124 @@ __xde_get_cardinal(Window win, Atom prop, Atom type, long *card_ret)
 	return result;
 }
 
-__asm__(".symver __xde_get_cardinal,xde_get_cardinal@@XDE_1.0");
-
+__attribute__((symver("xde_set_cardinal@@XDE_1.0")))
 void
 __xde_set_cardinal(Window win, Atom prop, Atom type, long card)
 {
 	xde_set_cardinals(win, prop, type, &card, 1);
 }
 
-__asm__(".symver __xde_set_cardinal,xde_set_cardinal@@XDE_1.0");
-
+__attribute__((symver("xde_get_windows@@XDE_1.0")))
 Window *
 __xde_get_windows(Window win, Atom prop, Atom type, long *n)
 {
 	return (Window *) xde_get_cardinals(win, prop, type, n);
 }
 
-__asm__(".symver __xde_get_windows,xde_get_windows@@XDE_1.0");
-
+__attribute__((symver("xde_set_windows@@XDE_1.0")))
 void
 __xde_set_windows(Window win, Atom prop, Atom type, Window *winds, long n)
 {
 	xde_set_cardinals(win, prop, type, (long *) winds, n);
 }
 
-__asm__(".symver __xde_set_windows,xde_set_windows@@XDE_1.0");
-
+__attribute__((symver("xde_get_window@@XDE_1.0")))
 Bool
 __xde_get_window(Window win, Atom prop, Atom type, Window *win_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) win_ret);
 }
 
-__asm__(".symver __xde_get_window,xde_get_window@@XDE_1.0");
-
+__attribute__((symver("xde_set_window@@XDE_1.0")))
 void
 __xde_set_window(Window win, Atom prop, Atom type, Window wind)
 {
 	xde_set_cardinal(win, prop, type, wind);
 }
 
-__asm__(".symver __xde_set_window,xde_set_window@@XDE_1.0");
-
+__attribute__((symver("xde_get_times@@XDE_1.0")))
 Time *
 __xde_get_times(Window win, Atom prop, Atom type, long *n)
 {
 	return (Time *) xde_get_cardinals(win, prop, type, n);
 }
 
-__asm__(".symver __xde_get_times,xde_get_times@@XDE_1.0");
-
+__attribute__((symver("xde_set_times@@XDE_1.0")))
 void
 __xde_set_times(Window win, Atom prop, Atom type, Time *times, long n)
 {
 	xde_set_cardinals(win, prop, type, (long *) times, n);
 }
 
-__asm__(".symver __xde_set_times,xde_set_times@@XDE_1.0");
-
+__attribute__((symver("xde_get_time@@XDE_1.0")))
 Bool
 __xde_get_time(Window win, Atom prop, Atom type, Time *time_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) time_ret);
 }
 
-__asm__(".symver __xde_get_time,xde_get_time@@XDE_1.0");
-
+__attribute__((symver("xde_set_time@@XDE_1.0")))
 void
 __xde_set_time(Window win, Atom prop, Atom type, Time time)
 {
 	xde_set_cardinal(win, prop, type, time);
 }
 
-__asm__(".symver __xde_set_time,xde_set_time@@XDE_1.0");
-
+__attribute__((symver("xde_get_atoms@@XDE_1.0")))
 Atom *
 __xde_get_atoms(Window win, Atom prop, Atom type, long *n)
 {
 	return (Atom *) xde_get_cardinals(win, prop, type, n);
 }
 
-__asm__(".symver __xde_get_atoms,xde_get_atoms@@XDE_1.0");
-
+__attribute__((symver("xde_set_atoms@@XDE_1.0")))
 void
 __xde_set_atoms(Window win, Atom prop, Atom type, Atom *atoms, long n)
 {
 	xde_set_cardinals(win, prop, type, (long *) atoms, n);
 }
 
-__asm__(".symver __xde_set_atoms,xde_set_atoms@@XDE_1.0");
-
+__attribute__((symver("xde_get_atom@@XDE_1.0")))
 Bool
 __xde_get_atom(Window win, Atom prop, Atom type, Atom *atom_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) atom_ret);
 }
 
-__asm__(".symver __xde_get_atom,xde_get_atom@@XDE_1.0");
-
+__attribute__((symver("xde_set_atom@@XDE_1.0")))
 void
 __xde_set_atom(Window win, Atom prop, Atom type, Atom atom)
 {
 	xde_set_cardinal(win, prop, type, atom);
 }
 
-__asm__(".symver __xde_set_atom,xde_set_atom@@XDE_1.0");
-
+__attribute__((symver("xde_get_pixmaps@@XDE_1.0")))
 Pixmap *
 __xde_get_pixmaps(Window win, Atom prop, Atom type, long *n)
 {
 	return (Pixmap *) xde_get_cardinals(win, prop, type, n);
 }
 
-__asm__(".symver __xde_get_pixmaps,xde_get_pixmaps@@XDE_1.0");
-
+__attribute__((symver("xde_set_pixmaps@@XDE_1.0")))
 void
 __xde_set_pixmaps(Window win, Atom prop, Atom type, Pixmap *pixmaps, long n)
 {
 	xde_set_cardinals(win, prop, type, (long *) pixmaps, n);
 }
 
-__asm__(".symver __xde_set_pixmaps,xde_set_pixmaps@@XDE_1.0");
-
+__attribute__((symver("xde_get_pixmap@@XDE_1.0")))
 Bool
 __xde_get_pixmap(Window win, Atom prop, Atom type, Pixmap *pixmap_ret)
 {
 	return xde_get_cardinal(win, prop, type, (long *) pixmap_ret);
 }
 
-__asm__(".symver __xde_get_pixmap,xde_get_pixmap@@XDE_1.0");
-
+__attribute__((symver("xde_set_pixmap@@XDE_1.0")))
 void
 __xde_set_pixmap(Window win, Atom prop, Atom type, Pixmap pixmap)
 {
 	xde_set_cardinal(win, prop, type, pixmap);
 }
-
-__asm__(".symver __xde_set_pixmap,xde_set_pixmap@@XDE_1.0");
 
 /** @brief Check for recursive window properties
   * @param atom - property name
@@ -1345,6 +1316,7 @@ get_proc_link(pid_t pid, char *name)
 	return link;
 }
 
+__attribute__((symver("xde_get_proc_environ@@XDE_1.0")))
 char *
 __xde_get_proc_environ(char *name)
 {
@@ -1364,8 +1336,6 @@ __xde_get_proc_environ(char *name)
       nope:
 	return getenv(name);
 }
-
-__asm__(".symver __xde_get_proc_environ,xde_get_proc_environ@@XDE_1.0");
 
 char *
 get_proc_comm(pid_t pid)
@@ -1397,6 +1367,7 @@ get_proc_cwd(pid_t pid)
   * themes directories, such as Openbox and Metacity, as well as for finding XDE
   * theme files.
   */
+__attribute__((symver("xde_get_xdg_dirs@@XDE_1.0")))
 void
 __xde_get_xdg_dirs()
 {
@@ -1433,11 +1404,10 @@ __xde_get_xdg_dirs()
 	return;
 }
 
-__asm__(".symver __xde_get_xdg_dirs,xde_get_xdg_dirs@@XDE_1.0");
-
 /** @brief Determine if XDE theme name exists for window manager.
   * @return Bool - True when theme exists; False otherwise.
   */
+__attribute__((symver("xde_find_theme@@XDE_1.0")))
 Bool
 __xde_find_theme(char *name, char **filename)
 {
@@ -1500,8 +1470,6 @@ __xde_find_theme(char *name, char **filename)
 	free(copy);
 	return False;
 }
-
-__asm__(".symver __xde_find_theme,xde_find_theme@@XDE_1.0");
 
 /** @} */
 
@@ -2165,6 +2133,7 @@ static WmOperations *get_wm_ops(void);
 
 /** @brief Check for a window manager on the current screen.
   */
+__attribute__((symver("xde_check_wm@@XDE_1.0")))
 Bool
 __xde_check_wm()
 {
@@ -2209,8 +2178,6 @@ __xde_check_wm()
 	unref_wm();
 	return False;
 }
-
-__asm__(".symver __xde_check_wm,xde_check_wm@@XDE_1.0");
 
 static void
 xde_identify_wm_human()
@@ -2507,6 +2474,7 @@ have_property(Atom *list, int n, Atom prop)
 
 /** @brief set XDE properties on the root window for the current screen
   */
+__attribute__((symver("xde_set_properties_on@@XDE_1.0")))
 void
 __xde_set_properties_on(Window win)
 {
@@ -2770,8 +2738,6 @@ __xde_set_properties_on(Window win)
 		XFree(props);
 }
 
-__asm__(".symver __xde_set_properties_on,xde_set_properties_on@@XDE_1.0");
-
 void
 set_basic_props(Window win, Atom *props, int n)
 {
@@ -2792,6 +2758,7 @@ set_basic_props(Window win, Atom *props, int n)
 	}
 }
 
+__attribute__((symver("xde_set_properties@@XDE_1.0")))
 void
 __xde_set_properties(void)
 {
@@ -2830,8 +2797,7 @@ __xde_set_properties(void)
 	}
 }
 
-__asm__(".symver __xde_set_properties,xde_set_properties@@XDE_1.0");
-
+__attribute__((symver("xde_del_properties_from@@XDE_1.0")))
 void
 __xde_del_properties_from(Window win)
 {
@@ -2906,15 +2872,12 @@ __xde_del_properties_from(Window win)
 		XFree(props);
 }
 
-__asm__(".symver __xde_del_properties_from,xde_del_properties_from@@XDE_1.0");
-
+__attribute__((symver("xde_del_properties@@XDE_1.0")))
 void
 __xde_del_properties(void)
 {
 	xde_del_properties_from(scr->root);
 }
-
-__asm__(".symver __xde_del_properties,xde_del_properties@@XDE_1.0");
 
 static void
 xde_identify_wm_props()
@@ -2922,6 +2885,7 @@ xde_identify_wm_props()
 	xde_set_properties();
 }
 
+__attribute__((symver("xde_identify_wm@@XDE_1.0")))
 void
 __xde_identify_wm()
 {
@@ -2940,8 +2904,6 @@ __xde_identify_wm()
 		break;
 	}
 }
-
-__asm__(".symver __xde_identify_wm,xde_identify_wm@@XDE_1.0");
 
 static void
 show_wm()
@@ -3019,6 +2981,7 @@ show_wm()
 		OPRINTF("%d %s: themefile %s\n", screen, wm->name, scr->themefile);
 }
 
+__attribute__((symver("xde_show_wms@@XDE_1.0")))
 void
 __xde_show_wms()
 {
@@ -3034,8 +2997,7 @@ __xde_show_wms()
 	}
 }
 
-__asm__(".symver __xde_show_wms,xde_show_wms@@XDE_1.0");
-
+__attribute__((symver("xde_detect_wm@@XDE_1.0")))
 Bool
 __xde_detect_wm()
 {
@@ -3074,8 +3036,7 @@ __xde_detect_wm()
 	return have_wm;
 }
 
-__asm__(".symver __xde_detect_wm,xde_detect_wm@@XDE_1.0");
-
+__attribute__((symver("xde_action_check_wm@@XDE_1.0")))
 void
 __xde_action_check_wm(XPointer dummy)
 {
@@ -3083,11 +3044,10 @@ __xde_action_check_wm(XPointer dummy)
 	xde_recheck_wm();
 }
 
-__asm__(".symver __xde_action_check_wm,xde_action_check_wm@@XDE_1.0");
-
 /** @brief check whether a window manager has changed (or appeared)
   * @return Bool - true if changed
   */
+__attribute__((symver("xde_recheck_wm@@XDE_1.0")))
 void
 __xde_recheck_wm()
 {
@@ -3184,8 +3144,6 @@ __xde_recheck_wm()
 	free(oldfile);
 }
 
-__asm__(".symver __xde_recheck_wm,xde_recheck_wm@@XDE_1.0");
-
 /** @} */
 
 /** @name themes, styles and menus
@@ -3218,6 +3176,7 @@ get_optarg(char *optname)
 	return NULL;
 }
 
+__attribute__((symver("xde_get_rcfile_optarg@@XDE_1.0")))
 char *
 __xde_get_rcfile_optarg(char *optname)
 {
@@ -3226,8 +3185,7 @@ __xde_get_rcfile_optarg(char *optname)
 	return get_optarg(optname);
 }
 
-__asm__(".symver __xde_get_rcfile_optarg,xde_get_rcfile_optarg@@XDE_1.0");
-
+__attribute__((symver("xde_get_simple_dirs@@XDE_1.0")))
 void
 __xde_get_simple_dirs(char *wmname)
 {
@@ -3259,8 +3217,7 @@ __xde_get_simple_dirs(char *wmname)
 	}
 }
 
-__asm__(".symver __xde_get_simple_dirs,xde_get_simple_dirs@@XDE_1.0");
-
+__attribute__((symver("xde_get_rcfile_simple@@XDE_1.0")))
 void
 __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 {
@@ -3307,8 +3264,6 @@ __xde_get_rcfile_simple(char *wmname, char *rcname, char *option)
 	xde_get_simple_dirs(wmname);
 }
 
-__asm__(".symver __xde_get_rcfile_simple,xde_get_rcfile_simple@@XDE_1.0");
-
 struct sortentry {
 	char *stylename;
 	char *filename;
@@ -3323,6 +3278,7 @@ entry_compare(const void *a, const void *b)
 	return strcmp(A->stylename, B->stylename);
 }
 
+__attribute__((symver("xde_list_dir_simple@@XDE_1.0")))
 void
 __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style,
 		      enum ListType type)
@@ -3436,8 +3392,7 @@ __xde_list_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *
 	}
 }
 
-__asm__(".symver __xde_list_dir_simple,xde_list_dir_simple@@XDE_1.0");
-
+__attribute__((symver("xde_list_styles_simple@@XDE_1.0")))
 void
 __xde_list_styles_simple()
 {
@@ -3519,8 +3474,7 @@ __xde_list_styles_simple()
 	}
 }
 
-__asm__(".symver __xde_list_styles_simple,xde_list_styles_simple@@XDE_1.0");
-
+__attribute__((symver("xde_gen_dir_simple@@XDE_1.0")))
 void
 __xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *style,
 		     enum ListType type)
@@ -3613,8 +3567,7 @@ __xde_gen_dir_simple(char *xdir, char *dname, char *fname, char *suffix, char *s
 	}
 }
 
-__asm__(".symver __xde_gen_dir_simple,xde_gen_dir_simple@@XDE_1.0");
-
+__attribute__((symver("xde_gen_menu_simple@@XDE_1.0")))
 void
 __xde_gen_menu_simple()
 {
@@ -3634,8 +3587,7 @@ __xde_gen_menu_simple()
 	}
 }
 
-__asm__(".symver __xde_gen_menu_simple,xde_gen_menu_simple@@XDE_1.0");
-
+__attribute__((symver("xde_list_styles_nostyle@@XDE_1.0")))
 void
 __xde_list_styles_nostyle()
 {
@@ -3735,8 +3687,7 @@ __xde_list_styles_nostyle()
 	free(seen);
 }
 
-__asm__(".symver __xde_list_styles_nostyle,xde_list_styles_nostyle@@XDE_1.0");
-
+__attribute__((symver("xde_find_style_simple@@XDE_1.0")))
 char *
 __xde_find_style_simple(char *dname, char *fname, char *suffix)
 {
@@ -3834,8 +3785,7 @@ __xde_find_style_simple(char *dname, char *fname, char *suffix)
 	return path;
 }
 
-__asm__(".symver __xde_find_style_simple,xde_find_style_simple@@XDE_1.0");
-
+__attribute__((symver("xde_get_menu_simple@@XDE_1.0")))
 char *
 __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 {
@@ -3887,8 +3837,6 @@ __xde_get_menu_simple(char *fname, char *(*from_file) (char *))
 	return wm->menu;
 }
 
-__asm__(".symver __xde_get_menu_simple,xde_get_menu_simple@@XDE_1.0");
-
 static char *
 theme_replace(char *stylename, char *themefile)
 {
@@ -3926,6 +3874,7 @@ theme_replace(char *stylename, char *themefile)
   * theme is set by examining the _XDE_THEME_NAME property on the root window
   * and, barring that, check the ~/.gtkrc-2.0.xde file for a theme name.
   */
+__attribute__((symver("xde_get_theme@@XDE_1.0")))
 char *
 __xde_get_theme()
 {
@@ -4019,38 +3968,34 @@ __xde_get_theme()
 	return theme;
 }
 
-__asm__(".symver __xde_get_theme,xde_get_theme@@XDE_1.0");
-
+__attribute((symver("xde_get_style@@XDE_1.0")))
 char *
-xde_get_style()
+__xde_get_style()
 {
 	if (!wm || !wm->ops || !wm->ops->get_style)
 		return NULL;
 	return wm->ops->get_style();
 }
 
-__asm__(".symver __xde_get_style,xde_get_style@@XDE_1.0");
-
+__attribute__((symver("xde_get_menu@@XDE_1.0")))
 char *
-xde_get_menu()
+__xde_get_menu()
 {
 	if (!wm || !wm->ops || !wm->ops->get_menu)
 		return NULL;
 	return wm->ops->get_menu();
 }
 
-__asm__(".symver __xde_get_menu,xde_get_menu@@XDE_1.0");
-
+__attribute__((symver("xde_get_icon@@XDE_1.0")))
 char *
-xde_get_icon()
+__xde_get_icon()
 {
 	if (!wm || !wm->ops || !wm->ops->get_icon)
 		return NULL;
 	return wm->ops->get_icon();
 }
 
-__asm__(".symver __xde_get_icon,xde_get_icon@@XDE_1.0");
-
+__attribute__((symver("xde_check_style@@XDE_1.0")))
 void
 __xde_check_style()
 {
@@ -4076,8 +4021,7 @@ __xde_check_style()
 		callbacks->wm_style_changed(wm->stylename, wm->style, wm->stylefile);
 }
 
-__asm__(".symver __xde_check_style,xde_check_style@@XDE_1.0");
-
+__attribute__((symver("xde_check_menu@@XDE_1.0")))
 void
 __xde_check_menu()
 {
@@ -4096,8 +4040,7 @@ __xde_check_menu()
 		callbacks->wm_menu_changed(wm->menu);
 }
 
-__asm__(".symver __xde_check_menu,xde_check_menu@@XDE_1.0");
-
+__attribute__((symver("xde_check_icon@@XDE_1.0")))
 void
 __xde_check_icon()
 {
@@ -4116,8 +4059,7 @@ __xde_check_icon()
 		callbacks->wm_icon_changed(wm->icon);
 }
 
-__asm__(".symver __xde_check_icon,xde_check_icon@@XDE_1.0");
-
+__attribute__((symver("xde_check_theme@@XDE_1.0")))
 void
 __xde_check_theme()
 {
@@ -4139,8 +4081,7 @@ __xde_check_theme()
 		(callbacks->wm_theme_changed) (scr->theme, scr->themefile);
 }
 
-__asm__(".symver __xde_check_theme,xde_check_theme@@XDE_1.0");
-
+__attribute__((symver("xde_action_check_theme@@XDE_1.0")))
 void
 __xde_action_check_theme(XPointer dummy)
 {
@@ -4148,8 +4089,7 @@ __xde_action_check_theme(XPointer dummy)
 	xde_check_theme();
 }
 
-__asm__(".symver __xde_action_check_theme,xde_action_check_theme@@XDE_1.0");
-
+__attribute__((symver("xde_set_theme@@XDE_1.0")))
 void
 __xde_set_theme(char *name)
 {
@@ -4235,8 +4175,7 @@ __xde_set_theme(char *name)
 	return;
 }
 
-__asm__(".symver __xde_set_theme,xde_set_theme@@XDE_1.0");
-
+__attribute__((symver("xde_get_style_simple@@XDE_1.0")))
 char *
 __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 {
@@ -4328,12 +4267,11 @@ __xde_get_style_simple(char *fname, char *(*from_file) (char *))
 	return wm->style;
 }
 
-__asm__(".symver __xde_get_style_simple,xde_get_style_simple@@XDE_1.0");
-
 /** @brief Get menu from resource database.
   *
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
   */
+__attribute__((symver("xde_get_menu_database@@XDE_1.0")))
 char *
 __xde_get_menu_database(char *name, char *clas)
 {
@@ -4370,12 +4308,11 @@ __xde_get_menu_database(char *name, char *clas)
 	return wm->menu;
 }
 
-__asm__(".symver __xde_get_menu_database,xde_get_menu_database@@XDE_1.0");
-
 /** @brief Get style from resource database.
   *
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
   */
+__attribute__((symver("xde_get_style_database@@XDE_1.0")))
 char *
 __xde_get_style_database(char *name, char *clas)
 {
@@ -4408,8 +4345,7 @@ __xde_get_style_database(char *name, char *clas)
 	return wm->style;
 }
 
-__asm__(".symver __xde_get_style_database,xde_get_style_database@@XDE_1.0");
-
+__attribute__((symver("xde_set_style_simple@@XDE_1.0")))
 void
 __xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 {
@@ -4466,12 +4402,11 @@ __xde_set_style_simple(char *rcname, void (*to_file) (char *, char *))
 	}
 }
 
-__asm__(".symver __xde_set_style_simple,xde_set_style_simple@@XDE_1.0");
-
 /** @brief Set the session.styleFile resource in the rcfile.
   *
   * This method is shared by blackbox(1), fluxbox(1) and waimea(1).
   */
+__attribute__((symver("xde_set_style_database@@XDE_1.0")))
 void
 __xde_set_style_database(char *name)
 {
@@ -4520,8 +4455,6 @@ __xde_set_style_database(char *name)
 	return;
 }
 
-__asm__(".symver __xde_set_style_database,xde_set_style_database@@XDE_1.0");
-
 /** @brief get an icon for the window manager
   *
   * Basically search the XDG directories for an xsession .desktop file with the
@@ -4530,6 +4463,7 @@ __asm__(".symver __xde_set_style_database,xde_set_style_database@@XDE_1.0");
   * name if available; otherwise, return NULL.
   *
   */
+__attribute__((symver("xde_get_icon_simple@@XDE_1.0")))
 char *
 __xde_get_icon_simple(const char *fallback)
 {
@@ -4652,8 +4586,7 @@ __xde_get_icon_simple(const char *fallback)
 	return icon;
 }
 
-__asm__(".symver __xde_get_icon_simple,xde_get_icon_simple@@XDE_1.0");
-
+__attribute__((symver("xde_check_file@@XDE_1.0")))
 Bool
 __xde_check_file(char *path)
 {
@@ -4679,8 +4612,7 @@ __xde_check_file(char *path)
 	return False;
 }
 
-__asm__(".symver __xde_check_file,xde_check_file@@XDE_1.0");
-
+__attribute__((symver("xde_test_file@@XDE_1.0")))
 Bool
 __xde_test_file(char *path)
 {
@@ -4706,8 +4638,6 @@ __xde_test_file(char *path)
 	return False;
 }
 
-__asm__(".symver __xde_test_file,xde_test_file@@XDE_1.0");
-
 /** @} */
 
 /* @name XTWM
@@ -4717,6 +4647,7 @@ __asm__(".symver __xde_test_file,xde_test_file@@XDE_1.0");
  */
 /** @{ */
 
+__attribute__((symver("xde_get_rcfile_XTWM@@XDE_1.0")))
 void
 __xde_get_rcfile_XTWM(char *xtwm)
 {
@@ -4821,8 +4752,6 @@ __xde_get_rcfile_XTWM(char *xtwm)
 		}
 	}
 }
-
-__asm__(".symver __xde_get_rcfile_XTWM,xde_get_rcfile_XTWM@@XDE_1.0");
 
 /** @} */
 
@@ -5070,6 +4999,7 @@ handle_DestroyNotify(const XEvent *e)
 
 /** @brief handle an Xlib event
   */
+__attribute__((symver("xde_handle_event@@XDE_1.0")))
 Bool
 __xde_handle_event(const XEvent *ev)
 {
@@ -5120,8 +5050,6 @@ __xde_handle_event(const XEvent *ev)
 	return False;
 }
 
-__asm__(".symver __xde_handle_event,xde_handle_event@@XDE_1.0");
-
 WmDeferred *deferred_wait;
 WmDeferred *deferred_done;
 WmDeferred **deferred_tail = &deferred_done;
@@ -5152,6 +5080,7 @@ set_timer(WmDeferred * d)
   * wait at least #delay millseconds before before processing the deferred
   * action, and then only after all pending X events have been handled.
   */
+__attribute__((symver("xde_defer_action@@XDE_1.0")))
 void
 __xde_defer_action(void (*action) (XPointer), Time delay, XPointer data)
 {
@@ -5193,8 +5122,6 @@ __xde_defer_action(void (*action) (XPointer), Time delay, XPointer data)
 	}
 }
 
-__asm__(".symver __xde_defer_action,xde_defer_action@@XDE_1.0");
-
 /** @brief defer and action for later once
   * @param action - action to perform once later
   * @param delay - amount of time to delay before queuing action
@@ -5205,6 +5132,7 @@ __asm__(".symver __xde_defer_action,xde_defer_action@@XDE_1.0");
   * the same client data, return false and do not queue another instance of the
   * same action.
   */
+__attribute__((symver("xde_defer_once@@XDE_1.0")))
 Bool
 __xde_defer_once(void (*action) (XPointer), Time delay, XPointer data)
 {
@@ -5223,8 +5151,6 @@ __xde_defer_once(void (*action) (XPointer), Time delay, XPointer data)
 	return True;
 }
 
-__asm__(".symver __xde_defer_once,xde_defer_once@@XDE_1.0");
-
 static int signum;
 
 /** @brief function to invoke from within signal handler
@@ -5233,13 +5159,12 @@ static int signum;
   * Can be used as a function to signal() to handle a signal not otherwise
   * handled by the library.
   */
+__attribute__((symver("xde_sig_handler@@XDE_1.0")))
 void
 __xde_sig_handler(int sig)
 {
 	signum = sig;
 }
-
-__asm__(".symver __xde_sig_handler,xde_sig_handler@@XDE_1.0");
 
 XPointer retval;
 int shutting_down;
@@ -5250,6 +5175,7 @@ int shutting_down;
   * Quits the main loop and causes xde_main_loop() to return the value
   * specified.
   */
+__attribute__((symver("xde_main_quit@@XDE_1.0")))
 void
 __xde_main_quit(XPointer value)
 {
@@ -5257,13 +5183,12 @@ __xde_main_quit(XPointer value)
 	shutting_down = 1;
 }
 
-__asm__(".symver __xde_main_quit,xde_main_quit@@XDE_1.0");
-
 /** @brief process timeouts
   *
   * Used to process timeouts on the defer timer file descriptor.  You should
   * only need to call this if you are writing your own event loop.
   */
+__attribute__((symver("xde_process_timeouts@@XDE_1.0")))
 void
 __xde_process_timeouts()
 {
@@ -5293,13 +5218,12 @@ __xde_process_timeouts()
 		set_timer(d);
 }
 
-__asm__(".symver __xde_process_timeouts,xde_process_timeouts@@XDE_1.0");
-
 /** @brief process X library events
   *
   * Use to process X library events.  You should only need to call this if you
   * are writing your own event loop.
   */
+__attribute__((symver("xde_process_xevents@@XDE_1.0")))
 void
 __xde_process_xevents()
 {
@@ -5319,10 +5243,9 @@ __xde_process_xevents()
 	while (deferred_done && XPending(dpy));
 }
 
-__asm__(".symver __xde_process_xevents,xde_process_xevents@@XDE_1.0");
-
 /** @brief process ICE messages
   */
+__attribute__((symver("xde_process_messages@@XDE_1.0")))
 void
 __xde_process_messages(void)
 {
@@ -5334,13 +5257,12 @@ __xde_process_messages(void)
 	IceProcessMessages(iceConn, NULL, NULL);
 }
 
-__asm__(".symver __xde_process_messages,xde_process_messages@@XDE_1.0");
-
 /** @brief process deferred events
   *
   * Process all deferred events that have expired their waiting intervals.  You
   * should only need to call this if you are writing your own event loop.
   */
+__attribute__((symver("xde_process_deferred@@XDE_1.0")))
 void
 __xde_process_deferred(void)
 {
@@ -5356,13 +5278,12 @@ __xde_process_deferred(void)
 	deferred_tail = &deferred_done;
 }
 
-__asm__(".symver __xde_process_deferred,xde_process_deferred@@XDE_1.0");
-
 /** @brief handle signals
   *
   * Process signals within the event loop (instead of the signal handler).  You
   * should only need to call this if you are writing your own event loop.
   */
+__attribute__((symver("xde_handle_signal@@XDE_1.0")))
 void
 __xde_handle_signal(int sig)
 {
@@ -5376,11 +5297,10 @@ __xde_handle_signal(int sig)
 	}
 }
 
-__asm__(".symver __xde_handle_signal,xde_handle_signal@@XDE_1.0");
-
 /** @brief main event loop for XDE library
   * @return XPointer - value passed by xde_main_quit()
   */
+__attribute__((symver("xde_main_loop@@XDE_1.0")))
 XPointer
 __xde_main_loop(void)
 {
@@ -5459,10 +5379,9 @@ __xde_main_loop(void)
 	return (retval);
 }
 
-__asm__(".symver __xde_main_loop,xde_main_loop@@XDE_1.0");
-
 /** @brief defer a window manager recheck
   */
+__attribute__((symver("xde_defer_wm_check@@XDE_1.0")))
 void
 __xde_defer_wm_check(Time delay)
 {
@@ -5470,19 +5389,16 @@ __xde_defer_wm_check(Time delay)
 	xde_defer_once(xde_action_check_wm, delay, NULL);
 }
 
-__asm__(".symver __xde_defer_wm_check,xde_defer_wm_check@@XDE_1.0");
-
 /** @brief defer a window manager theme check
   */
 
+__attribute__((symver("xde_defer_theme_check@@XDE_1.0")))
 void
 __xde_defer_theme_check(Time delay)
 {
 	DPRINTF("deferring theme check %d milliseconds\n", (int) delay);
 	xde_defer_once(xde_action_check_theme, delay, NULL);
 }
-
-__asm__(".symver __xde_defer_theme_check,xde_defer_theme_check@@XDE_1.0");
 
 static Bool
 is_wm_window(Window win)
