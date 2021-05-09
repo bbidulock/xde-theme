@@ -1,4 +1,37 @@
-xde-theme -- history of user-visible changes.  2020-02-08
+xde-theme -- history of user-visible changes.  2021-05-09
+
+Release xde-theme-1.5 released 2021-05-09
+-----------------------------------------
+
+git tag -n100 -l 1.5
+
+1.5             Maintenance Release 1.5
+
+    This is the fifth release of the xde-theme package. This package
+    contains various tools for setting themes for a wide range of
+    light-weight window managers. These tools are meant to have minimal
+    dependencies, GTK2-based, and each tool able to run independent of the
+    others (and, for that matter, independent of the desktop environment):
+    they work well with many light-weight window managers. I use these
+    tools daily and they are quite stable.
+
+    This release is a maintenance release whose sole purpose is to update
+    the build system and support symbol versioning under gcc 10.2.0
+    compiler.
+
+    Included in the release is an autoconf tarball for building the release
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 1.4...1.5
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      update copyright headers
+      whoops
+      support gcc 10 symver
+      update release notes
+      update for autoconf 2.71
+
 
 Release xde-theme-1.4 released 2020-02-08
 -----------------------------------------
@@ -25,10 +58,11 @@ git tag -n100 -l 1.4
 
 git shortlog -e -n -w80,6,8 1.3...1.4
 
-Brian Bidulock <bidulock@openss7.org> (3):
+Brian Bidulock <bidulock@openss7.org> (4):
       simplify MDOCDATE and cscope
       fixes for -Wextra
       new release notes
+      update release files
 
 
 Release xde-theme-1.3 released 2019-09-05
