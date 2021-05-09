@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.71])
 AC_INIT([xde-theme],[1.4],[https://github.com/bbidulock/xde-theme],[xde-theme], [https://github.com/bbidulock/xde-theme/issues])
 AC_REVISION([1.4])
 
@@ -87,12 +87,13 @@ LT_LANG([C])
 AC_SUBST([LIBTOOL_DEPS])
 
 PKG_PROG_PKG_CONFIG([0.14.0])
+AC_PROG_EGREP
 
 # Checks for libraries.
 
 # Checks for header files.
 AS_BOX([Header Files])
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
 AC_PATH_X
 AC_PATH_XTRA
 AC_CHECK_HEADERS([fcntl.h locale.h stddef.h stdint.h stdlib.h string.h strings.h sys/ioctl.h sys/time.h syslog.h unistd.h])
@@ -101,6 +102,8 @@ AC_CHECK_HEADERS([fcntl.h locale.h stddef.h stdint.h stdlib.h string.h strings.h
 AS_BOX([Typedefs, Structures, Compiler])
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AS_BOX([Library Functions])
@@ -108,7 +111,7 @@ AC_FUNC_FORK
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul])
+AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul clock_gettime getcwd memset])
 
 AS_BOX([X11 Extension Libraries])
 
@@ -122,8 +125,7 @@ PKG_CHECK_MODULES([GIO_UNIX],[gio-unix-2.0])
 PKG_CHECK_MODULES([IMLIB],[imlib2])
 
 AC_ARG_ENABLE([xrandr],
-	AC_HELP_STRING([--disable-xrandr],
-		[Disable XRANDR support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xrandr],[Disable XRANDR support @<:@default=auto@:>@]))
 if test "x$enable_xrandr" != xno ; then
 	PKG_CHECK_MODULES([XRANDR],[xrandr],
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
@@ -135,8 +137,7 @@ AC_MSG_RESULT([${enable_xrandr:-yes}])
 AM_CONDITIONAL([HAVE_XRANDR],[test  "x$enable_xrandr" != "xno"])
 
 AC_ARG_ENABLE([xinerama],
-	AC_HELP_STRING([--disable-xinerama],
-		[Disable XINERAMA support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xinerama],[Disable XINERAMA support @<:@default=auto@:>@]))
 if test "x$enable_xinerama" != xno ; then
 	PKG_CHECK_MODULES([XINERAMA],[xinerama],
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
@@ -148,8 +149,7 @@ AC_MSG_RESULT([${enable_xinerama:-yes}])
 AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
 AC_ARG_ENABLE([debug],
-	AC_HELP_STRING([--enable-debug],
-		[Enable debugging support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--enable-debug],[Enable debugging support @<:@default=disabled@:>@]))
 if test "x$enable_debug" = xyes ; then
 	AC_DEFINE_UNQUOTED([DEBUG],[],[Define to enable debugging])
 fi
